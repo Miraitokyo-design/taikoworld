@@ -1,0 +1,28 @@
+[
+  {
+    "id": "park_grass",
+    "name": "잔디 공원",
+    "modelPath": "/models/spaces/space_park_grass.glb",
+    "spawnPoint": [0, 0, 3],
+    "walkableBounds": {
+      "minX": -6,
+      "maxX": 6,
+      "minZ": -5,
+      "maxZ": 5
+    },
+    "obstacles": [
+      { "id": "main_taiko", "type": "circle", "x": 0, "z": -1, "radius": 0.9 },
+      { "id": "tree_01", "type": "circle", "x": -4.2, "z": -3.2, "radius": 0.8 },
+      { "id": "tree_02", "type": "circle", "x": 4.4, "z": -3.0, "radius": 0.8 },
+      { "id": "tree_03", "type": "circle", "x": -4.8, "z": 2.4, "radius": 0.8 },
+      { "id": "tree_04", "type": "circle", "x": 4.6, "z": 2.6, "radius": 0.8 }
+    ],
+    "routes": {
+      "park_grass_a": [
+        [-2, 0, 1],
+        [1, 0, 1],
+        [1, 0, -1]
+      ]
+    }
+  }
+]
