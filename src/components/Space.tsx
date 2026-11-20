@@ -1,8 +1,11 @@
+import type { ThreeEvent } from '@react-three/fiber';
 import type { Obstacle, SpaceConfig } from '../types/world';
 
 interface SpaceProps {
   /** spaces.json에서 불러온 현재 공간 설정 데이터 */
   space: SpaceConfig;
+  /** 사용자가 잔디 바닥을 클릭/터치했을 때 호출되는 콜백 함수 */
+  onGroundClick: (point: [number, number]) => void;
 }
 
 /**
@@ -77,9 +80,11 @@ function PlaceholderFlower({ x, z, color }: { x: number; z: number; color: strin
 /**
  * 잔디 공원 3D 공간을 그리는 컴포넌트
  * - spaces.json의 walkableBounds(이동 가능 경계)와 obstacles(나무 등) 데이터를 읽어 화면을 구성합니다.
+ * - 잔디 바닥 클릭/터치 좌표를 받아 플레이어 이동 목적지로 전달합니다.
  * @param props.space - 현재 공간 설정 객체
+ * @param props.onGroundClick - 바닥 클릭 시 [x, z] 좌표를 넘기는 콜백
  */
-export function Space({ space }: SpaceProps) {
+export function Space({ space, onGroundClick }: SpaceProps) {
   const { walkableBounds, obstacles } = space;
 
   // 이동 가능한 잔디 광장의 가로(width), 세로(depth) 크기 계산
@@ -91,18 +96,35 @@ export function Space({ space }: SpaceProps) {
   // 장애물 중 id가 'tree_'로 시작하는 항목만 추려 나무로 배치
   const treeObstacles = obstacles.filter((obstacle) => obstacle.id.startsWith('tree_'));
 
+  /**
+   * 바닥 메시 클릭 시 3D 교차점의 (x, z) 좌표를 상위로 전달하는 핸들러
+   * - 모바일 터치(pointerType === 'touch')는 플로팅 조이스틱이 담당하므로 바닥 이동을 실행하지 않습니다.
+   */
+  const handleGroundPointerDown = (event: ThreeEvent<PointerEvent>) => {
+    if (event.nativeEvent.pointerType === 'touch') return;
+
+    // 뒤쪽 메시로 클릭 이벤트가 중복 전달되지 않도록 막음
+    event.stopPropagation();
+    onGroundClick([event.point.x, event.point.z]);
+  };
+
   return (
     <group name={space.id}>
-      {/* 공원 바깥을 감싸는 넓은 들판 바닥 */}
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.04, 0]}>
+      {/* 공원 바깥 들판 바닥 (바깥을 눌러도 광장 경계 끝까지 자연스럽게 걸어가도록 클릭 허용) */}
+      <mesh
+        rotation={[-Math.PI / 2, 0, 0]}
+        position={[0, -0.04, 0]}
+        onPointerDown={handleGroundPointerDown}
+      >
         <planeGeometry args={[60, 60]} />
         <meshStandardMaterial color="#87c976" roughness={0.95} />
       </mesh>
 
-      {/* 이동 가능한 잔디 광장 영역 (살짝 밝은 연두색으로 경계를 자연스럽게 표시) */}
+      {/* 이동 가능한 잔디 광장 영역 */}
       <mesh
         rotation={[-Math.PI / 2, 0, 0]}
         position={[plazaCenterX, 0, plazaCenterZ]}
+        onPointerDown={handleGroundPointerDown}
       >
         <planeGeometry args={[plazaWidth, plazaDepth]} />
         <meshStandardMaterial color="#9ad983" roughness={0.95} />
@@ -112,6 +134,7 @@ export function Space({ space }: SpaceProps) {
       <mesh
         rotation={[-Math.PI / 2, 0, 0]}
         position={[plazaCenterX, -0.02, plazaCenterZ]}
+        onPointerDown={handleGroundPointerDown}
       >
         <planeGeometry args={[plazaWidth + 0.6, plazaDepth + 0.6]} />
         <meshStandardMaterial color="#d9c69e" roughness={0.95} />

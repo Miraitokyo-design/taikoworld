@@ -73,3 +73,12 @@ export interface PlayerState {
   rotationY: number;
   action: PlayerAction;
 }
+
+/**
+ * 2D 평면(X, Z) 이동 방향 및 세기를 나타내는 벡터 타입
+ * - 각 값의 크기(길이)는 0 ~ 1 사이로, 조이스틱 기울기나 키보드 방향을 표현합니다.
+ */
+export interface MoveVector {
+  x: number;
+  z: number;
+}

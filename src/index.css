@@ -17,17 +17,51 @@ body,
   background-color: #cde9f6;
   font-family: -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Pretendard',
     'Noto Sans KR', sans-serif;
-  /* 모바일 터치 시 화면이 쓸려 내려가거나 확대되는 현상 방지 */
+  /* 모바일 터치 시 화면이 쓸려 내려가거나 길게 누를 때 메뉴가 뜨는 현상 방지 */
   touch-action: none;
   user-select: none;
   -webkit-user-select: none;
+  -webkit-touch-callout: none;
 }
 
-/* 좌측 하단 공간 정보 표시용 최소 배지 */
+/* 모바일 플로팅 가상 조이스틱 바깥 원판 */
+.virtual-joystick-base {
+  position: fixed;
+  width: 96px;
+  height: 96px;
+  margin-left: -48px;
+  margin-top: -48px;
+  border-radius: 50%;
+  background: rgba(255, 252, 245, 0.32);
+  border: 2px solid rgba(255, 252, 245, 0.78);
+  box-shadow: 0 6px 20px rgba(61, 53, 46, 0.18);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 20;
+}
+
+/* 모바일 플로팅 가상 조이스틱 가운데 손잡이(노브) */
+.virtual-joystick-knob {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(224, 79, 62, 0.85);
+  border: 3px solid rgba(255, 252, 245, 0.95);
+  box-shadow: 0 4px 12px rgba(61, 53, 46, 0.25);
+  will-change: transform;
+}
+
+/* 좌측 하단 공간 정보 및 조작 안내 배지 */
 .space-badge {
   position: fixed;
   left: 16px;
   bottom: 16px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
   padding: 8px 14px;
   border-radius: 999px;
   background: rgba(255, 252, 245, 0.9);
@@ -36,4 +70,10 @@ body,
   font-weight: 600;
   box-shadow: 0 4px 12px rgba(61, 53, 46, 0.12);
   pointer-events: none;
+}
+
+.space-badge-hint {
+  font-size: 12px;
+  font-weight: 500;
+  color: #6f6458;
 }
