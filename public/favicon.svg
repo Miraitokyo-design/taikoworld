@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- 타이코 붉은 몸통 테두리 -->
+  <circle cx="32" cy="32" r="30" fill="#c94632" />
+  <!-- 나무 테두리 (카 영역) -->
+  <circle cx="32" cy="32" r="25" fill="#5e321d" />
+  <!-- 가죽 북면 (돈 영역) -->
+  <circle cx="32" cy="32" r="19" fill="#f7ebd5" />
+  <!-- 중앙 포인트 -->
+  <circle cx="32" cy="32" r="6" fill="#d94b38" />
+</svg>
