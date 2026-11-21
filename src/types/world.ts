@@ -44,6 +44,8 @@ export interface GroupHideoutConfig {
   groupId: string;
   /** 화면 표시 이름 (예: "転太鼓舞", "鶴亀太鼓") */
   name: string;
+  /** 추후 Blender 아지트 GLB로 바로 교체할 모델 경로 (예: "/models/props/hideout_tentaikomai.glb") */
+  modelPath?: string;
   /** 3D 배치 좌표 [x, y, z] */
   position: Vec3;
   /** 큐브 바탕 색상 (hex) */

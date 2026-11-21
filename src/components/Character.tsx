@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import { memo, useRef } from 'react';
 import type { MutableRefObject } from 'react';
 import { useFrame } from '@react-three/fiber';
 import type { Group } from 'three';
@@ -85,7 +85,7 @@ function CharacterHeadPart({ head, color }: { head: string; color: string }) {
  * - 공통 애니메이션(idle, walk, play)을 useFrame에서 직접 구동하며,
  *   원점(Origin)이 바닥(y = 0)에 있어 추후 Blender 캐릭터 GLB로 바로 교체할 수 있습니다.
  */
-export function Character({ parts, actionRef }: CharacterProps) {
+export const Character = memo(function Character({ parts, actionRef }: CharacterProps) {
   const bodyGroupRef = useRef<Group>(null);
   const leftArmRef = useRef<Group>(null);
   const rightArmRef = useRef<Group>(null);
@@ -223,4 +223,4 @@ export function Character({ parts, actionRef }: CharacterProps) {
       </group>
     </group>
   );
-}
+});

@@ -33,6 +33,24 @@ class AudioManager {
 
   /** 실제 오디오 파일(.mp3)을 미리 디코딩해 보관하는 캐시 맵 */
   private decodedBuffers = new Map<string, AudioBuffer>();
+  /** 타격/심벌 합성 시 매번 새 버퍼를 만들지 않고 재사용하는 공용 화이트노이즈 버퍼 */
+  private sharedNoiseBuffer: AudioBuffer | null = null;
+
+  /**
+   * 공용 0.5초 화이트노이즈 버퍼를 1회만 생성해 메모리 재할당(GC)을 줄이는 도우미 함수
+   */
+  private getNoiseBuffer(ctx: AudioContext): AudioBuffer {
+    if (!this.sharedNoiseBuffer) {
+      const length = Math.floor(ctx.sampleRate * 0.5);
+      const buffer = ctx.createBuffer(1, length, ctx.sampleRate);
+      const data = buffer.getChannelData(0);
+      for (let i = 0; i < length; i++) {
+        data[i] = Math.random() * 2 - 1;
+      }
+      this.sharedNoiseBuffer = buffer;
+    }
+    return this.sharedNoiseBuffer;
+  }
 
   /**
    * 브라우저 오디오 컨텍스트를 생성하고 잠금 해제(resume)하는 함수
@@ -366,15 +384,9 @@ class AudioManager {
       osc.stop(now + duration + 0.02);
     }
 
-    const bufferSize = Math.floor(ctx.sampleRate * duration);
-    const noiseBuffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
-    const data = noiseBuffer.getChannelData(0);
-    for (let i = 0; i < bufferSize; i++) {
-      data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (bufferSize * 0.32));
-    }
-
+    // 공용 화이트노이즈 버퍼 재사용 (매 타격마다 메모리 할당 방지)
     const noise = ctx.createBufferSource();
-    noise.buffer = noiseBuffer;
+    noise.buffer = this.getNoiseBuffer(ctx);
 
     const filter = ctx.createBiquadFilter();
     filter.type = 'highpass';
@@ -388,6 +400,7 @@ class AudioManager {
     filter.connect(noiseGain);
     noiseGain.connect(destination);
     noise.start(now);
+    noise.stop(now + duration + 0.02);
   }
 
   /** 공통 나무 테두리(かっ) 타격음 보조 합성 함수 */
@@ -415,15 +428,8 @@ class AudioManager {
     woodOsc.start(now);
     woodOsc.stop(now + 0.1);
 
-    const bufferSize = Math.floor(ctx.sampleRate * 0.05);
-    const noiseBuffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
-    const data = noiseBuffer.getChannelData(0);
-    for (let i = 0; i < bufferSize; i++) {
-      data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (bufferSize * 0.25));
-    }
-
     const noiseSource = ctx.createBufferSource();
-    noiseSource.buffer = noiseBuffer;
+    noiseSource.buffer = this.getNoiseBuffer(ctx);
 
     const filter = ctx.createBiquadFilter();
     filter.type = 'bandpass';
@@ -438,6 +444,7 @@ class AudioManager {
     filter.connect(noiseGain);
     noiseGain.connect(destination);
     noiseSource.start(now);
+    noiseSource.stop(now + 0.06);
   }
 }
 

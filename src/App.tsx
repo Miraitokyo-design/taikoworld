@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Canvas } from '@react-three/fiber';
 import spacesData from './data/spaces.json';
 import instrumentsData from './data/instruments.json';
@@ -33,14 +33,45 @@ import { VirtualJoystick } from './components/ui/VirtualJoystick';
 import { LandingOverlay } from './components/ui/LandingOverlay';
 import { TaikoPlayOverlay } from './components/ui/TaikoPlayOverlay';
 import { ScheduleBanner } from './components/ui/ScheduleBanner';
-import { ScheduleCalendarModal } from './components/ui/ScheduleCalendarModal';
-import { CircleInfoModal } from './components/ui/CircleInfoModal';
-import { MemberProfileModal } from './components/ui/MemberProfileModal';
-import { MemberDirectoryModal } from './components/ui/MemberDirectoryModal';
-import { SongBookModal } from './components/ui/SongBookModal';
-import { TaikoGuideModal } from './components/ui/TaikoGuideModal';
-import { MenuModal } from './components/ui/MenuModal';
 import { SoundControl } from './components/ui/SoundControl';
+
+// React.lazy(지연 로딩): 입장 직후에는 안 보이는 무거운 모달들을 별도 청크로 분리해
+// 모바일 첫 로딩 속도를 높이고, 사용자가 모달을 열 때만 필요한 코드를 불러옵니다.
+const ScheduleCalendarModal = lazy(() =>
+  import('./components/ui/ScheduleCalendarModal').then((m) => ({
+    default: m.ScheduleCalendarModal,
+  }))
+);
+const CircleInfoModal = lazy(() =>
+  import('./components/ui/CircleInfoModal').then((m) => ({
+    default: m.CircleInfoModal,
+  }))
+);
+const MemberProfileModal = lazy(() =>
+  import('./components/ui/MemberProfileModal').then((m) => ({
+    default: m.MemberProfileModal,
+  }))
+);
+const MemberDirectoryModal = lazy(() =>
+  import('./components/ui/MemberDirectoryModal').then((m) => ({
+    default: m.MemberDirectoryModal,
+  }))
+);
+const SongBookModal = lazy(() =>
+  import('./components/ui/SongBookModal').then((m) => ({
+    default: m.SongBookModal,
+  }))
+);
+const TaikoGuideModal = lazy(() =>
+  import('./components/ui/TaikoGuideModal').then((m) => ({
+    default: m.TaikoGuideModal,
+  }))
+);
+const MenuModal = lazy(() =>
+  import('./components/ui/MenuModal').then((m) => ({
+    default: m.MenuModal,
+  }))
+);
 
 // JSON 배열은 TypeScript가 일반 number[]로 추론하므로, 엄격한 타입으로 안전하게 연결
 const spaces = spacesData as unknown as SpaceConfig[];
@@ -157,6 +188,15 @@ export function App() {
     closeAllModals();
     setIsMenuOpen(true);
   }, [closeAllModals]);
+
+  /** NPC 클릭/E키 시 프로필 카드를 여는 안정화된 콜백 (NpcGroup 불필요 재렌더링 방지) */
+  const handleSelectMember = useCallback(
+    (member: MemberConfig) => {
+      closeAllModals();
+      setSelectedMember(member);
+    },
+    [closeAllModals]
+  );
 
   /** 지역 단체 아지트(큐브)에 접근해 클릭 또는 E 키로 해당 지역 단체 소개를 여는 핸들러 */
   const handleOpenHideoutGuide = useCallback(
@@ -287,6 +327,7 @@ export function App() {
       {/* 3D 그래픽을 그리는 캔버스: 모바일 성능 예산에 따라 픽셀 배율(dpr)을 최대 2로 제한 */}
       <Canvas
         dpr={[1, 2]}
+        gl={{ antialias: true, powerPreference: 'high-performance' }}
         camera={{
           position: [spawnX, 8.2, spawnZ + 9.2],
           fov: 40,
@@ -311,10 +352,7 @@ export function App() {
           onNearbyMemberChange={setNearbyMember}
           onNearbyHideoutChange={setNearbyHideout}
           onSelectInstrument={handleEnterPlayMode}
-          onSelectMember={(member) => {
-            closeAllModals();
-            setSelectedMember(member);
-          }}
+          onSelectMember={handleSelectMember}
           onSelectHideout={handleOpenHideoutGuide}
           taikoHitPulseRef={taikoHitPulseRef}
         />
@@ -392,114 +430,117 @@ export function App() {
         />
       )}
 
-      {/* 통합 메뉴바 모달 */}
-      {hasEntered && isMenuOpen && (
-        <MenuModal
-          nextEvent={nextUpcomingEvent}
-          memberCount={members.length}
-          songCount={songs.length + customSongs.length}
-          isPlayerSoundOn={isPlayerSoundOn}
-          isNpcSoundOn={isNpcSoundOn}
-          onOpenSchedule={() => {
-            closeAllModals();
-            setOpenedFromMenu(true);
-            setIsScheduleOpen(true);
-          }}
-          onOpenMembers={() => {
-            closeAllModals();
-            setOpenedFromMenu(true);
-            setIsMemberDirectoryOpen(true);
-          }}
-          onOpenSongs={() => {
-            closeAllModals();
-            setOpenedFromMenu(true);
-            setIsSongBookOpen(true);
-          }}
-          onOpenTaikoGuide={() => {
-            closeAllModals();
-            setOpenedFromMenu(true);
-            setGuideInitialTab('types');
-            setIsTaikoGuideOpen(true);
-          }}
-          onOpenCircle={() => {
-            closeAllModals();
-            setOpenedFromMenu(true);
-            setIsCircleOpen(true);
-          }}
-          onTogglePlayerSound={handleTogglePlayerSound}
-          onToggleNpcSound={handleToggleNpcSound}
-          onClose={() => setIsMenuOpen(false)}
-        />
-      )}
+      {/* 지연 로딩되는 정보 모달 그룹 (필요할 때만 청크 다운로드) */}
+      <Suspense fallback={null}>
+        {/* 통합 메뉴바 모달 */}
+        {hasEntered && isMenuOpen && (
+          <MenuModal
+            nextEvent={nextUpcomingEvent}
+            memberCount={members.length}
+            songCount={songs.length + customSongs.length}
+            isPlayerSoundOn={isPlayerSoundOn}
+            isNpcSoundOn={isNpcSoundOn}
+            onOpenSchedule={() => {
+              closeAllModals();
+              setOpenedFromMenu(true);
+              setIsScheduleOpen(true);
+            }}
+            onOpenMembers={() => {
+              closeAllModals();
+              setOpenedFromMenu(true);
+              setIsMemberDirectoryOpen(true);
+            }}
+            onOpenSongs={() => {
+              closeAllModals();
+              setOpenedFromMenu(true);
+              setIsSongBookOpen(true);
+            }}
+            onOpenTaikoGuide={() => {
+              closeAllModals();
+              setOpenedFromMenu(true);
+              setGuideInitialTab('types');
+              setIsTaikoGuideOpen(true);
+            }}
+            onOpenCircle={() => {
+              closeAllModals();
+              setOpenedFromMenu(true);
+              setIsCircleOpen(true);
+            }}
+            onTogglePlayerSound={handleTogglePlayerSound}
+            onToggleNpcSound={handleToggleNpcSound}
+            onClose={() => setIsMenuOpen(false)}
+          />
+        )}
 
-      {/* 상세 월간 연주 일정 캘린더 모달 */}
-      {hasEntered && isScheduleOpen && (
-        <ScheduleCalendarModal
-          events={scheduleEvents}
-          nextEvent={nextUpcomingEvent}
-          onBackToMenu={openedFromMenu ? handleBackToMenu : undefined}
-          onClose={closeAllModals}
-        />
-      )}
+        {/* 상세 월간 연주 일정 캘린더 모달 */}
+        {hasEntered && isScheduleOpen && (
+          <ScheduleCalendarModal
+            events={scheduleEvents}
+            nextEvent={nextUpcomingEvent}
+            onBackToMenu={openedFromMenu ? handleBackToMenu : undefined}
+            onClose={closeAllModals}
+          />
+        )}
 
-      {/* 전체 서클 멤버 도감 모달 */}
-      {hasEntered && isMemberDirectoryOpen && (
-        <MemberDirectoryModal
-          members={members}
-          onSelectMember={(member) => {
-            setIsMemberDirectoryOpen(false);
-            setSelectedMember(member);
-          }}
-          onBackToMenu={openedFromMenu ? handleBackToMenu : undefined}
-          onClose={closeAllModals}
-        />
-      )}
+        {/* 전체 서클 멤버 도감 모달 */}
+        {hasEntered && isMemberDirectoryOpen && (
+          <MemberDirectoryModal
+            members={members}
+            onSelectMember={(member) => {
+              setIsMemberDirectoryOpen(false);
+              setSelectedMember(member);
+            }}
+            onBackToMenu={openedFromMenu ? handleBackToMenu : undefined}
+            onClose={closeAllModals}
+          />
+        )}
 
-      {/* 멀티 레이어 타이코 곡 정보 & 직접 작곡 모달 */}
-      {hasEntered && isSongBookOpen && (
-        <SongBookModal
-          builtInSongs={songs}
-          customSongs={customSongs}
-          allTracks={taikoTracks}
-          tracksById={tracksById}
-          members={members}
-          onSaveCustomSong={handleSaveCustomSong}
-          onDeleteCustomSong={handleDeleteCustomSong}
-          onBackToMenu={openedFromMenu ? handleBackToMenu : undefined}
-          onClose={closeAllModals}
-        />
-      )}
+        {/* 멀티 레이어 타이코 곡 정보 & 직접 작곡 모달 */}
+        {hasEntered && isSongBookOpen && (
+          <SongBookModal
+            builtInSongs={songs}
+            customSongs={customSongs}
+            allTracks={taikoTracks}
+            tracksById={tracksById}
+            members={members}
+            onSaveCustomSong={handleSaveCustomSong}
+            onDeleteCustomSong={handleDeleteCustomSong}
+            onBackToMenu={openedFromMenu ? handleBackToMenu : undefined}
+            onClose={closeAllModals}
+          />
+        )}
 
-      {/* 타이코 종류 & 지역 타이코 단체 소개 모달 (아지트에서 진입 시 E로 닫기 지원) */}
-      {hasEntered && isTaikoGuideOpen && (
-        <TaikoGuideModal
-          guide={taikoGuide}
-          tracksById={tracksById}
-          initialTab={guideInitialTab}
-          highlightedGroupId={highlightedGroupId}
-          allowKeyEClose={guideOpenedFromHideout}
-          onBackToMenu={openedFromMenu ? handleBackToMenu : undefined}
-          onClose={closeAllModals}
-        />
-      )}
+        {/* 타이코 종류 & 지역 타이코 단체 소개 모달 (아지트에서 진입 시 E로 닫기 지원) */}
+        {hasEntered && isTaikoGuideOpen && (
+          <TaikoGuideModal
+            guide={taikoGuide}
+            tracksById={tracksById}
+            initialTab={guideInitialTab}
+            highlightedGroupId={highlightedGroupId}
+            allowKeyEClose={guideOpenedFromHideout}
+            onBackToMenu={openedFromMenu ? handleBackToMenu : undefined}
+            onClose={closeAllModals}
+          />
+        )}
 
-      {/* 서클 소개 & 대학교 홈페이지 · 인스타그램 QR 모달 */}
-      {hasEntered && isCircleOpen && (
-        <CircleInfoModal
-          circle={circleInfo}
-          onBackToMenu={openedFromMenu ? handleBackToMenu : undefined}
-          onClose={closeAllModals}
-        />
-      )}
+        {/* 서클 소개 & 대학교 홈페이지 · 인스타그램 QR 모달 */}
+        {hasEntered && isCircleOpen && (
+          <CircleInfoModal
+            circle={circleInfo}
+            onBackToMenu={openedFromMenu ? handleBackToMenu : undefined}
+            onClose={closeAllModals}
+          />
+        )}
 
-      {/* NPC 멤버 프로필 카드 모달 (E/ESC로 닫기 가능) */}
-      {hasEntered && selectedMember && (
-        <MemberProfileModal
-          member={selectedMember}
-          songs={songs}
-          onClose={() => setSelectedMember(null)}
-        />
-      )}
+        {/* NPC 멤버 프로필 카드 모달 (E/ESC로 닫기 가능) */}
+        {hasEntered && selectedMember && (
+          <MemberProfileModal
+            member={selectedMember}
+            songs={songs}
+            onClose={() => setSelectedMember(null)}
+          />
+        )}
+      </Suspense>
 
       {/* 탐색 모드 하단 좌측 공간 안내 배지 & 하단 우측 [서클/문의] 버튼 */}
       {isExploring && (

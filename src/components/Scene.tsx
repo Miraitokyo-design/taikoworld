@@ -144,6 +144,9 @@ export function Scene({
       {/* 따뜻한 햇살 느낌의 주 조명 */}
       <directionalLight position={[6, 12, 8]} intensity={1.35} color="#fff6e0" />
 
+      {/* 반대편 그림자가 너무 어둡게 죽지 않도록 도와주는 은은한 보조 조명 (Blender PBR GLB 대비) */}
+      <directionalLight position={[-7, 6, -6]} intensity={0.45} color="#d9ecff" />
+
       {/* 잔디 공원 공간 (PC 바닥 클릭 이벤트 연결) */}
       <Space space={space} onGroundClick={handleGroundClick} />
 

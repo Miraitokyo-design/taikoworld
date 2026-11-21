@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { memo, useEffect } from 'react';
 import type { MutableRefObject } from 'react';
 import type { ThreeEvent } from '@react-three/fiber';
 import { Html } from '@react-three/drei';
@@ -34,7 +34,7 @@ interface NpcProps {
  * 개별 NPC 1명의 3D 외형, 근접 [!] 말풍선, 추임새 텍스트를 그리는 컴포넌트
  * - 실제 이동과 3인 합주 상태머신 계산은 상위 NpcGroup에서 통합 실행합니다.
  */
-export function Npc({
+export const Npc = memo(function Npc({
   member,
   initialPosition,
   initialRotationY,
@@ -159,4 +159,4 @@ export function Npc({
       )}
     </group>
   );
-}
+});
