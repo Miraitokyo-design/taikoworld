@@ -35,6 +35,26 @@ export interface Obstacle {
 }
 
 /**
+ * 3D 공간에 배치되는 지역 타이코 단체 아지트(큐브) 설정 타입
+ * - 사용자가 가까이 다가가면 해당 지역 단체 소개 화면으로 연결됩니다.
+ */
+export interface GroupHideoutConfig {
+  id: string;
+  /** taikoGuide.json의 localGroups[].id와 연결되는 단체 ID */
+  groupId: string;
+  /** 화면 표시 이름 (예: "転太鼓舞", "鶴亀太鼓") */
+  name: string;
+  /** 3D 배치 좌표 [x, y, z] */
+  position: Vec3;
+  /** 큐브 바탕 색상 (hex) */
+  color: string;
+  /** 큐브 테두리 색상 (hex) */
+  borderColor: string;
+  /** 상호작용(! 말풍선)이 활성화되는 접근 반경 (m) */
+  interactRadius: number;
+}
+
+/**
  * 하나의 3D 공간(예: 잔디 공원) 설정 타입 — src/data/spaces.json과 1:1 대응
  */
 export interface SpaceConfig {
@@ -44,6 +64,8 @@ export interface SpaceConfig {
   spawnPoint: Vec3;
   walkableBounds: WalkableBounds;
   obstacles: Obstacle[];
+  /** 추후 더 많은 지역 단체가 늘어나도 JSON에만 추가하면 되는 아지트 목록 */
+  hideouts?: GroupHideoutConfig[];
   routes: Record<string, Vec3[]>;
 }
 

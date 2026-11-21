@@ -9,33 +9,38 @@ interface MenuModalProps {
   memberCount: number;
   /** 등록된 타이코 곡 수 */
   songCount: number;
-  /** 현재 음소거 여부 */
-  isMuted: boolean;
+  /** 직접 연주 소리 ON/OFF 여부 */
+  isPlayerSoundOn: boolean;
+  /** NPC 합주 소리 ON/OFF 여부 */
+  isNpcSoundOn: boolean;
   /** 각 메뉴 항목 실행 콜백 */
   onOpenSchedule: () => void;
   onOpenMembers: () => void;
   onOpenSongs: () => void;
   onOpenTaikoGuide: () => void;
   onOpenCircle: () => void;
-  onToggleMute: () => void;
+  onTogglePlayerSound: () => void;
+  onToggleNpcSound: () => void;
   onClose: () => void;
 }
 
 /**
  * 화면 좌측 상단 [☰ 메뉴] 버튼을 눌렀을 때 열리는 통합 메뉴바 모달 컴포넌트
- * - 연주 일정, 멤버 정보(도감), 곡 정보(레이어 악보), 타이코의 종류와 역사, 서클/문의, 소리 설정을 제공합니다.
+ * - 연주 일정, 멤버 정보, 곡 정보/직접 작곡, 타이코 종류·지역 단체, 서클/문의, 세부 소리 설정을 제공합니다.
  */
 export function MenuModal({
   nextEvent,
   memberCount,
   songCount,
-  isMuted,
+  isPlayerSoundOn,
+  isNpcSoundOn,
   onOpenSchedule,
   onOpenMembers,
   onOpenSongs,
   onOpenTaikoGuide,
   onOpenCircle,
-  onToggleMute,
+  onTogglePlayerSound,
+  onToggleNpcSound,
   onClose,
 }: MenuModalProps) {
   useEffect(() => {
@@ -120,7 +125,7 @@ export function MenuModal({
                 곡 정보 · 레이어 악보 / 직접 작곡 ({songCount}곡)
               </span>
               <span className="menu-item-desc">
-                尺·沖·締め·笛·チャッパ 악보 듣기 및 내 곡 직접 작곡하기
+                레이어 볼륨·강약 조절 및 나만의 타이코 곡 직접 작곡하기
               </span>
             </span>
             <span className="menu-item-arrow" aria-hidden="true">
@@ -135,7 +140,7 @@ export function MenuModal({
             <span className="menu-item-body">
               <span className="menu-item-title">타이코 종류 · 지역 단체 소개</span>
               <span className="menu-item-desc">
-                어깨북·시메·피리·차파 특징과 지역 타이코 서클(転太鼓舞·鶴亀太鼓)
+                어깨북·시메·피리·차파 특징과 지역 서클(転太鼓舞·鶴亀太鼓)
               </span>
             </span>
             <span className="menu-item-arrow" aria-hidden="true">
@@ -158,20 +163,43 @@ export function MenuModal({
             </span>
           </button>
 
-          <button type="button" className="menu-item-btn" onClick={onToggleMute}>
-            <span className="menu-item-icon" aria-hidden="true">
-              {isMuted ? '🔇' : '🔊'}
-            </span>
-            <span className="menu-item-body">
-              <span className="menu-item-title">
-                소리 설정 ({isMuted ? '현재 꺼짐' : '현재 켜짐'})
-              </span>
-              <span className="menu-item-desc">
-                북 타격음 및 멤버 합주 배경 소리 켜기/끄기
-              </span>
-            </span>
-            <span className="menu-item-pill">{isMuted ? 'OFF' : 'ON'}</span>
-          </button>
+          {/* 세분화된 소리 설정 (직접 연주 vs NPC 합주) */}
+          <div className="menu-sound-card">
+            <div className="menu-sound-heading">🔊 소리 세부 설정</div>
+            <div className="menu-sound-rows">
+              <button
+                type="button"
+                className="sound-toggle-row"
+                onClick={onTogglePlayerSound}
+              >
+                <span className="sound-toggle-info">
+                  <span className="sound-toggle-name">🥁 직접 연주 소리</span>
+                  <span className="sound-toggle-desc">북 체험 · 악보 미리듣기 · 작곡</span>
+                </span>
+                <span
+                  className={`sound-switch-pill ${isPlayerSoundOn ? 'is-on' : 'is-off'}`}
+                >
+                  {isPlayerSoundOn ? 'ON' : 'OFF'}
+                </span>
+              </button>
+
+              <button
+                type="button"
+                className="sound-toggle-row"
+                onClick={onToggleNpcSound}
+              >
+                <span className="sound-toggle-info">
+                  <span className="sound-toggle-name">👥 NPC 합주 소리</span>
+                  <span className="sound-toggle-desc">공원에서 멤버들이 모였을 때 합주</span>
+                </span>
+                <span
+                  className={`sound-switch-pill ${isNpcSoundOn ? 'is-on' : 'is-off'}`}
+                >
+                  {isNpcSoundOn ? 'ON' : 'OFF'}
+                </span>
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>

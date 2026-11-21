@@ -7,6 +7,12 @@ interface TaikoGuideModalProps {
   guide: TaikoGuideData;
   /** 소리 미리듣기에 사용할 악기 음원 맵 */
   tracksById: Record<string, TaikoTrackDefinition>;
+  /** 처음 열릴 때 기본으로 보여줄 탭 ('types' | 'groups') */
+  initialTab?: 'types' | 'groups';
+  /** 아지트에서 진입했을 때 강조 표시할 특정 지역 단체 ID */
+  highlightedGroupId?: string | null;
+  /** E 키로도 닫기를 허용할지 여부 (3D 아지트에서 E로 열었을 때 바로 E로 닫기 지원) */
+  allowKeyEClose?: boolean;
   /** 메뉴로 돌아가기 콜백 (메뉴에서 진입했을 때만 버튼 표시) */
   onBackToMenu?: () => void;
   /** 모달 닫기 콜백 */
@@ -14,28 +20,36 @@ interface TaikoGuideModalProps {
 }
 
 /**
- * 메뉴바의 [타이코 종류 · 지역 단체 소개]에서 열리는 안내 모달 컴포넌트
- * - '타이코의 종류' 탭: 尺(2,4,6), 沖, 締め, 笛, チャッパ(및 추후 추가될 서서 치는 북) 설명 + 소리 듣기
- * - '지역 타이코 단체' 탭: 転太鼓舞(조형대학), 鶴亀太鼓(기술대학) 등 지역 타이코 서클 소개
+ * [타이코 종류 · 지역 단체 소개] 안내 모달 컴포넌트
+ * - 메뉴에서 열거나, 3D 월드의 지역 단체 아지트(転太鼓舞·鶴亀太鼓 큐브)에 다가가 E/클릭으로 열 수 있습니다.
+ * - 아지트에서 열었을 때는 바로 '지역 타이코 단체' 탭이 선택되며 E 키로 열고 닫을 수 있습니다.
  */
 export function TaikoGuideModal({
   guide,
   tracksById,
+  initialTab = 'types',
+  highlightedGroupId = null,
+  allowKeyEClose = false,
   onBackToMenu,
   onClose,
 }: TaikoGuideModalProps) {
-  const [activeTab, setActiveTab] = useState<'types' | 'groups'>('types');
+  const [activeTab, setActiveTab] = useState<'types' | 'groups'>(initialTab);
+
+  useEffect(() => {
+    setActiveTab(initialTab);
+  }, [initialTab, highlightedGroupId]);
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.code === 'Escape') {
+      if (event.repeat) return;
+      if (event.code === 'Escape' || (allowKeyEClose && event.code === 'KeyE')) {
         event.preventDefault();
         onClose();
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [onClose]);
+  }, [onClose, allowKeyEClose]);
 
   /** 안내 카드에서 해당 악기의 대표 소리를 1회 들려주는 핸들러 */
   const handlePlaySample = (trackId: string, sampleNote: string) => {
@@ -43,6 +57,7 @@ export function TaikoGuideModal({
     audioManager.playTrackNote(trackId, sampleNote, {
       soundUrl: trackDef?.audioFiles?.[sampleNote],
       isNpc: false,
+      volume: 1,
     });
   };
 
@@ -150,28 +165,46 @@ export function TaikoGuideModal({
         ) : (
           /* 탭 2: 지역 타이코 단체 소개 (転太鼓舞, 鶴亀太鼓 등) */
           <div className="guide-groups-list">
-            {guide.localGroups.map((group) => (
-              <div key={group.id} className="guide-group-card">
-                <div className="guide-group-affiliation">{group.affiliation}</div>
-                <div className="guide-group-title-row">
-                  <span className="guide-group-name">{group.name}</span>
-                  <span className="guide-group-reading">{group.reading}</span>
+            {guide.localGroups.map((group) => {
+              const isHighlighted = highlightedGroupId === group.id;
+              return (
+                <div
+                  key={group.id}
+                  className={`guide-group-card ${isHighlighted ? 'is-highlighted' : ''}`}
+                >
+                  <div className="guide-group-top-row">
+                    <span className="guide-group-affiliation">{group.affiliation}</span>
+                    {isHighlighted && (
+                      <span className="guide-group-here-badge">📍 지금 보고 있는 아지트</span>
+                    )}
+                  </div>
+                  <div className="guide-group-title-row">
+                    <span className="guide-group-name">{group.name}</span>
+                    <span className="guide-group-reading">{group.reading}</span>
+                  </div>
+                  <div className="guide-group-tagline">{group.tagline}</div>
+                  <p className="guide-group-desc">{group.description}</p>
+                  <div className="guide-group-tags">
+                    {group.tags.map((tag) => (
+                      <span key={tag} className="guide-tag">
+                        #{tag}
+                      </span>
+                    ))}
+                  </div>
                 </div>
-                <div className="guide-group-tagline">{group.tagline}</div>
-                <p className="guide-group-desc">{group.description}</p>
-                <div className="guide-group-tags">
-                  {group.tags.map((tag) => (
-                    <span key={tag} className="guide-tag">
-                      #{tag}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
 
         <p className="guide-edit-notice">{guide.editNotice}</p>
+
+        {allowKeyEClose && (
+          <div className="modal-key-hint">
+            <span className="key-cap key-cap--dark">E</span> 또는{' '}
+            <span className="key-cap key-cap--dark">ESC</span> 키로 닫기
+          </div>
+        )}
       </div>
     </div>
   );

@@ -8,51 +8,86 @@
     "minPlayers": 3,
     "stepsPerMeasure": 8,
     "totalSteps": 32,
-    "description": "시메의 빠른 리드 위로 尺(4)의 리듬, 沖의 웅장한 저음, 피리 선율과 チャッパ가 어우러지는 대표 축제곡입니다.",
+    "description": "시메의 빠른 리드 위로 尺(4)의 리듬, 沖의 웅장한 저음, 피리 선율과 チャッパ가 어우러지는 대표 축제곡입니다. 마지막 마디에서 점점 커지며 힘차게 마무리됩니다.",
     "layers": [
       {
         "instrumentId": "fue",
+        "volume": 0.85,
         "steps": [
           "レ", "-", "ミ", "-", "ソ", "-", "-", "-",
           "ラ", "-", "ソ", "ミ", "レ", "-", "-", "-",
           "ミ", "-", "ソ", "-", "ラ", "-", "ソ", "-",
           "ミ", "レ", "ミ", "-", "ソ", "-", "-", "-"
+        ],
+        "dynamics": [
+          "weak", "normal", "normal", "normal", "strong", "normal", "normal", "normal",
+          "strong", "normal", "normal", "normal", "weak", "normal", "normal", "normal",
+          "normal", "normal", "normal", "normal", "strong", "normal", "normal", "normal",
+          "cresc", "cresc", "cresc", "cresc", "strong", "normal", "normal", "normal"
         ]
       },
       {
         "instrumentId": "shime",
+        "volume": 0.78,
         "steps": [
           "う", "さ", "う", "さ", "う", "さ", "う", "さ",
           "う", "さ", "う", "さ", "う", "さ", "う", "さ",
           "う", "さ", "う", "さ", "う", "さ", "う", "さ",
           "う", "さ", "う", "さ", "う", "-", "う", "-"
+        ],
+        "dynamics": [
+          "cresc", "cresc", "cresc", "cresc", "cresc", "cresc", "cresc", "cresc",
+          "normal", "normal", "normal", "normal", "normal", "normal", "normal", "normal",
+          "weak", "weak", "weak", "weak", "normal", "normal", "normal", "normal",
+          "cresc", "cresc", "cresc", "cresc", "strong", "normal", "strong", "normal"
         ]
       },
       {
         "instrumentId": "shaku_4",
+        "volume": 0.85,
         "steps": [
           "う", "-", "さ", "う", "かっ", "-", "さ", "-",
           "う", "う", "さ", "-", "かっ", "さ", "う", "-",
           "う", "-", "かっ", "さ", "う", "さ", "かっ", "-",
           "う", "さ", "う", "さ", "かっ", "-", "-", "-"
+        ],
+        "dynamics": [
+          "normal", "normal", "normal", "normal", "strong", "normal", "weak", "normal",
+          "normal", "normal", "normal", "normal", "strong", "normal", "normal", "normal",
+          "weak", "normal", "normal", "normal", "normal", "normal", "strong", "normal",
+          "cresc", "cresc", "cresc", "cresc", "strong", "normal", "normal", "normal"
         ]
       },
       {
         "instrumentId": "oki",
+        "volume": 0.95,
         "steps": [
           "どん", "-", "-", "-", "どん", "-", "かっ", "-",
           "どん", "-", "-", "どん", "-", "-", "かっ", "-",
           "どん", "-", "-", "-", "どん", "-", "かっ", "-",
           "どん", "-", "どん", "-", "どん", "-", "-", "-"
+        ],
+        "dynamics": [
+          "strong", "normal", "normal", "normal", "normal", "normal", "weak", "normal",
+          "strong", "normal", "normal", "normal", "normal", "normal", "normal", "normal",
+          "weak", "normal", "normal", "normal", "normal", "normal", "normal", "normal",
+          "cresc", "cresc", "cresc", "cresc", "strong", "normal", "normal", "normal"
         ]
       },
       {
         "instrumentId": "chappa",
+        "volume": 0.72,
         "steps": [
           "-", "-", "チッ", "-", "チャン", "-", "-", "-",
           "-", "-", "チッ", "-", "チャン", "-", "チッ", "-",
           "-", "-", "チッ", "-", "チャン", "-", "-", "-",
           "チッ", "-", "チッ", "-", "チャン", "-", "-", "-"
+        ],
+        "dynamics": [
+          "normal", "normal", "weak", "normal", "strong", "normal", "normal", "normal",
+          "normal", "normal", "weak", "normal", "strong", "normal", "weak", "normal",
+          "normal", "normal", "weak", "normal", "normal", "normal", "normal", "normal",
+          "normal", "normal", "normal", "normal", "strong", "normal", "normal", "normal"
         ]
       }
     ]
@@ -60,48 +95,76 @@
   {
     "id": "song_kaze",
     "title": "바람의 울림 (카제)",
-    "subtitle": "피리와 尺(2)·시메·차파의 경쾌한 앙상블",
+    "subtitle": "피리와 尺(2)·시메·차파의 경쾌한 4인 이상 앙상블",
     "bpm": 124,
     "difficulty": "보통",
-    "minPlayers": 3,
+    "minPlayers": 4,
     "stepsPerMeasure": 8,
     "totalSteps": 32,
-    "description": "沖 없이 가볍고 빠른 편성으로, 바람처럼 흐르는 피리 선율과 尺(2)·チャッパ의 섬세한 호흡이 돋보이는 곡입니다.",
+    "description": "4명 이상이 모였을 때 연주하는 경쾌한 편성입니다. 바람처럼 점점 커졌다가 여운을 남기며 잦아드는 강약 표현이 포인트입니다.",
     "layers": [
       {
         "instrumentId": "fue",
+        "volume": 0.9,
         "steps": [
           "ソ", "-", "ラ", "-", "ソ", "ミ", "レ", "-",
           "ミ", "-", "ソ", "-", "ラ", "-", "-", "-",
           "ラ", "ソ", "ミ", "-", "ソ", "ミ", "レ", "-",
           "レ", "ミ", "ソ", "ラ", "ソ", "-", "-", "-"
+        ],
+        "dynamics": [
+          "normal", "normal", "strong", "normal", "normal", "normal", "weak", "normal",
+          "cresc", "cresc", "cresc", "cresc", "strong", "normal", "normal", "normal",
+          "decresc", "decresc", "decresc", "decresc", "decresc", "decresc", "decresc", "normal",
+          "cresc", "cresc", "cresc", "cresc", "strong", "normal", "normal", "normal"
         ]
       },
       {
         "instrumentId": "shime",
+        "volume": 0.76,
         "steps": [
           "う", "さ", "う", "-", "う", "さ", "う", "さ",
           "う", "さ", "う", "-", "う", "さ", "う", "さ",
           "う", "さ", "う", "さ", "う", "-", "う", "さ",
           "う", "さ", "う", "さ", "う", "-", "-", "-"
+        ],
+        "dynamics": [
+          "weak", "weak", "weak", "normal", "normal", "normal", "normal", "normal",
+          "cresc", "cresc", "cresc", "cresc", "cresc", "cresc", "cresc", "cresc",
+          "decresc", "decresc", "decresc", "decresc", "decresc", "normal", "weak", "weak",
+          "cresc", "cresc", "cresc", "cresc", "strong", "normal", "normal", "normal"
         ]
       },
       {
         "instrumentId": "shaku_2",
+        "volume": 0.85,
         "steps": [
           "-", "う", "さ", "-", "かっ", "う", "さ", "-",
           "う", "さ", "かっ", "-", "う", "-", "さ", "-",
           "かっ", "-", "う", "さ", "う", "さ", "かっ", "-",
           "う", "う", "さ", "さ", "かっ", "-", "-", "-"
+        ],
+        "dynamics": [
+          "normal", "weak", "weak", "normal", "strong", "normal", "normal", "normal",
+          "normal", "normal", "strong", "normal", "normal", "normal", "weak", "normal",
+          "strong", "normal", "decresc", "decresc", "decresc", "decresc", "weak", "normal",
+          "cresc", "cresc", "cresc", "cresc", "strong", "normal", "normal", "normal"
         ]
       },
       {
         "instrumentId": "chappa",
+        "volume": 0.7,
         "steps": [
           "チャン", "-", "-", "チッ", "-", "-", "チッ", "-",
           "チャン", "-", "-", "チッ", "チャン", "-", "-", "-",
           "-", "チッ", "-", "チッ", "チャン", "-", "チッ", "-",
           "チッ", "チッ", "チャン", "-", "-", "-", "-", "-"
+        ],
+        "dynamics": [
+          "strong", "normal", "normal", "weak", "normal", "normal", "weak", "normal",
+          "normal", "normal", "normal", "weak", "strong", "normal", "normal", "normal",
+          "normal", "weak", "normal", "weak", "normal", "normal", "weak", "normal",
+          "cresc", "cresc", "strong", "normal", "normal", "normal", "normal", "normal"
         ]
       }
     ]
@@ -115,33 +178,54 @@
     "minPlayers": 3,
     "stepsPerMeasure": 8,
     "totalSteps": 32,
-    "description": "피리와 차파를 비우고 오직 북소리만으로 대지의 울림을 표현하는 힘찬 편성입니다.",
+    "description": "피리와 차파를 비우고 오직 북소리만으로 대지의 울림을 표현합니다. 약하게 시작해 점점 웅장하게 폭발하는 크레센도가 매력입니다.",
     "layers": [
       {
         "instrumentId": "shime",
+        "volume": 0.78,
         "steps": [
           "う", "-", "さ", "-", "う", "さ", "う", "-",
           "う", "さ", "う", "-", "さ", "う", "さ", "-",
           "う", "さ", "う", "さ", "う", "さ", "う", "さ",
           "う", "-", "う", "-", "う", "-", "-", "-"
+        ],
+        "dynamics": [
+          "weak", "normal", "weak", "normal", "normal", "normal", "normal", "normal",
+          "normal", "normal", "normal", "normal", "normal", "normal", "normal", "normal",
+          "cresc", "cresc", "cresc", "cresc", "cresc", "cresc", "cresc", "cresc",
+          "strong", "normal", "strong", "normal", "strong", "normal", "normal", "normal"
         ]
       },
       {
         "instrumentId": "shaku_6",
+        "volume": 0.88,
         "steps": [
           "-", "-", "う", "さ", "かっ", "-", "-", "-",
           "う", "さ", "う", "-", "かっ", "-", "さ", "-",
           "う", "-", "さ", "う", "かっ", "う", "さ", "かっ",
           "う", "-", "う", "-", "かっ", "-", "-", "-"
+        ],
+        "dynamics": [
+          "normal", "normal", "weak", "weak", "normal", "normal", "normal", "normal",
+          "normal", "normal", "normal", "normal", "strong", "normal", "weak", "normal",
+          "cresc", "cresc", "cresc", "cresc", "cresc", "cresc", "cresc", "cresc",
+          "strong", "normal", "strong", "normal", "strong", "normal", "normal", "normal"
         ]
       },
       {
         "instrumentId": "oki",
+        "volume": 1.0,
         "steps": [
           "どん", "-", "-", "-", "どん", "-", "-", "かっ",
           "どん", "-", "どん", "-", "-", "-", "かっ", "-",
           "どん", "-", "-", "どん", "-", "-", "どん", "-",
           "どん", "-", "どん", "-", "どん", "-", "-", "-"
+        ],
+        "dynamics": [
+          "weak", "normal", "normal", "normal", "normal", "normal", "normal", "weak",
+          "normal", "normal", "strong", "normal", "normal", "normal", "normal", "normal",
+          "cresc", "cresc", "cresc", "cresc", "cresc", "cresc", "cresc", "cresc",
+          "strong", "normal", "strong", "normal", "strong", "normal", "normal", "normal"
         ]
       }
     ]

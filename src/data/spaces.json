@@ -12,21 +12,43 @@
     },
     "obstacles": [
       { "id": "main_taiko", "type": "circle", "x": 0, "z": -1, "radius": 0.9 },
-      { "id": "tree_01", "type": "circle", "x": -5.6, "z": -4.6, "radius": 0.85 },
-      { "id": "tree_02", "type": "circle", "x": 5.8, "z": -4.4, "radius": 0.85 },
+      { "id": "hideout_tentaikomai", "type": "circle", "x": -5.1, "z": -1.4, "radius": 1.2 },
+      { "id": "hideout_tsurukamedaiko", "type": "circle", "x": 5.1, "z": -1.4, "radius": 1.2 },
+      { "id": "tree_01", "type": "circle", "x": -5.6, "z": -4.8, "radius": 0.85 },
+      { "id": "tree_02", "type": "circle", "x": 5.8, "z": -4.6, "radius": 0.85 },
       { "id": "tree_03", "type": "circle", "x": -6.0, "z": 4.0, "radius": 0.85 },
       { "id": "tree_04", "type": "circle", "x": 5.8, "z": 4.4, "radius": 0.85 }
+    ],
+    "hideouts": [
+      {
+        "id": "hideout_tentaikomai",
+        "groupId": "group_tentaikomai",
+        "name": "転太鼓舞",
+        "position": [-5.1, 0, -1.4],
+        "color": "#c96a2b",
+        "borderColor": "#1c1917",
+        "interactRadius": 2.6
+      },
+      {
+        "id": "hideout_tsurukamedaiko",
+        "groupId": "group_tsurukamedaiko",
+        "name": "鶴亀太鼓",
+        "position": [5.1, 0, -1.4],
+        "color": "#1d2d50",
+        "borderColor": "#0f172a",
+        "interactRadius": 2.6
+      }
     ],
     "routes": {
       "park_grass_a": [
         [-2.2, 0, -0.4],
-        [-4.2, 0, 1.8],
+        [-3.4, 0, 2.2],
         [-1.6, 0, 1.6],
         [-2.6, 0, -2.6]
       ],
       "park_grass_b": [
         [2.2, 0, -0.4],
-        [4.2, 0, 1.4],
+        [3.4, 0, 2.0],
         [1.5, 0, 1.5],
         [2.4, 0, -2.5]
       ],

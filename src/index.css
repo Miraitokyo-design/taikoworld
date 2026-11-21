@@ -1774,7 +1774,7 @@ body,
 /* 좌측 고정 악기 트랙 헤더 열 */
 .layer-track-labels {
   flex-shrink: 0;
-  width: 108px;
+  width: 118px;
   background: #faf5eb;
   border-right: 1.5px solid #e7dbc7;
   display: flex;
@@ -1787,18 +1787,18 @@ body,
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 11px;
+  font-size: 10.5px;
   font-weight: 800;
   color: #8c7b6b;
   border-bottom: 1px solid #ece3d3;
 }
 
 .layer-track-label {
-  height: 44px;
+  height: 54px;
   display: flex;
   align-items: center;
   gap: 5px;
-  padding: 0 6px 0 0;
+  padding: 0 7px 0 0;
   border-bottom: 1px solid #f0e8da;
 }
 
@@ -1812,15 +1812,30 @@ body,
 
 .layer-track-bar {
   width: 5px;
-  height: 26px;
+  height: 36px;
   border-radius: 0 4px 4px 0;
   flex-shrink: 0;
+}
+
+.layer-track-control-col {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.layer-track-top-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px;
 }
 
 .layer-track-name {
   flex: 1;
   min-width: 0;
-  font-size: 12px;
+  font-size: 11.5px;
   font-weight: 800;
   color: #3d352e;
   overflow: hidden;
@@ -1829,15 +1844,23 @@ body,
 }
 
 .layer-mute-btn {
-  width: 24px;
-  height: 24px;
+  width: 22px;
+  height: 22px;
   border: none;
-  border-radius: 7px;
+  border-radius: 6px;
   background: #efe7d8;
-  font-size: 11px;
+  font-size: 10.5px;
   cursor: pointer;
   flex-shrink: 0;
   padding: 0;
+}
+
+.layer-volume-slider {
+  width: 100%;
+  height: 12px;
+  margin: 0;
+  accent-color: #d94b38;
+  cursor: pointer;
 }
 
 /* 우측 가로 스크롤 타임라인 영역 */
@@ -1898,7 +1921,7 @@ body,
 
 .layer-steps-row {
   display: flex;
-  height: 44px;
+  height: 54px;
   border-bottom: 1px solid #f0e8da;
 }
 
@@ -1911,14 +1934,16 @@ body,
 }
 
 .layer-step-cell {
+  position: relative;
   width: 40px;
-  height: 44px;
+  height: 54px;
   flex-shrink: 0;
   padding: 4px 2px;
   border: none;
   border-left: 1px solid #f3ede2;
   background: transparent;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   cursor: pointer;
@@ -2385,4 +2410,223 @@ body,
 
 .layer-step-cell.is-editable:hover {
   background: rgba(217, 75, 56, 0.07);
+}
+
+/* 음표 강약(f / p / < / >) 시각 표현 스타일 */
+.layer-note-chip.is-strong {
+  box-shadow: 0 0 0 2px #f6c445, 0 3px 8px rgba(45, 34, 24, 0.25);
+}
+
+.layer-note-chip.is-weak {
+  opacity: 0.62;
+}
+
+.layer-dynamic-badge {
+  position: absolute;
+  bottom: 2px;
+  font-size: 9.5px;
+  font-weight: 900;
+  line-height: 1;
+  pointer-events: none;
+}
+
+.layer-dynamic-badge--strong {
+  color: #c94632;
+}
+
+.layer-dynamic-badge--weak {
+  color: #2f74c0;
+}
+
+.layer-dynamic-badge--cresc {
+  color: #b86a14;
+}
+
+.layer-dynamic-badge--decresc {
+  color: #6b4fa8;
+}
+
+.composer-settings-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.composer-brush-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.composer-brush-btn {
+  padding: 5px 9px;
+  border: 1.5px solid #dfd2bc;
+  border-radius: 10px;
+  background: #ffffff;
+  color: #4f4338;
+  font-size: 11px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.composer-brush-btn.is-active {
+  background: #3d352e;
+  border-color: #3d352e;
+  color: #fffcf5;
+}
+
+/* ================================
+   3D 지역 단체 아지트 간판 & 강조 카드
+   ================================ */
+.hideout-nameplate {
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(28, 25, 23, 0.82);
+  color: #fffcf5;
+  font-size: 12px;
+  font-weight: 800;
+  white-space: nowrap;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.22);
+}
+
+.guide-group-card.is-highlighted {
+  border-color: #d94b38;
+  background: #fff4ea;
+  box-shadow: 0 6px 18px rgba(217, 75, 56, 0.16);
+}
+
+.guide-group-top-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 4px;
+}
+
+.guide-group-here-badge {
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: #d94b38;
+  color: #ffffff;
+  font-size: 10.5px;
+  font-weight: 800;
+}
+
+/* ================================
+   세분화 소리 설정 (팝오버 & 메뉴 카드)
+   ================================ */
+.sound-control-wrap {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  z-index: 36;
+}
+
+.sound-control-wrap .mute-toggle-btn {
+  position: static;
+}
+
+@media (max-width: 540px) {
+  .sound-control-wrap {
+    right: 12px;
+  }
+}
+
+.sound-popover {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  width: 244px;
+  padding: 12px;
+  border-radius: 18px;
+  background: rgba(255, 252, 245, 0.98);
+  border: 1.5px solid #eadfcd;
+  box-shadow: 0 14px 32px rgba(42, 34, 28, 0.22);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sound-popover-title {
+  font-size: 12px;
+  font-weight: 800;
+  color: #7c6b5b;
+  padding: 0 2px;
+}
+
+.sound-toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  padding: 9px 10px;
+  border: 1px solid #efe6d7;
+  border-radius: 12px;
+  background: #ffffff;
+  color: #3d352e;
+  text-align: left;
+  cursor: pointer;
+}
+
+.sound-toggle-row:active {
+  transform: scale(0.98);
+}
+
+.sound-toggle-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.sound-toggle-name {
+  font-size: 12.5px;
+  font-weight: 800;
+  color: #3d352e;
+}
+
+.sound-toggle-desc {
+  font-size: 11px;
+  font-weight: 500;
+  color: #847465;
+}
+
+.sound-switch-pill {
+  flex-shrink: 0;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.sound-switch-pill.is-on {
+  background: #2f8f83;
+  color: #ffffff;
+}
+
+.sound-switch-pill.is-off {
+  background: #e9e2d5;
+  color: #7c6f63;
+}
+
+.menu-sound-card {
+  padding: 12px;
+  border-radius: 16px;
+  background: #faf5eb;
+  border: 1.5px solid #efe6d7;
+}
+
+.menu-sound-heading {
+  font-size: 12px;
+  font-weight: 800;
+  color: #7c6b5b;
+  margin-bottom: 8px;
+}
+
+.menu-sound-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 }

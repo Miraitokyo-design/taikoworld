@@ -1,13 +1,20 @@
 import { useCallback, useState } from 'react';
 import type { MutableRefObject } from 'react';
 import type { MemberConfig, SongConfig, TaikoTrackDefinition } from '../types/content';
-import type { InstrumentConfig, MoveVector, PlayerState, SpaceConfig } from '../types/world';
+import type {
+  GroupHideoutConfig,
+  InstrumentConfig,
+  MoveVector,
+  PlayerState,
+  SpaceConfig,
+} from '../types/world';
 import { useKeyboardInput } from '../hooks/useKeyboardInput';
 import { resolvePlayerPosition } from '../systems/collision';
 import { Space } from './Space';
 import { Taiko } from './Taiko';
 import { Player } from './Player';
 import { NpcGroup } from './NpcGroup';
+import { GroupHideout } from './GroupHideout';
 import { DestinationMarker } from './DestinationMarker';
 
 interface SceneProps {
@@ -33,14 +40,20 @@ interface SceneProps {
   activeInstrument: InstrumentConfig | null;
   /** 플레이어가 가까이 다가가 있는 악기 (링 강조 표시용) */
   nearbyInstrument: InstrumentConfig | null;
+  /** 플레이어가 가까이 다가가 있는 지역 단체 아지트 ([! E] 말풍선 표시용) */
+  nearbyHideout: GroupHideoutConfig | null;
   /** 근처 악기 변경 시 상위에 알리는 콜백 */
   onNearbyInstrumentChange: (instrument: InstrumentConfig | null) => void;
   /** 가장 가까운 근접 NPC가 바뀔 때 상위에 알리는 콜백 (PC E 키 연동용) */
   onNearbyMemberChange: (member: MemberConfig | null) => void;
+  /** 근처 지역 단체 아지트가 바뀔 때 상위에 알리는 콜백 (PC E 키 연동용) */
+  onNearbyHideoutChange: (hideout: GroupHideoutConfig | null) => void;
   /** 북을 직접 클릭해 연주 모드로 들어갈 때 호출되는 콜백 */
   onSelectInstrument: (instrument: InstrumentConfig) => void;
   /** 3D 공간에서 NPC를 클릭/터치했을 때 프로필 카드를 여는 콜백 */
   onSelectMember: (member: MemberConfig) => void;
+  /** 3D 공간에서 지역 단체 아지트를 클릭/터치했을 때 단체 소개를 여는 콜백 */
+  onSelectHideout: (hideout: GroupHideoutConfig) => void;
   /** 북 타격 시 3D 북을 살짝 울리게 하는 공유 ref */
   taikoHitPulseRef: MutableRefObject<number>;
 }
@@ -60,10 +73,13 @@ export function Scene({
   isModalOpen,
   activeInstrument,
   nearbyInstrument,
+  nearbyHideout,
   onNearbyInstrumentChange,
   onNearbyMemberChange,
+  onNearbyHideoutChange,
   onSelectInstrument,
   onSelectMember,
+  onSelectHideout,
   taikoHitPulseRef,
 }: SceneProps) {
   // PC 키보드(WASD / 방향키) 입력 상태 추적
@@ -107,6 +123,15 @@ export function Scene({
     [hasEntered, isModalOpen, activeInstrument, onSelectMember]
   );
 
+  const handleSelectHideout = useCallback(
+    (hideout: GroupHideoutConfig) => {
+      if (!hasEntered || isModalOpen || activeInstrument !== null) return;
+      setTargetPoint(null);
+      onSelectHideout(hideout);
+    },
+    [hasEntered, isModalOpen, activeInstrument, onSelectHideout]
+  );
+
   return (
     <>
       {/* 맑고 따뜻한 낮 하늘색 배경과 부드러운 원거리 안개 (넓어진 원형 광장에 맞춰 시야 거리 확장) */}
@@ -136,6 +161,17 @@ export function Scene({
         />
       ))}
 
+      {/* spaces.json에 등록된 지역 타이코 단체 아지트(큐브) 배치 */}
+      {(space.hideouts ?? []).map((hideout) => (
+        <GroupHideout
+          key={hideout.id}
+          hideout={hideout}
+          isPlayerNear={nearbyHideout?.id === hideout.id}
+          isInteractionActive={canMove}
+          onSelect={handleSelectHideout}
+        />
+      ))}
+
       {/* members.json 기반 서클 NPC 그룹 (랜덤 산책 + 바로 옆 3인 공통곡 합주 + [!] 말풍선 + 추임새) */}
       <NpcGroup
         members={members}
@@ -159,6 +195,7 @@ export function Scene({
         targetPoint={targetPoint}
         onClearTarget={handleClearTarget}
         onNearbyInstrumentChange={onNearbyInstrumentChange}
+        onNearbyHideoutChange={onNearbyHideoutChange}
         pressedKeysRef={pressedKeysRef}
         joystickVectorRef={joystickVectorRef}
       />

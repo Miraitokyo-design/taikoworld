@@ -17,21 +17,25 @@ const FUE_PITCH_MAP: Record<string, number> = {
 
 /**
  * Web Audio API 기반 경량 오디오 매니저 클래스
- * - 尺(2,4,6), 沖, 締め, 笛(4음계), チャッパ 각 악기별 고유 합성음을 지원합니다.
- * - 추후 public/audio/taiko/에 실제 녹음 파일(.mp3)을 넣으면 사전 디코딩해 자동 교체됩니다.
+ * - 직접 연주·악보 소리(playerGain)와 NPC 배경 합주 소리(npcEnabledGain)를 분리해 개별 ON/OFF를 지원합니다.
+ * - 메뉴나 팝업 창, 연주 모드가 열리면 NPC 합주 배경 볼륨만 자동으로 낮춥니다(덕킹).
+ * - 각 레이어 볼륨과 강약 표현(점점 크게/작게/강하게/약하게)을 volume 배율로 정확히 반영합니다.
  */
 class AudioManager {
   private context: AudioContext | null = null;
-  private masterGain: GainNode | null = null;
-  private npcGain: GainNode | null = null;
-  private isMuted = false;
+  private playerGain: GainNode | null = null;
+  private npcEnabledGain: GainNode | null = null;
+  private npcDuckingGain: GainNode | null = null;
+
+  private isPlayerSoundOn = true;
+  private isNpcSoundOn = true;
+  private isNpcDucking = false;
 
   /** 실제 오디오 파일(.mp3)을 미리 디코딩해 보관하는 캐시 맵 */
   private decodedBuffers = new Map<string, AudioBuffer>();
 
   /**
    * 브라우저 오디오 컨텍스트를 생성하고 잠금 해제(resume)하는 함수
-   * - 반드시 버튼 클릭/터치 같은 사용자 동작 안에서 호출해야 iOS/모바일에서 소리가 납니다.
    */
   public async unlock(): Promise<void> {
     if (!this.context) {
@@ -43,15 +47,19 @@ class AudioManager {
 
       this.context = new AudioCtx();
 
-      // 전체 볼륨(음소거 제어용) 마스터 게인 노드
-      this.masterGain = this.context.createGain();
-      this.masterGain.gain.value = this.isMuted ? 0 : 1;
-      this.masterGain.connect(this.context.destination);
+      // 1) 직접 연주 및 악보 미리듣기 전용 채널
+      this.playerGain = this.context.createGain();
+      this.playerGain.gain.value = this.isPlayerSoundOn ? 1 : 0;
+      this.playerGain.connect(this.context.destination);
 
-      // 공원 NPC 합주 배경 볼륨 자동 축소(덕킹)를 위한 전용 게인 노드
-      this.npcGain = this.context.createGain();
-      this.npcGain.gain.value = 1;
-      this.npcGain.connect(this.masterGain);
+      // 2) NPC 공원 합주 전용 채널: [ON/OFF 게인] -> [팝업·연주 모드 덕킹 게인] -> 출력
+      this.npcDuckingGain = this.context.createGain();
+      this.npcDuckingGain.gain.value = this.isNpcDucking ? 0.2 : 1;
+      this.npcDuckingGain.connect(this.context.destination);
+
+      this.npcEnabledGain = this.context.createGain();
+      this.npcEnabledGain.gain.value = this.isNpcSoundOn ? 1 : 0;
+      this.npcEnabledGain.connect(this.npcDuckingGain);
     }
 
     if (this.context.state === 'suspended') {
@@ -61,7 +69,6 @@ class AudioManager {
 
   /**
    * 실제 녹음 파일(.mp3)이 public/audio에 존재할 경우 미리 메모리에 디코딩해 두는 함수
-   * - 파일이 아직 없는 단계에서는 에러 없이 조용히 합성음 모드로 동작합니다.
    */
   public async preloadSoundUrls(urls: Array<string | undefined>): Promise<void> {
     if (!this.context) return;
@@ -94,25 +101,42 @@ class AudioManager {
     await this.preloadSoundUrls([sounds.don, sounds.ka]);
   }
 
-  /** 전체 음소거 상태를 전환하는 함수 */
-  public setMuted(muted: boolean): void {
-    this.isMuted = muted;
-    if (this.masterGain && this.context) {
-      this.masterGain.gain.setTargetAtTime(muted ? 0 : 1, this.context.currentTime, 0.015);
+  /**
+   * 직접 연주(북 체험·악보 미리듣기·작곡) 소리 ON/OFF 설정
+   */
+  public setPlayerSoundEnabled(enabled: boolean): void {
+    this.isPlayerSoundOn = enabled;
+    if (this.playerGain && this.context) {
+      this.playerGain.gain.setTargetAtTime(enabled ? 1 : 0, this.context.currentTime, 0.015);
     }
   }
 
-  /** 현재 음소거 여부를 반환하는 함수 */
-  public getMuted(): boolean {
-    return this.isMuted;
+  /**
+   * NPC 공원 합주 배경 소리 ON/OFF 설정
+   */
+  public setNpcSoundEnabled(enabled: boolean): void {
+    this.isNpcSoundOn = enabled;
+    if (this.npcEnabledGain && this.context) {
+      this.npcEnabledGain.gain.setTargetAtTime(
+        enabled ? 1 : 0,
+        this.context.currentTime,
+        0.02
+      );
+    }
   }
 
   /**
-   * 게스트가 북 연주 모드나 악보 미리듣기에 들어가면 NPC 배경 합주 볼륨을 낮추는 덕킹(Ducking) 함수
+   * 메뉴나 팝업 창, 북 연주 모드가 열렸을 때 NPC 배경 합주 볼륨을 부드럽게 줄여주는 덕킹(Ducking) 함수
+   * @param isDucking - true면 배경 합주 볼륨을 20%로 낮춤
    */
   public setNpcDucking(isDucking: boolean): void {
-    if (!this.npcGain || !this.context) return;
-    this.npcGain.gain.setTargetAtTime(isDucking ? 0.14 : 1, this.context.currentTime, 0.08);
+    this.isNpcDucking = isDucking;
+    if (!this.npcDuckingGain || !this.context) return;
+    this.npcDuckingGain.gain.setTargetAtTime(
+      isDucking ? 0.2 : 1,
+      this.context.currentTime,
+      0.08
+    );
   }
 
   /**
@@ -120,24 +144,26 @@ class AudioManager {
    */
   public playTaikoHit(hitType: TaikoHitType, soundUrl?: string): void {
     const note = hitType === 'don' ? 'どん' : 'かっ';
-    this.playTrackNote('oki', note, { soundUrl, isNpc: false });
+    this.playTrackNote('oki', note, { soundUrl, isNpc: false, volume: 1 });
   }
 
   /**
-   * 멀티 레이어 악보의 특정 악기(尺 2/4/6, 沖, 締め, 笛, チャッパ 등)와 음표를 재생하는 핵심 함수
-   * - 실제 .mp3 파일이 디코딩되어 있으면 파일을, 아직 없으면 악기별 고유 합성음을 재생합니다.
+   * 멀티 레이어 악보의 특정 악기와 음표를 지정 볼륨(레이어 볼륨 * 다이나믹 배율)으로 재생하는 핵심 함수
    * @param instrumentId - taikoTracks.json의 악기 ID
    * @param note - 음 기호 (예: "う", "さ", "かっ", "どん", "レ", "チャン")
-   * @param options - { soundUrl, isNpc }
+   * @param options - { soundUrl, isNpc, volume }
    */
   public playTrackNote(
     instrumentId: TrackInstrumentId,
     note: string,
-    options: { soundUrl?: string; isNpc?: boolean } = {}
+    options: { soundUrl?: string; isNpc?: boolean; volume?: number } = {}
   ): void {
-    const { soundUrl, isNpc = false } = options;
+    const { soundUrl, isNpc = false, volume = 1 } = options;
 
-    if (!this.context || !this.masterGain || !this.npcGain) {
+    if (isNpc && !this.isNpcSoundOn) return;
+    if (!isNpc && !this.isPlayerSoundOn) return;
+
+    if (!this.context || !this.playerGain || !this.npcEnabledGain) {
       if (isNpc) return;
       void this.unlock().then(() => this.playTrackNote(instrumentId, note, options));
       return;
@@ -148,60 +174,52 @@ class AudioManager {
       void this.context.resume();
     }
 
-    if (this.isMuted) return;
-
-    // NPC 공원 합주는 npcGain(덕킹 노드)을 거쳐 은은하게(22%) 출력
-    let destination: AudioNode = this.masterGain;
-    if (isNpc) {
-      const npcSoftGain = this.context.createGain();
-      npcSoftGain.gain.value = 0.22;
-      npcSoftGain.connect(this.npcGain);
-      destination = npcSoftGain;
-    }
+    // 최종 음량 노드: NPC 합주는 기본 24% 배경음 크기 * 곡의 다이나믹/레이어 볼륨
+    const baseBus = isNpc ? this.npcEnabledGain : this.playerGain;
+    const noteGain = this.context.createGain();
+    const clampedVolume = Math.max(0.03, Math.min(1.6, volume));
+    noteGain.gain.value = isNpc ? clampedVolume * 0.24 : clampedVolume;
+    noteGain.connect(baseBus);
 
     // 1) 미리 디코딩된 실제 녹음 파일(.mp3)이 있으면 지연 없이 겹침 재생
     if (soundUrl && this.decodedBuffers.has(soundUrl)) {
       const source = this.context.createBufferSource();
       source.buffer = this.decodedBuffers.get(soundUrl)!;
-      source.connect(destination);
+      source.connect(noteGain);
       source.start(this.context.currentTime);
       return;
     }
 
     // 2) 악기별 임시 Web Audio 합성음 분기
-    // - 尺(2, 4, 6)은 추후 개별 음색으로 쉽게 분리할 수 있도록 별도 ID를 받되 현재는 공통 尺 음색 재생
     if (instrumentId === 'shaku_2' || instrumentId === 'shaku_4' || instrumentId === 'shaku_6') {
-      this.synthesizeShaku(this.context, destination, note);
+      this.synthesizeShaku(this.context, noteGain, note);
       return;
     }
 
     if (instrumentId === 'oki') {
-      this.synthesizeOki(this.context, destination, note);
+      this.synthesizeOki(this.context, noteGain, note);
       return;
     }
 
     if (instrumentId === 'shime') {
-      this.synthesizeShime(this.context, destination, note);
+      this.synthesizeShime(this.context, noteGain, note);
       return;
     }
 
     if (instrumentId === 'fue') {
-      this.synthesizeFue(this.context, destination, note);
+      this.synthesizeFue(this.context, noteGain, note);
       return;
     }
 
     if (instrumentId === 'chappa') {
-      this.synthesizeChappa(this.context, destination, note);
+      this.synthesizeChappa(this.context, noteGain, note);
       return;
     }
 
-    // 추후 추가될 서서 치는 타이코 등 기타 악기 기본 폴백
-    this.synthesizeOki(this.context, destination, note);
+    this.synthesizeOki(this.context, noteGain, note);
   }
 
-  /**
-   * 尺(2, 4, 6) — 어깨에 매고 양손으로 치는 타이코 (う / さ / かっ)
-   */
+  /** 尺(2, 4, 6) — 어깨에 매고 양손으로 치는 타이코 (う / さ / かっ) */
   private synthesizeShaku(ctx: AudioContext, destination: AudioNode, note: string): void {
     const now = ctx.currentTime;
 
@@ -227,19 +245,15 @@ class AudioManager {
     osc.stop(now + 0.25);
   }
 
-  /**
-   * 沖(오키) — 어깨에 매는 큰 타이코, 묵직하고 웅장한 큰 음 (どん / かっ)
-   */
+  /** 沖(오키) — 어깨에 매는 큰 타이코, 묵직하고 웅장한 큰 음 (どん / かっ) */
   private synthesizeOki(ctx: AudioContext, destination: AudioNode, note: string): void {
     const now = ctx.currentTime;
 
     if (note === 'かっ' || note === '카') {
-      // 沖는 몸통이 커서 테두리 소리도 조금 더 굵고 묵직함
       this.synthesizeRim(ctx, destination, 820, 500, 0.5);
       return;
     }
 
-    // 묵직한 저음 메인 바디
     const bodyOsc = ctx.createOscillator();
     const bodyGain = ctx.createGain();
     bodyOsc.type = 'sine';
@@ -256,7 +270,6 @@ class AudioManager {
     bodyOsc.start(now);
     bodyOsc.stop(now + 0.6);
 
-    // 가죽 타격 순간의 강렬한 어택 펀치
     const punchOsc = ctx.createOscillator();
     const punchGain = ctx.createGain();
     punchOsc.type = 'triangle';
@@ -272,9 +285,7 @@ class AudioManager {
     punchOsc.stop(now + 0.09);
   }
 
-  /**
-   * 締め(시메) — 바닥 台(받침대) 위에서 곡을 리드하는 높고 빠른 음 (う / さ)
-   */
+  /** 締め(시메) — 바닥 台(받침대) 위에서 곡을 리드하는 높고 빠른 음 (う / さ) */
   private synthesizeShime(ctx: AudioContext, destination: AudioNode, note: string): void {
     const now = ctx.currentTime;
     const isSa = note === 'さ' || note === '사';
@@ -295,9 +306,7 @@ class AudioManager {
     osc.stop(now + 0.12);
   }
 
-  /**
-   * 笛(피리) — 4개 음계(レ / ミ / ソ / ラ)에 맞춰 연주하는 대나무 피리 선율
-   */
+  /** 笛(피리) — 4개 음계(レ / ミ / ソ / ラ)에 맞춰 연주하는 대나무 피리 선율 */
   private synthesizeFue(ctx: AudioContext, destination: AudioNode, note: string): void {
     const now = ctx.currentTime;
     const freq = FUE_PITCH_MAP[note] ?? 783.99;
@@ -307,7 +316,6 @@ class AudioManager {
     osc.type = 'sine';
     osc.frequency.setValueAtTime(freq, now);
 
-    // 대나무 피리 특유의 맑은 떨림(비브라토)
     const vibrato = ctx.createOscillator();
     const vibratoGain = ctx.createGain();
     vibrato.frequency.setValueAtTime(5.6, now);
@@ -329,15 +337,12 @@ class AudioManager {
     vibrato.stop(now + 0.44);
   }
 
-  /**
-   * チャッパ(차파) — 미니 심벌즈처럼 쨍쨍~ 울리는 금속 타악기 (チャン / チッ)
-   */
+  /** チャッパ(차파) — 미니 심벌즈처럼 쨍쨍~ 울리는 금속 타악기 (チャン / チッ) */
   private synthesizeChappa(ctx: AudioContext, destination: AudioNode, note: string): void {
     const now = ctx.currentTime;
     const isShort = note === 'チッ';
     const duration = isShort ? 0.08 : 0.34;
 
-    // 금속 심벌즈 특유의 비정수 배음 4개 조합으로 쨍쨍~ 한 울림 구현
     const partials = [2780, 3690, 4860, 6120];
     for (const freq of partials) {
       const osc = ctx.createOscillator();
@@ -361,7 +366,6 @@ class AudioManager {
       osc.stop(now + duration + 0.02);
     }
 
-    // 찰랑거리는 금속 노이즈 어택
     const bufferSize = Math.floor(ctx.sampleRate * duration);
     const noiseBuffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
     const data = noiseBuffer.getChannelData(0);

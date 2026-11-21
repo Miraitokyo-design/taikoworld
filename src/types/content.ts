@@ -123,13 +123,27 @@ export interface TaikoTrackDefinition {
 }
 
 /**
+ * 악보 각 칸에 지정할 수 있는 강약·표현(다이나믹) 기호 타입
+ * - normal: 보통 (1.0배)
+ * - strong: 강하게 f (1.45배)
+ * - weak: 약하게 p (0.45배)
+ * - cresc: 점점 크게 < (연속된 칸에 걸쳐 0.35 -> 1.45배로 점진 증가)
+ * - decresc: 점점 작게 > (연속된 칸에 걸쳐 1.45 -> 0.35배로 점진 감소)
+ */
+export type NoteDynamic = 'normal' | 'strong' | 'weak' | 'cresc' | 'decresc';
+
+/**
  * 한 곡 안의 개별 악기 레이어(트랙) 타입
- * - 추후 직접 작곡(Composer) 모드에서도 동일한 구조를 그대로 편집·저장할 수 있습니다.
+ * - 레이어별 기본 볼륨(0 ~ 1)과 칸별 강약·점점 크게/작게 표현을 함께 저장합니다.
  */
 export interface SongLayer {
   instrumentId: TrackInstrumentId;
+  /** 레이어 개별 볼륨 (0.0 ~ 1.0, 미지정 시 기본 0.85) */
+  volume?: number;
   /** 박자(8분음표) 단위의 음표 배열 ("-"는 쉼표) */
   steps: string[];
+  /** steps와 1:1 대응하는 칸별 다이나믹(강하게/약하게/점점 크게/점점 작게) 배열 */
+  dynamics?: NoteDynamic[];
 }
 
 /**

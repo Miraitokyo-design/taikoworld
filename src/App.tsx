@@ -8,7 +8,13 @@ import membersData from './data/members.json';
 import songsData from './data/songs.json';
 import taikoTracksData from './data/taikoTracks.json';
 import taikoGuideData from './data/taikoGuide.json';
-import type { InstrumentConfig, MoveVector, PlayerState, SpaceConfig } from './types/world';
+import type {
+  GroupHideoutConfig,
+  InstrumentConfig,
+  MoveVector,
+  PlayerState,
+  SpaceConfig,
+} from './types/world';
 import type {
   CircleInfo,
   MemberConfig,
@@ -34,6 +40,7 @@ import { MemberDirectoryModal } from './components/ui/MemberDirectoryModal';
 import { SongBookModal } from './components/ui/SongBookModal';
 import { TaikoGuideModal } from './components/ui/TaikoGuideModal';
 import { MenuModal } from './components/ui/MenuModal';
+import { SoundControl } from './components/ui/SoundControl';
 
 // JSON 배열은 TypeScript가 일반 number[]로 추론하므로, 엄격한 타입으로 안전하게 연결
 const spaces = spacesData as unknown as SpaceConfig[];
@@ -52,8 +59,9 @@ const tracksById: Record<string, TaikoTrackDefinition> = Object.fromEntries(
 
 /**
  * Taiko World 최상위 앱 컴포넌트
- * - 입장 화면(오디오 활성화), 3D 잔디 공원 탐색, 메뉴바(되돌아가기 지원), 상단 연주 일정 배너·캘린더,
- *   멤버 도감·프로필 카드, 멀티 레이어 악보 플레이어, 타이코 종류/역사 안내, 서클/문의 모달을 연결합니다.
+ * - 입장 화면, 3D 잔디 공원 탐색(지역 단체 아지트 큐브 + 6명 NPC 근접 합주),
+ *   메뉴바, 세분화 소리 설정(직접 연주 vs NPC 합주 + 팝업 시 자동 덕킹),
+ *   멀티 레이어 악보/직접 작곡, 지역 단체 소개 모달을 통합 관리합니다.
  */
 export function App() {
   // MVP 1차 공간: 첫 번째 공간(잔디 공원)을 기본으로 불러옴
@@ -62,7 +70,7 @@ export function App() {
   // 구글 스프레드시트(VITE_SCHEDULE_CSV_URL)가 설정되어 있으면 실시간 일정을, 없으면 기본 JSON 일정을 사용
   const { events: scheduleEvents } = useScheduleEvents(fallbackScheduleEvents);
 
-  // 오늘 날짜 기준으로 가장 가까운 예정 연주 1건 계산 (배너, 메뉴, 캘린더 초기 월 표시에 사용)
+  // 오늘 날짜 기준으로 가장 가까운 예정 연주 1건 계산
   const nextUpcomingEvent = useMemo(
     () => getNextUpcomingEvent(scheduleEvents),
     [scheduleEvents]
@@ -71,13 +79,19 @@ export function App() {
   // 브라우저 localStorage에 저장된 사용자 작곡 곡 목록 상태
   const [customSongs, setCustomSongs] = useState<SongConfig[]>(() => loadCustomSongs());
 
-  // React useState: 화면 전환 및 모달 열림 상태 관리
+  // 화면 진입 및 세분화 소리 설정 상태 (직접 연주 소리 / NPC 합주 소리 개별 제어)
   const [hasEntered, setHasEntered] = useState(false);
-  const [isMuted, setIsMuted] = useState(false);
+  const [isPlayerSoundOn, setIsPlayerSoundOn] = useState(true);
+  const [isNpcSoundOn, setIsNpcSoundOn] = useState(true);
+  const [isSoundPopoverOpen, setIsSoundPopoverOpen] = useState(false);
+
+  // 3D 근접 상호작용 대상 상태 (북 / NPC / 지역 단체 아지트)
   const [nearbyInstrument, setNearbyInstrument] = useState<InstrumentConfig | null>(null);
   const [nearbyMember, setNearbyMember] = useState<MemberConfig | null>(null);
+  const [nearbyHideout, setNearbyHideout] = useState<GroupHideoutConfig | null>(null);
   const [activeInstrument, setActiveInstrument] = useState<InstrumentConfig | null>(null);
 
+  // 모달 열림 상태
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScheduleOpen, setIsScheduleOpen] = useState(false);
   const [isMemberDirectoryOpen, setIsMemberDirectoryOpen] = useState(false);
@@ -86,18 +100,19 @@ export function App() {
   const [isCircleOpen, setIsCircleOpen] = useState(false);
   const [selectedMember, setSelectedMember] = useState<MemberConfig | null>(null);
 
-  // 메뉴바에서 진입한 모달인지 기록해 [← 메뉴] 되돌아가기 버튼 표시 여부를 결정
+  // 메뉴 진입 여부 및 지역 단체 아지트 진입 시 초기 탭/강조 단체 상태
   const [openedFromMenu, setOpenedFromMenu] = useState(false);
+  const [guideInitialTab, setGuideInitialTab] = useState<'types' | 'groups'>('types');
+  const [highlightedGroupId, setHighlightedGroupId] = useState<string | null>(null);
+  const [guideOpenedFromHideout, setGuideOpenedFromHideout] = useState(false);
 
-  // 플레이어 상태 단일 객체: 매 프레임 업데이트되어도 React 전체가 다시 그려지지 않게 useRef로 관리
+  // 플레이어 상태 단일 객체 (60fps 이동을 위해 useRef 관리)
   const playerStateRef = useRef<PlayerState>({
     position: [...currentSpace.spawnPoint],
-    // 북이 있는 뒤쪽(-Z)을 바라보도록 180도(Math.PI) 회전
     rotationY: Math.PI,
     action: 'idle',
   });
 
-  // 모바일 플로팅 조이스틱 방향 벡터 및 3D 북 타격 울림 공유 ref
   const joystickVectorRef = useRef<MoveVector>({ x: 0, z: 0 });
   const taikoHitPulseRef = useRef(0);
 
@@ -122,8 +137,9 @@ export function App() {
     });
   }, []);
 
-  /** 열려 있는 모든 정보 모달을 한 번에 닫는 보조 함수 */
+  /** 열려 있는 모든 정보 모달 및 팝오버를 한 번에 닫는 보조 함수 */
   const closeAllModals = useCallback(() => {
+    setIsSoundPopoverOpen(false);
     setIsMenuOpen(false);
     setIsScheduleOpen(false);
     setIsMemberDirectoryOpen(false);
@@ -132,6 +148,8 @@ export function App() {
     setIsCircleOpen(false);
     setSelectedMember(null);
     setOpenedFromMenu(false);
+    setGuideOpenedFromHideout(false);
+    setHighlightedGroupId(null);
   }, []);
 
   /** 메뉴에서 진입한 하위 모달에서 [← 메뉴] 버튼을 눌렀을 때 메뉴바로 되돌아가는 함수 */
@@ -140,10 +158,19 @@ export function App() {
     setIsMenuOpen(true);
   }, [closeAllModals]);
 
-  /**
-   * [타이코 월드 입장] 버튼 클릭 핸들러
-   * - 첫 터치 순간 브라우저 오디오 컨텍스트를 활성화하고, 악기/트랙 사운드 사전 로딩을 시도합니다.
-   */
+  /** 지역 단체 아지트(큐브)에 접근해 클릭 또는 E 키로 해당 지역 단체 소개를 여는 핸들러 */
+  const handleOpenHideoutGuide = useCallback(
+    (hideout: GroupHideoutConfig) => {
+      closeAllModals();
+      setGuideInitialTab('groups');
+      setHighlightedGroupId(hideout.groupId);
+      setGuideOpenedFromHideout(true);
+      setIsTaikoGuideOpen(true);
+    },
+    [closeAllModals]
+  );
+
+  /** [타이코 월드 입장] 버튼 클릭 핸들러 */
   const handleEnterWorld = useCallback(async () => {
     await audioManager.unlock();
     for (const inst of instruments) {
@@ -156,50 +183,46 @@ export function App() {
     setHasEntered(true);
   }, []);
 
-  /**
-   * 상시 HUD 및 메뉴 [소리 켜기/끄기] 토글 핸들러
-   */
-  const handleToggleMute = useCallback(() => {
-    setIsMuted((prev) => {
-      const nextMuted = !prev;
-      audioManager.setMuted(nextMuted);
-      return nextMuted;
+  /** 직접 연주 소리 ON/OFF 토글 핸들러 */
+  const handleTogglePlayerSound = useCallback(() => {
+    setIsPlayerSoundOn((prev) => {
+      const next = !prev;
+      audioManager.setPlayerSoundEnabled(next);
+      return next;
     });
   }, []);
 
-  /**
-   * 타이코 연주 모드 진입 핸들러
-   * - 열려 있던 모달을 모두 닫고, NPC 합주 배경 볼륨을 낮추는 덕킹을 켠 뒤 연주 UI를 표시합니다.
-   */
+  /** NPC 합주 배경 소리 ON/OFF 토글 핸들러 */
+  const handleToggleNpcSound = useCallback(() => {
+    setIsNpcSoundOn((prev) => {
+      const next = !prev;
+      audioManager.setNpcSoundEnabled(next);
+      return next;
+    });
+  }, []);
+
+  /** 타이코 연주 모드 진입 핸들러 */
   const handleEnterPlayMode = useCallback(
     (instrument: InstrumentConfig) => {
       void audioManager.unlock();
       closeAllModals();
-      audioManager.setNpcDucking(true);
       setActiveInstrument(instrument);
     },
     [closeAllModals]
   );
 
-  /**
-   * 타이코 연주 모드 종료([월드로 돌아가기]) 핸들러
-   */
+  /** 타이코 연주 모드 종료([월드로 돌아가기]) 핸들러 */
   const handleExitPlayMode = useCallback(() => {
-    audioManager.setNpcDucking(false);
     setActiveInstrument(null);
   }, []);
 
-  /**
-   * 북 중앙(돈) 또는 테두리(카) 타격 시 오디오 재생 + 3D 북 울림 반응 실행
-   */
+  /** 북 중앙(돈) 또는 테두리(카) 타격 시 오디오 재생 + 3D 북 울림 반응 실행 */
   const handleTaikoHit = useCallback(
     (hitType: TaikoHitType) => {
       if (!activeInstrument) return;
       const soundUrl =
         hitType === 'don' ? activeInstrument.sounds.don : activeInstrument.sounds.ka;
       audioManager.playTaikoHit(hitType, soundUrl);
-
-      // 3D 공간의 북 모델도 타격 세기에 맞춰 살짝 통통 울리도록 자극 전달
       taikoHitPulseRef.current = hitType === 'don' ? 1 : 0.45;
     },
     [activeInstrument]
@@ -216,9 +239,15 @@ export function App() {
     selectedMember !== null;
   const isExploring = hasEntered && activeInstrument === null;
 
+  // 메뉴·팝업 창이 열려 있거나 북 연주 모드 중일 때 배경 NPC 합주 소리를 자동으로 줄임(덕킹)
+  useEffect(() => {
+    const shouldDuckNpc = isModalOpen || isSoundPopoverOpen || activeInstrument !== null;
+    audioManager.setNpcDucking(shouldDuckNpc);
+  }, [isModalOpen, isSoundPopoverOpen, activeInstrument]);
+
   // PC 단축키(탐색 모드):
   // - 북 근처에서는 Space로 연주 모드 진입
-  // - NPC 근처([!] 말풍선 표시 중)에서는 E로 해당 멤버 프로필 카드 열기
+  // - NPC 또는 지역 단체 아지트 근처([!] 말풍선 표시 중)에서는 E로 해당 정보 창 열기
   useEffect(() => {
     if (!isExploring || isModalOpen) return;
 
@@ -228,10 +257,15 @@ export function App() {
       if (event.code === 'Space' && nearbyInstrument) {
         event.preventDefault();
         handleEnterPlayMode(nearbyInstrument);
-      } else if (event.code === 'KeyE' && nearbyMember) {
-        event.preventDefault();
-        closeAllModals();
-        setSelectedMember(nearbyMember);
+      } else if (event.code === 'KeyE') {
+        if (nearbyMember) {
+          event.preventDefault();
+          closeAllModals();
+          setSelectedMember(nearbyMember);
+        } else if (nearbyHideout) {
+          event.preventDefault();
+          handleOpenHideoutGuide(nearbyHideout);
+        }
       }
     };
 
@@ -242,7 +276,9 @@ export function App() {
     isModalOpen,
     nearbyInstrument,
     nearbyMember,
+    nearbyHideout,
     handleEnterPlayMode,
+    handleOpenHideoutGuide,
     closeAllModals,
   ]);
 
@@ -270,13 +306,16 @@ export function App() {
           isModalOpen={isModalOpen}
           activeInstrument={activeInstrument}
           nearbyInstrument={nearbyInstrument}
+          nearbyHideout={nearbyHideout}
           onNearbyInstrumentChange={setNearbyInstrument}
           onNearbyMemberChange={setNearbyMember}
+          onNearbyHideoutChange={setNearbyHideout}
           onSelectInstrument={handleEnterPlayMode}
           onSelectMember={(member) => {
             closeAllModals();
             setSelectedMember(member);
           }}
+          onSelectHideout={handleOpenHideoutGuide}
           taikoHitPulseRef={taikoHitPulseRef}
         />
       </Canvas>
@@ -306,7 +345,7 @@ export function App() {
         </button>
       )}
 
-      {/* 탐색 모드 상단 정중앙 최단 연주 일정 배너 (터치 시 상세 캘린더 열림) */}
+      {/* 탐색 모드 상단 정중앙 최단 연주 일정 배너 */}
       {isExploring && (
         <div className="schedule-banner-wrap">
           <ScheduleBanner
@@ -319,20 +358,20 @@ export function App() {
         </div>
       )}
 
-      {/* 입장 후 상시 HUD: 우측 상단 음소거 토글 버튼 */}
+      {/* 입장 후 상시 HUD: 우측 상단 세분화 소리 설정(직접 연주 vs NPC 합주) */}
       {hasEntered && (
-        <button
-          type="button"
-          className="mute-toggle-btn"
-          onClick={handleToggleMute}
-          aria-label={isMuted ? '소리 켜기' : '소리 끄기'}
-        >
-          <span aria-hidden="true">{isMuted ? '🔇' : '🔊'}</span>
-          <span className="mute-toggle-label">{isMuted ? '꺼짐' : '소리'}</span>
-        </button>
+        <SoundControl
+          isPlayerSoundOn={isPlayerSoundOn}
+          isNpcSoundOn={isNpcSoundOn}
+          isOpen={isSoundPopoverOpen}
+          onToggleOpen={() => setIsSoundPopoverOpen((prev) => !prev)}
+          onClose={() => setIsSoundPopoverOpen(false)}
+          onTogglePlayerSound={handleTogglePlayerSound}
+          onToggleNpcSound={handleToggleNpcSound}
+        />
       )}
 
-      {/* 탐색 모드에서 북 근처에 다가가면 표시되는 [연주하기] 버튼 (PC: Space 바로도 진입 가능) */}
+      {/* 탐색 모드에서 북 근처에 다가가면 표시되는 [연주하기] 버튼 (PC: Space) */}
       {isExploring && !isModalOpen && nearbyInstrument && (
         <button
           type="button"
@@ -344,7 +383,7 @@ export function App() {
         </button>
       )}
 
-      {/* 타이코 연주 모드 전용 오버레이 (돈/카 타격 패드 + 키보드 단축키) */}
+      {/* 타이코 연주 모드 전용 오버레이 */}
       {hasEntered && activeInstrument && (
         <TaikoPlayOverlay
           instrument={activeInstrument}
@@ -359,7 +398,8 @@ export function App() {
           nextEvent={nextUpcomingEvent}
           memberCount={members.length}
           songCount={songs.length + customSongs.length}
-          isMuted={isMuted}
+          isPlayerSoundOn={isPlayerSoundOn}
+          isNpcSoundOn={isNpcSoundOn}
           onOpenSchedule={() => {
             closeAllModals();
             setOpenedFromMenu(true);
@@ -378,6 +418,7 @@ export function App() {
           onOpenTaikoGuide={() => {
             closeAllModals();
             setOpenedFromMenu(true);
+            setGuideInitialTab('types');
             setIsTaikoGuideOpen(true);
           }}
           onOpenCircle={() => {
@@ -385,7 +426,8 @@ export function App() {
             setOpenedFromMenu(true);
             setIsCircleOpen(true);
           }}
-          onToggleMute={handleToggleMute}
+          onTogglePlayerSound={handleTogglePlayerSound}
+          onToggleNpcSound={handleToggleNpcSound}
           onClose={() => setIsMenuOpen(false)}
         />
       )}
@@ -400,7 +442,7 @@ export function App() {
         />
       )}
 
-      {/* 전체 서클 멤버 도감 모달 (메뉴 -> 멤버 정보) */}
+      {/* 전체 서클 멤버 도감 모달 */}
       {hasEntered && isMemberDirectoryOpen && (
         <MemberDirectoryModal
           members={members}
@@ -413,7 +455,7 @@ export function App() {
         />
       )}
 
-      {/* 멀티 레이어 타이코 곡 정보 & 직접 작곡 모달 (메뉴 -> 곡 정보) */}
+      {/* 멀티 레이어 타이코 곡 정보 & 직접 작곡 모달 */}
       {hasEntered && isSongBookOpen && (
         <SongBookModal
           builtInSongs={songs}
@@ -428,11 +470,14 @@ export function App() {
         />
       )}
 
-      {/* 타이코의 종류와 역사 안내 모달 (메뉴 -> 타이코의 종류와 역사) */}
+      {/* 타이코 종류 & 지역 타이코 단체 소개 모달 (아지트에서 진입 시 E로 닫기 지원) */}
       {hasEntered && isTaikoGuideOpen && (
         <TaikoGuideModal
           guide={taikoGuide}
           tracksById={tracksById}
+          initialTab={guideInitialTab}
+          highlightedGroupId={highlightedGroupId}
+          allowKeyEClose={guideOpenedFromHideout}
           onBackToMenu={openedFromMenu ? handleBackToMenu : undefined}
           onClose={closeAllModals}
         />
@@ -447,7 +492,7 @@ export function App() {
         />
       )}
 
-      {/* NPC 멤버 클릭 또는 E 키로 열리는 미니 프로필 카드 모달 (E/ESC로 닫기 가능) */}
+      {/* NPC 멤버 프로필 카드 모달 (E/ESC로 닫기 가능) */}
       {hasEntered && selectedMember && (
         <MemberProfileModal
           member={selectedMember}
@@ -462,7 +507,7 @@ export function App() {
           <div className="space-badge">
             <span>🌿 {currentSpace.name}</span>
             <span className="space-badge-hint">
-              모바일: 화면 터치 조이스틱 · PC: WASD · E(멤버) · Space(연주)
+              모바일: 화면 터치 조이스틱 · PC: WASD · E(멤버·아지트) · Space(연주)
             </span>
           </div>
 

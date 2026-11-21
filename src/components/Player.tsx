@@ -5,6 +5,7 @@ import { Vector3 } from 'three';
 import type { Group } from 'three';
 import type { MemberParts } from '../types/content';
 import type {
+  GroupHideoutConfig,
   InstrumentConfig,
   MoveVector,
   PlayerAction,
@@ -32,6 +33,8 @@ interface PlayerProps {
   onClearTarget: () => void;
   /** 상호작용 반경 안에 들어온 악기가 바뀔 때만 호출되는 콜백 */
   onNearbyInstrumentChange: (instrument: InstrumentConfig | null) => void;
+  /** 상호작용 반경 안에 들어온 지역 단체 아지트가 바뀔 때만 호출되는 콜백 */
+  onNearbyHideoutChange: (hideout: GroupHideoutConfig | null) => void;
   /** 현재 눌린 키보드 키 목록 ref */
   pressedKeysRef: MutableRefObject<Set<string>>;
   /** 모바일 플로팅 조이스틱 방향 벡터 ref */
@@ -65,15 +68,17 @@ export function Player({
   targetPoint,
   onClearTarget,
   onNearbyInstrumentChange,
+  onNearbyHideoutChange,
   pressedKeysRef,
   joystickVectorRef,
 }: PlayerProps) {
   const rootGroupRef = useRef<Group>(null);
   const actionRef = useRef<PlayerAction>(playerStateRef.current.action);
 
-  // 장애물에 걸렸을 때 멈추기 위한 타이머 & 직전 근처 악기 ID
+  // 장애물에 걸렸을 때 멈추기 위한 타이머 & 직전 근처 악기/아지트 ID
   const stuckTimeRef = useRef(0);
   const lastNearbyIdRef = useRef<string | null>(null);
+  const lastNearbyHideoutIdRef = useRef<string | null>(null);
 
   // 카메라가 부드럽게 따라가기 위한 임시 3D 벡터(매 프레임 객체 생성을 피해 메모리 절약)
   const desiredCameraPosRef = useRef(new Vector3());
@@ -218,6 +223,22 @@ export function Player({
     if (foundId !== lastNearbyIdRef.current) {
       lastNearbyIdRef.current = foundId;
       onNearbyInstrumentChange(foundNearby);
+    }
+
+    // 6-2) 근처 지역 단체 아지트(interactRadius 이내) 감지 — 바뀔 때만 콜백 호출
+    let foundHideout: GroupHideoutConfig | null = null;
+    for (const hideout of space.hideouts ?? []) {
+      const dist = getDistance2D(px, pz, hideout.position[0], hideout.position[2]);
+      if (dist <= hideout.interactRadius) {
+        foundHideout = hideout;
+        break;
+      }
+    }
+
+    const foundHideoutId = foundHideout ? foundHideout.id : null;
+    if (foundHideoutId !== lastNearbyHideoutIdRef.current) {
+      lastNearbyHideoutIdRef.current = foundHideoutId;
+      onNearbyHideoutChange(foundHideout);
     }
 
     // 7) 쿼터뷰 카메라가 플레이어를 부드럽게 따라가도록 이동

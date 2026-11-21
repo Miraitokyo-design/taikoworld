@@ -149,13 +149,14 @@ export function NpcGroup({
       onNearbyMemberChange(closestMember);
     }
 
-    // 3) 3인 이상 공통곡 합주 중 멀티 레이어 악보의 현재 칸 음표들(尺/沖/締め/笛/チャッパ)을 재생
+    // 3) 3인 이상 공통곡 합주 중 멀티 레이어 악보의 음표와 다이나믹 볼륨을 그대로 재생
     if (ensembleStep && hasEntered) {
       for (const item of ensembleStep.notes) {
         const trackDef = tracksById[item.instrumentId];
         audioManager.playTrackNote(item.instrumentId, item.note, {
           soundUrl: trackDef?.audioFiles?.[item.note],
           isNpc: true,
+          volume: item.volume,
         });
       }
     }
