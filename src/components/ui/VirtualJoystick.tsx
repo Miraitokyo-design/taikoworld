@@ -5,6 +5,8 @@ import type { MoveVector } from '../../types/world';
 interface VirtualJoystickProps {
   /** 조이스틱의 현재 방향 벡터({ x, z })를 3D 이동 루프에 전달할 ref */
   joystickVectorRef: MutableRefObject<MoveVector>;
+  /** 입장 화면이나 연주 모드 중일 때 조이스틱을 비활성화하는 옵션 */
+  disabled?: boolean;
 }
 
 /** 조이스틱 중심에서 손잡이(노브)가 움직일 수 있는 최대 반경 (px) */
@@ -29,7 +31,10 @@ function isInteractiveUiElement(target: EventTarget | null): boolean {
  * - 드래그 중에는 React 상태를 매번 바꾸지 않고 DOM ref와 joystickVectorRef만 갱신해 60fps 성능을 유지합니다.
  * @param props.joystickVectorRef - 이동 방향 { x, z }를 기록할 공유 ref
  */
-export function VirtualJoystick({ joystickVectorRef }: VirtualJoystickProps) {
+export function VirtualJoystick({
+  joystickVectorRef,
+  disabled = false,
+}: VirtualJoystickProps) {
   // 조이스틱 원판이 나타날 화면 위치 (손을 떼면 null로 숨김)
   const [origin, setOrigin] = useState<{ x: number; y: number } | null>(null);
 
@@ -47,6 +52,12 @@ export function VirtualJoystick({ joystickVectorRef }: VirtualJoystickProps) {
       joystickVectorRef.current.z = 0;
       setOrigin(null);
     };
+
+    // 입장 전이거나 연주 모드일 때는 기존 입력을 초기화하고 터치 이벤트를 등록하지 않음
+    if (disabled) {
+      resetJoystick();
+      return;
+    }
 
     const handlePointerDown = (event: PointerEvent) => {
       // 모바일/태블릿 터치 입력일 때만 플로팅 조이스틱 표시
@@ -116,7 +127,7 @@ export function VirtualJoystick({ joystickVectorRef }: VirtualJoystickProps) {
       window.removeEventListener('blur', resetJoystick);
       resetJoystick();
     };
-  }, [joystickVectorRef]);
+  }, [joystickVectorRef, disabled]);
 
   // 터치 중이 아닐 때는 화면을 가리지 않도록 아무것도 그리지 않음
   if (!origin) return null;

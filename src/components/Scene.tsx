@@ -17,40 +17,66 @@ interface SceneProps {
   playerStateRef: MutableRefObject<PlayerState>;
   /** 모바일 플로팅 조이스틱 방향 벡터 ref */
   joystickVectorRef: MutableRefObject<MoveVector>;
+  /** 입장 완료 여부 (입장 전에는 이동 차단) */
+  hasEntered: boolean;
+  /** 현재 연주 중인 악기 (없으면 null) */
+  activeInstrument: InstrumentConfig | null;
+  /** 플레이어가 가까이 다가가 있는 악기 (링 강조 표시용) */
+  nearbyInstrument: InstrumentConfig | null;
+  /** 근처 악기 변경 시 상위에 알리는 콜백 */
+  onNearbyInstrumentChange: (instrument: InstrumentConfig | null) => void;
+  /** 북을 직접 클릭해 연주 모드로 들어갈 때 호출되는 콜백 */
+  onSelectInstrument: (instrument: InstrumentConfig) => void;
+  /** 북 타격 시 3D 북을 살짝 울리게 하는 공유 ref */
+  taikoHitPulseRef: MutableRefObject<number>;
 }
 
 /**
  * 3D 월드 전체 장면(배경, 조명, 공간, 악기, 플레이어, 클릭 목적지 표시)을 조립하는 컴포넌트
- * @param props.space - 현재 공간 데이터
- * @param props.instruments - 악기 데이터 배열
- * @param props.playerStateRef - 플레이어 단일 상태 객체 ref
- * @param props.joystickVectorRef - 모바일 조이스틱 방향 벡터 ref
  */
 export function Scene({
   space,
   instruments,
   playerStateRef,
   joystickVectorRef,
+  hasEntered,
+  activeInstrument,
+  nearbyInstrument,
+  onNearbyInstrumentChange,
+  onSelectInstrument,
+  taikoHitPulseRef,
 }: SceneProps) {
   // PC 키보드(WASD / 방향키) 입력 상태 추적
   const pressedKeysRef = useKeyboardInput();
 
-  // 바닥 클릭/터치로 지정된 목적지 상태 (DestinationMarker 표시용)
+  // PC 바닥 클릭으로 지정된 목적지 상태 (DestinationMarker 표시용)
   const [targetPoint, setTargetPoint] = useState<[number, number] | null>(null);
+
+  const canMove = hasEntered && activeInstrument === null;
 
   // useCallback: 불필요한 함수 재생성을 막기 위해 콜백을 기억하는 Hook
   const handleGroundClick = useCallback(
     (rawPoint: [number, number]) => {
+      if (!canMove) return;
       // 장애물 안이나 광장 바깥을 클릭해도 이동 가능한 가장 가까운 지점으로 보정
       const safePoint = resolvePlayerPosition(rawPoint[0], rawPoint[1], space);
       setTargetPoint([safePoint.x, safePoint.z]);
     },
-    [space]
+    [space, canMove]
   );
 
   const handleClearTarget = useCallback(() => {
     setTargetPoint(null);
   }, []);
+
+  const handleSelectInstrument = useCallback(
+    (instrument: InstrumentConfig) => {
+      if (!hasEntered) return;
+      setTargetPoint(null);
+      onSelectInstrument(instrument);
+    },
+    [hasEntered, onSelectInstrument]
+  );
 
   return (
     <>
@@ -64,23 +90,33 @@ export function Scene({
       {/* 따뜻한 햇살 느낌의 주 조명 */}
       <directionalLight position={[6, 12, 8]} intensity={1.35} color="#fff6e0" />
 
-      {/* 잔디 공원 공간 (바닥 클릭 이벤트 연결) */}
+      {/* 잔디 공원 공간 (PC 바닥 클릭 이벤트 연결) */}
       <Space space={space} onGroundClick={handleGroundClick} />
 
-      {/* 바닥 클릭/터치 시 목적지를 알려주는 반짝이는 링 */}
-      <DestinationMarker target={targetPoint} />
+      {/* 바닥 클릭 시 목적지를 알려주는 반짝이는 링 (연주 모드에서는 숨김) */}
+      <DestinationMarker target={canMove ? targetPoint : null} />
 
       {/* instruments.json에 등록된 모든 타이코 배치 */}
       {instruments.map((instrument) => (
-        <Taiko key={instrument.id} instrument={instrument} />
+        <Taiko
+          key={instrument.id}
+          instrument={instrument}
+          isNearby={nearbyInstrument?.id === instrument.id}
+          onSelect={handleSelectInstrument}
+          hitPulseRef={taikoHitPulseRef}
+        />
       ))}
 
-      {/* 게스트 플레이어 캐릭터 (이동 + 2D 충돌 + 쿼터뷰 카메라 추적) */}
+      {/* 게스트 플레이어 캐릭터 (이동 + 2D 충돌 + 악기 근접 감지 + 카메라 제어) */}
       <Player
         playerStateRef={playerStateRef}
         space={space}
+        instruments={instruments}
+        activeInstrument={activeInstrument}
+        canMove={canMove}
         targetPoint={targetPoint}
         onClearTarget={handleClearTarget}
+        onNearbyInstrumentChange={onNearbyInstrumentChange}
         pressedKeysRef={pressedKeysRef}
         joystickVectorRef={joystickVectorRef}
       />
