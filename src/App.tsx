@@ -4,8 +4,9 @@ import spacesData from './data/spaces.json';
 import instrumentsData from './data/instruments.json';
 import scheduleData from './data/schedule.json';
 import circleData from './data/circle.json';
+import membersData from './data/members.json';
 import type { InstrumentConfig, MoveVector, PlayerState, SpaceConfig } from './types/world';
-import type { CircleInfo, ScheduleEvent } from './types/content';
+import type { CircleInfo, MemberConfig, ScheduleEvent } from './types/content';
 import { audioManager } from './systems/audioManager';
 import type { TaikoHitType } from './systems/audioManager';
 import { getNextUpcomingEvent } from './utils/scheduleUtils';
@@ -17,12 +18,14 @@ import { TaikoPlayOverlay } from './components/ui/TaikoPlayOverlay';
 import { ScheduleBanner } from './components/ui/ScheduleBanner';
 import { ScheduleCalendarModal } from './components/ui/ScheduleCalendarModal';
 import { CircleInfoModal } from './components/ui/CircleInfoModal';
+import { MemberProfileModal } from './components/ui/MemberProfileModal';
 
 // JSON 배열은 TypeScript가 일반 number[]로 추론하므로, 엄격한 3D 좌표 튜플 타입([x, y, z])으로 안전하게 연결
 const spaces = spacesData as unknown as SpaceConfig[];
 const instruments = instrumentsData as unknown as InstrumentConfig[];
 const fallbackScheduleEvents = scheduleData as ScheduleEvent[];
 const circleInfo = circleData as CircleInfo;
+const members = membersData as MemberConfig[];
 
 /**
  * Taiko World 최상위 앱 컴포넌트
@@ -50,6 +53,7 @@ export function App() {
   const [activeInstrument, setActiveInstrument] = useState<InstrumentConfig | null>(null);
   const [isScheduleOpen, setIsScheduleOpen] = useState(false);
   const [isCircleOpen, setIsCircleOpen] = useState(false);
+  const [selectedMember, setSelectedMember] = useState<MemberConfig | null>(null);
 
   // 플레이어 상태 단일 객체: 매 프레임 업데이트되어도 React 전체가 다시 그려지지 않게 useRef로 관리
   const playerStateRef = useRef<PlayerState>({
@@ -95,6 +99,7 @@ export function App() {
     void audioManager.unlock();
     setIsScheduleOpen(false);
     setIsCircleOpen(false);
+    setSelectedMember(null);
     audioManager.setNpcDucking(true);
     setActiveInstrument(instrument);
   }, []);
@@ -124,7 +129,7 @@ export function App() {
   );
 
   const [spawnX, , spawnZ] = currentSpace.spawnPoint;
-  const isModalOpen = isScheduleOpen || isCircleOpen;
+  const isModalOpen = isScheduleOpen || isCircleOpen || selectedMember !== null;
   const isExploring = hasEntered && activeInstrument === null;
 
   // 북 근처에 있을 때 PC에서 Space 바를 눌러 바로 연주 모드로 진입할 수 있게 키보드 이벤트 연결
@@ -156,6 +161,7 @@ export function App() {
         <Scene
           space={currentSpace}
           instruments={instruments}
+          members={members}
           playerStateRef={playerStateRef}
           joystickVectorRef={joystickVectorRef}
           hasEntered={hasEntered}
@@ -164,6 +170,11 @@ export function App() {
           nearbyInstrument={nearbyInstrument}
           onNearbyInstrumentChange={setNearbyInstrument}
           onSelectInstrument={handleEnterPlayMode}
+          onSelectMember={(member) => {
+            setIsScheduleOpen(false);
+            setIsCircleOpen(false);
+            setSelectedMember(member);
+          }}
           taikoHitPulseRef={taikoHitPulseRef}
         />
       </Canvas>
@@ -238,6 +249,14 @@ export function App() {
         <CircleInfoModal
           circle={circleInfo}
           onClose={() => setIsCircleOpen(false)}
+        />
+      )}
+
+      {/* NPC 멤버 클릭 시 열리는 미니 프로필 카드 모달 */}
+      {hasEntered && selectedMember && (
+        <MemberProfileModal
+          member={selectedMember}
+          onClose={() => setSelectedMember(null)}
         />
       )}
 

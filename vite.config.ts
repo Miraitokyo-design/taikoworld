@@ -10,8 +10,8 @@ import react from '@vitejs/plugin-react';
 export default defineConfig({
   plugins: [react()],
   build: {
-    // Three.js + React Three Fiber 묶음(약 930KB, gzip 247KB)이 기본 경고 기준(500KB)을 넘지 않게 조정
-    chunkSizeWarningLimit: 1000,
+    // Three.js + React Three Fiber + drei 묶음(gzip 약 313KB)이 경고로 뜨지 않게 기준 조정
+    chunkSizeWarningLimit: 1200,
     rolldownOptions: {
       output: {
         codeSplitting: {

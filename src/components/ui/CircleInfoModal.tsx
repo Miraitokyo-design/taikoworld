@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import type { CircleInfo, CircleLink } from '../../types/content';
 
 interface CircleInfoModalProps {
@@ -15,6 +15,8 @@ function getLinkIcon(type: CircleLink['type']): string {
   switch (type) {
     case 'instagram':
       return '📸';
+    case 'university':
+      return '🎓';
     case 'chat':
       return '💬';
     case 'youtube':
@@ -35,12 +37,15 @@ function isSafeExternalUrl(url: string): boolean {
 }
 
 /**
- * HUD [서클/문의] 버튼을 눌렀을 때 열리는 서클 소개 & 체험·가입 문의 모달 컴포넌트
- * - circle.json 데이터를 그대로 읽어 표시하므로, 링크나 소개 문구가 바뀌어도 JSON만 수정하면 됩니다.
+ * HUD [서클/문의] 버튼을 눌렀을 때 열리는 서클 소개 & 링크·인스타그램 QR 모달 컴포넌트
+ * - circle.json 데이터를 그대로 읽어 표시하므로, 링크나 QR 이미지 경로가 바뀌어도 JSON만 수정하면 됩니다.
  * @param props.circle - 서클 정보 객체
  * @param props.onClose - 모달 닫기 핸들러
  */
 export function CircleInfoModal({ circle, onClose }: CircleInfoModalProps) {
+  // QR코드 이미지 파일이 아직 public/images/에 없을 때 깔끔한 안내 박스를 띄우기 위한 상태
+  const [qrLoadFailed, setQrLoadFailed] = useState(false);
+
   // ESC 키로 모달 닫기 지원
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -72,7 +77,7 @@ export function CircleInfoModal({ circle, onClose }: CircleInfoModalProps) {
         {/* 모달 헤더 */}
         <div className="modal-header">
           <div>
-            <div className="modal-kicker">🥁 지역 타이코 서클</div>
+            <div className="modal-kicker">🥁 타이코 서클 소개</div>
             <h2 className="modal-title">{circle.name}</h2>
           </div>
           <button
@@ -99,9 +104,36 @@ export function CircleInfoModal({ circle, onClose }: CircleInfoModalProps) {
           <span className="circle-practice-value">{circle.practiceInfo}</span>
         </div>
 
-        {/* 체험·가입 문의 외부 링크 버튼 목록 (CTA) */}
+        {/* 인스타그램 QR코드를 넣을 수 있는 정사각형 네모박스 영역 */}
+        {circle.instagramQr && (
+          <div className="circle-qr-section">
+            <div className="circle-qr-box">
+              {!qrLoadFailed ? (
+                <img
+                  src={circle.instagramQr.imagePath}
+                  alt="P.Taiko 인스타그램 QR코드"
+                  className="circle-qr-image"
+                  onError={() => setQrLoadFailed(true)}
+                />
+              ) : (
+                <div className="circle-qr-placeholder">
+                  <span className="circle-qr-placeholder-icon" aria-hidden="true">
+                    📸
+                  </span>
+                  <span className="circle-qr-placeholder-title">인스타그램 QR</span>
+                  <span className="circle-qr-placeholder-hint">
+                    public/images/instagram-qr.png
+                  </span>
+                </div>
+              )}
+            </div>
+            <p className="circle-qr-caption">{circle.instagramQr.caption}</p>
+          </div>
+        )}
+
+        {/* 외부 링크 버튼 목록 (인스타그램 / 대학교 홈페이지 등) */}
         <div className="circle-links-section">
-          <div className="circle-links-heading">체험 · 가입 문의 및 소식 보기</div>
+          <div className="circle-links-heading">소식 보기 · 바로가기</div>
           <div className="circle-links-list">
             {safeLinks.map((link) => (
               <a

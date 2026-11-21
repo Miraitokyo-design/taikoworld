@@ -12,6 +12,7 @@
     "route": "park_grass_a",
     "profile": {
       "experience": "타이코력 3년",
+      "status": "OO대학 3학년",
       "personality": "에너지 넘치는 분위기 메이커",
       "traits": "큰 북만 보면 눈이 반짝거림",
       "favoriteTaiko": "오다이코 (큰 북)",
@@ -31,6 +32,7 @@
     "route": "park_grass_b",
     "profile": {
       "experience": "타이코력 2년",
+      "status": "OO대학 2학년",
       "personality": "차분하지만 박자 앞에서는 칼각",
       "traits": "걸을 때도 무의식중에 박자를 맞춤",
       "favoriteTaiko": "시메다이코 (작은 고음 북)",
@@ -50,6 +52,7 @@
     "route": "park_grass_c",
     "profile": {
       "experience": "타이코력 1년 6개월",
+      "status": "OO대학 1학년",
       "personality": "다정하고 신입 챙기기 좋아하는 편",
       "traits": "연습 끝나고 간식 추천 담당",
       "favoriteTaiko": "나가도 다이코 (기본 중북)",
@@ -69,6 +72,7 @@
     "route": "park_grass_d",
     "profile": {
       "experience": "타이코력 4년",
+      "status": "OO대학 25년 졸",
       "personality": "유쾌하고 장난기 많은 아이디어 뱅크",
       "traits": "새 리듬 패턴 만드는 걸 즐김",
       "favoriteTaiko": "오케도 다이코 (어깨에 메는 북)",

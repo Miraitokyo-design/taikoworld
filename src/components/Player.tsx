@@ -3,9 +3,17 @@ import type { MutableRefObject } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { Vector3 } from 'three';
 import type { Group } from 'three';
-import type { InstrumentConfig, MoveVector, PlayerState, SpaceConfig } from '../types/world';
+import type { MemberParts } from '../types/content';
+import type {
+  InstrumentConfig,
+  MoveVector,
+  PlayerAction,
+  PlayerState,
+  SpaceConfig,
+} from '../types/world';
 import { getDistance2D, resolvePlayerPosition } from '../systems/collision';
 import { getKeyboardDirection, lerpAngle } from '../systems/inputController';
+import { Character } from './Character';
 
 interface PlayerProps {
   /** 플레이어의 위치·방향·행동을 하나로 관리하는 단일 상태 ref */
@@ -16,7 +24,7 @@ interface PlayerProps {
   instruments: InstrumentConfig[];
   /** 현재 연주 중인 악기 (탐색 모드일 때는 null) */
   activeInstrument: InstrumentConfig | null;
-  /** 입장 화면 표시 중에는 이동 입력을 잠시 막는 옵션 */
+  /** 입장 화면이나 모달 표시 중에는 이동 입력을 잠시 막는 옵션 */
   canMove: boolean;
   /** PC 마우스 바닥 클릭으로 지정된 이동 목적지 [x, z] */
   targetPoint: [number, number] | null;
@@ -30,6 +38,13 @@ interface PlayerProps {
   joystickVectorRef: MutableRefObject<MoveVector>;
 }
 
+/** 게스트 캐릭터 기본 파츠 (NPC와 동일한 모듈식 Character 컴포넌트 재사용) */
+const GUEST_PLAYER_PARTS: MemberParts = {
+  head: 'head_a',
+  outfit: 'happi_blue',
+  color: '#3b7dd8',
+};
+
 /** 캐릭터 걷기 속도 (초당 미터) */
 const MOVE_SPEED = 3.8;
 /** 목적지에 도착했다고 판정할 거리 임계값 (m) */
@@ -38,9 +53,8 @@ const ARRIVAL_THRESHOLD = 0.12;
 const CAMERA_OFFSET = new Vector3(0, 8.2, 9.2);
 
 /**
- * 게스트 캐릭터의 렌더링, 이동(조이스틱 + WASD + 클릭), 2D 충돌, 악기 근접 감지, 카메라 제어를 처리하는 컴포넌트
- * - 연주 모드에 들어가면 이동을 멈추고 3D 카메라가 북 앞쪽으로 부드럽게 클로즈업됩니다.
- * - 원점(Origin)이 바닥(y = 0)에 있어 추후 Blender 캐릭터 GLB로 그대로 교체할 수 있습니다.
+ * 게스트 캐릭터의 이동(조이스틱 + WASD + 클릭), 2D 충돌, 악기 근접 감지, 카메라 제어를 처리하는 컴포넌트
+ * - 외형과 걷기/연주 애니메이션은 NPC와 동일한 모듈식 Character 컴포넌트를 공유합니다.
  */
 export function Player({
   playerStateRef,
@@ -55,12 +69,10 @@ export function Player({
   joystickVectorRef,
 }: PlayerProps) {
   const rootGroupRef = useRef<Group>(null);
-  const bodyGroupRef = useRef<Group>(null);
+  const actionRef = useRef<PlayerAction>(playerStateRef.current.action);
 
-  // 걷기 애니메이션 위상 및 장애물에 걸렸을 때 멈추기 위한 타이머
-  const walkPhaseRef = useRef(0);
+  // 장애물에 걸렸을 때 멈추기 위한 타이머 & 직전 근처 악기 ID
   const stuckTimeRef = useRef(0);
-  // 직전 프레임에 감지된 근처 악기 ID (바뀔 때만 React 상태를 갱신해 성능 절약)
   const lastNearbyIdRef = useRef<string | null>(null);
 
   // 카메라가 부드럽게 따라가기 위한 임시 3D 벡터(매 프레임 객체 생성을 피해 메모리 절약)
@@ -83,21 +95,15 @@ export function Player({
     // A) 연주 모드일 때: 이동 중지 + 플레이어 상태 'play' + 카메라를 북 앞쪽으로 클로즈업
     if (activeInstrument) {
       player.action = 'play';
+      actionRef.current = 'play';
       const [ix, iy, iz] = activeInstrument.position;
 
-      // 카메라가 북 정면 살짝 위쪽에서 북을 확대해 바라보도록 부드럽게 이동
       desiredCameraPosRef.current.set(ix, iy + 2.35, iz + 3.1);
       state.camera.position.lerp(desiredCameraPosRef.current, Math.min(delta * 5, 1));
 
       desiredLookAtRef.current.set(ix, iy + 0.88, iz);
       cameraLookAtRef.current.lerp(desiredLookAtRef.current, Math.min(delta * 6, 1));
       state.camera.lookAt(cameraLookAtRef.current);
-
-      // 연주 중에는 캐릭터 걷기 흔들림을 멈추고 정자세 유지
-      if (bodyGroupRef.current) {
-        bodyGroupRef.current.position.y *= 0.8;
-        bodyGroupRef.current.rotation.z *= 0.8;
-      }
       return;
     }
 
@@ -184,6 +190,9 @@ export function Player({
       stuckTimeRef.current = 0;
     }
 
+    // 모듈식 Character 애니메이션에 최신 행동 상태 전달
+    actionRef.current = player.action;
+
     // 5) 계산된 위치·회전을 실제 3D 캐릭터 그룹에 반영
     if (rootGroupRef.current) {
       rootGroupRef.current.position.set(
@@ -194,19 +203,7 @@ export function Player({
       rootGroupRef.current.rotation.y = player.rotationY;
     }
 
-    // 6) 임시 캐릭터 걷기 애니메이션 (걸을 때 통통 뛰고 살짝 좌우로 흔들림)
-    if (bodyGroupRef.current) {
-      if (player.action === 'walk') {
-        walkPhaseRef.current += delta * 14;
-        bodyGroupRef.current.position.y = Math.abs(Math.sin(walkPhaseRef.current)) * 0.09;
-        bodyGroupRef.current.rotation.z = Math.sin(walkPhaseRef.current) * 0.06;
-      } else {
-        bodyGroupRef.current.position.y *= 0.8;
-        bodyGroupRef.current.rotation.z *= 0.8;
-      }
-    }
-
-    // 7) 근처 악기(interactRadius 이내) 감지 — 상태가 바뀔 때만 상위 콜백 호출
+    // 6) 근처 악기(interactRadius 이내) 감지 — 상태가 바뀔 때만 상위 콜백 호출
     const [px, , pz] = player.position;
     let foundNearby: InstrumentConfig | null = null;
     for (const inst of instruments) {
@@ -223,7 +220,7 @@ export function Player({
       onNearbyInstrumentChange(foundNearby);
     }
 
-    // 8) 쿼터뷰 카메라가 플레이어를 부드럽게 따라가도록 이동
+    // 7) 쿼터뷰 카메라가 플레이어를 부드럽게 따라가도록 이동
     desiredCameraPosRef.current.set(
       px + CAMERA_OFFSET.x,
       CAMERA_OFFSET.y,
@@ -245,58 +242,7 @@ export function Player({
       position={[initialX, initialY, initialZ]}
       rotation={[0, playerStateRef.current.rotationY, 0]}
     >
-      {/* 가벼운 블롭 그림자 (바닥에 고정) */}
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.015, 0]}>
-        <circleGeometry args={[0.38, 16]} />
-        <meshBasicMaterial color="#3c6e47" transparent opacity={0.35} />
-      </mesh>
-
-      {/* 걸을 때 통통 움직이는 캐릭터 본체 그룹 */}
-      <group ref={bodyGroupRef}>
-        {/* 왼발 / 오른발 */}
-        <mesh position={[-0.12, 0.1, 0]}>
-          <boxGeometry args={[0.14, 0.2, 0.18]} />
-          <meshStandardMaterial color="#3a3a4a" roughness={0.8} />
-        </mesh>
-        <mesh position={[0.12, 0.1, 0]}>
-          <boxGeometry args={[0.14, 0.2, 0.18]} />
-          <meshStandardMaterial color="#3a3a4a" roughness={0.8} />
-        </mesh>
-
-        {/* 몸통 (하피 느낌의 파란 상의) */}
-        <mesh position={[0, 0.48, 0]}>
-          <cylinderGeometry args={[0.22, 0.28, 0.56, 12]} />
-          <meshStandardMaterial color="#3b7dd8" roughness={0.75} />
-        </mesh>
-
-        {/* 허리띠(오비) 포인트 */}
-        <mesh position={[0, 0.36, 0]}>
-          <cylinderGeometry args={[0.255, 0.265, 0.1, 12]} />
-          <meshStandardMaterial color="#f6c445" roughness={0.7} />
-        </mesh>
-
-        {/* 머리 */}
-        <mesh position={[0, 0.98, 0]}>
-          <sphereGeometry args={[0.26, 16, 16]} />
-          <meshStandardMaterial color="#ffe0bd" roughness={0.75} />
-        </mesh>
-
-        {/* 머리띠(하치마키) */}
-        <mesh position={[0, 1.07, 0]} rotation={[Math.PI / 2, 0, 0]}>
-          <torusGeometry args={[0.245, 0.035, 8, 20]} />
-          <meshStandardMaterial color="#e04f3e" roughness={0.7} />
-        </mesh>
-
-        {/* 앞 방향을 쉽게 알아볼 수 있는 두 눈 (+Z 방향이 정면) */}
-        <mesh position={[-0.09, 0.98, 0.23]}>
-          <sphereGeometry args={[0.032, 8, 8]} />
-          <meshBasicMaterial color="#2b2623" />
-        </mesh>
-        <mesh position={[0.09, 0.98, 0.23]}>
-          <sphereGeometry args={[0.032, 8, 8]} />
-          <meshBasicMaterial color="#2b2623" />
-        </mesh>
-      </group>
+      <Character parts={GUEST_PLAYER_PARTS} actionRef={actionRef} />
     </group>
   );
 }

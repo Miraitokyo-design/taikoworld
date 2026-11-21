@@ -13,12 +13,22 @@ export interface ScheduleEvent {
 }
 
 /**
- * 서클 외부 링크(인스타그램, 오픈채팅 등) 타입
+ * 서클 외부 링크(인스타그램, 대학교 홈페이지 등) 타입
  */
 export interface CircleLink {
   label: string;
-  type: 'instagram' | 'chat' | 'youtube' | 'website';
+  type: 'instagram' | 'university' | 'chat' | 'youtube' | 'website';
   url: string;
+}
+
+/**
+ * 인스타그램 QR코드 이미지 표시 설정 타입
+ */
+export interface CircleQrInfo {
+  /** public/ 폴더 기준 QR코드 이미지 경로 (예: "/images/instagram-qr.png") */
+  imagePath: string;
+  /** QR코드 박스 아래 안내 문구 */
+  caption: string;
 }
 
 /**
@@ -30,6 +40,8 @@ export interface CircleInfo {
   description: string;
   practiceInfo: string;
   links: CircleLink[];
+  /** 인스타그램 QR코드를 표시할 네모박스 설정 (선택) */
+  instagramQr?: CircleQrInfo;
 }
 
 /**
@@ -48,6 +60,8 @@ export interface MemberParts {
  */
 export interface MemberProfile {
   experience: string;
+  /** 현재 소속/학년·졸업 여부 표시 (예: "OO대학 3학년", "OO대학 25년 졸") */
+  status: string;
   personality: string;
   traits: string;
   favoriteTaiko: string;

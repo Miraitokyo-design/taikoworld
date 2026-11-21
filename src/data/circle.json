@@ -1,7 +1,7 @@
 {
   "name": "P.Taiko",
-  "tagline": "함께 두드리고 즐기는 지역 타이코 서클",
-  "description": "악기를 처음 잡아보는 초보자도 환영합니다! 주 1회 모여 신나게 북을 두드리고, 지역 축제와 작은 공연을 함께 준비하는 따뜻한 동아리입니다.",
+  "tagline": "함께 두드리고 즐기는 타이코 서클",
+  "description": "악기를 처음 잡아보는 초보자도 환영합니다! 주 1회 모여 신나게 북을 두드리고, 축제와 작은 공연을 함께 준비하는 따뜻한 동아리입니다.",
   "practiceInfo": "매주 토요일 14:00 ~ 17:00",
   "links": [
     {
@@ -10,9 +10,13 @@
       "url": "https://instagram.com/"
     },
     {
-      "label": "체험·가입 문의 (오픈채팅)",
-      "type": "chat",
-      "url": "https://open.kakao.com/"
+      "label": "대학교 홈페이지 바로가기",
+      "type": "university",
+      "url": "https://www.example.ac.kr/"
     }
-  ]
+  ],
+  "instagramQr": {
+    "imagePath": "/images/instagram-qr.png",
+    "caption": "스마트폰 카메라로 인스타그램 QR 스캔"
+  }
 }

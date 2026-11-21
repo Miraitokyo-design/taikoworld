@@ -142,6 +142,28 @@ class AudioManager {
   }
 
   /**
+   * 공원에서 연습 중인 NPC 멤버가 내는 은은한 배경 북소리 재생 함수
+   * - npcGain 노드를 거쳐 출력되므로, 게스트가 연주 모드에 들어가면 자동으로 볼륨이 낮아집니다(덕킹).
+   * - 오디오 컨텍스트가 아직 열리지 않았거나 음소거 상태면 아무 소리도 내지 않습니다.
+   * @param hitType - 'don' 또는 'ka'
+   */
+  public playNpcPracticeBeat(hitType: TaikoHitType): void {
+    if (!this.context || !this.npcGain || this.isMuted) return;
+    if (this.context.state !== 'running') return;
+
+    // 배경 소리이므로 플레이어 타격음보다 훨씬 은은하게(16% 볼륨) 출력
+    const softGain = this.context.createGain();
+    softGain.gain.value = 0.16;
+    softGain.connect(this.npcGain);
+
+    if (hitType === 'don') {
+      this.synthesizeDon(this.context, softGain);
+    } else {
+      this.synthesizeKa(this.context, softGain);
+    }
+  }
+
+  /**
    * '돈(Don)' — 북 중앙의 묵직하고 울림 있는 저음 타격음 합성
    */
   private synthesizeDon(ctx: AudioContext, destination: AudioNode): void {

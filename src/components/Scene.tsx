@@ -1,11 +1,13 @@
 import { useCallback, useState } from 'react';
 import type { MutableRefObject } from 'react';
+import type { MemberConfig } from '../types/content';
 import type { InstrumentConfig, MoveVector, PlayerState, SpaceConfig } from '../types/world';
 import { useKeyboardInput } from '../hooks/useKeyboardInput';
 import { resolvePlayerPosition } from '../systems/collision';
 import { Space } from './Space';
 import { Taiko } from './Taiko';
 import { Player } from './Player';
+import { Npc } from './Npc';
 import { DestinationMarker } from './DestinationMarker';
 
 interface SceneProps {
@@ -13,11 +15,13 @@ interface SceneProps {
   space: SpaceConfig;
   /** 공간에 배치할 악기 목록 */
   instruments: InstrumentConfig[];
+  /** 공간에서 활동할 서클 NPC 멤버 목록 */
+  members: MemberConfig[];
   /** 플레이어의 위치·방향·행동을 담은 단일 상태 ref */
   playerStateRef: MutableRefObject<PlayerState>;
   /** 모바일 플로팅 조이스틱 방향 벡터 ref */
   joystickVectorRef: MutableRefObject<MoveVector>;
-  /** 입장 완료 여부 (입장 전에는 이동 차단) */
+  /** 입장 완료 여부 (입장 전에는 이동 및 배경 소리 차단) */
   hasEntered: boolean;
   /** 캘린더·서클 소개·프로필 등 모달이 열려 있는지 여부 (열려 있으면 이동/클릭 일시 정지) */
   isModalOpen: boolean;
@@ -29,16 +33,19 @@ interface SceneProps {
   onNearbyInstrumentChange: (instrument: InstrumentConfig | null) => void;
   /** 북을 직접 클릭해 연주 모드로 들어갈 때 호출되는 콜백 */
   onSelectInstrument: (instrument: InstrumentConfig) => void;
+  /** 3D 공간에서 NPC를 클릭/터치했을 때 프로필 카드를 여는 콜백 */
+  onSelectMember: (member: MemberConfig) => void;
   /** 북 타격 시 3D 북을 살짝 울리게 하는 공유 ref */
   taikoHitPulseRef: MutableRefObject<number>;
 }
 
 /**
- * 3D 월드 전체 장면(배경, 조명, 공간, 악기, 플레이어, 클릭 목적지 표시)을 조립하는 컴포넌트
+ * 3D 월드 전체 장면(배경, 조명, 공간, 악기, NPC 멤버, 플레이어, 클릭 목적지 표시)을 조립하는 컴포넌트
  */
 export function Scene({
   space,
   instruments,
+  members,
   playerStateRef,
   joystickVectorRef,
   hasEntered,
@@ -47,6 +54,7 @@ export function Scene({
   nearbyInstrument,
   onNearbyInstrumentChange,
   onSelectInstrument,
+  onSelectMember,
   taikoHitPulseRef,
 }: SceneProps) {
   // PC 키보드(WASD / 방향키) 입력 상태 추적
@@ -81,6 +89,15 @@ export function Scene({
     [hasEntered, isModalOpen, onSelectInstrument]
   );
 
+  const handleSelectMember = useCallback(
+    (member: MemberConfig) => {
+      if (!hasEntered || isModalOpen || activeInstrument !== null) return;
+      setTargetPoint(null);
+      onSelectMember(member);
+    },
+    [hasEntered, isModalOpen, activeInstrument, onSelectMember]
+  );
+
   return (
     <>
       {/* 맑고 따뜻한 낮 하늘색 배경과 부드러운 원거리 안개 (넓어진 원형 광장에 맞춰 시야 거리 확장) */}
@@ -107,6 +124,21 @@ export function Scene({
           isNearby={nearbyInstrument?.id === instrument.id}
           onSelect={handleSelectInstrument}
           hitPulseRef={taikoHitPulseRef}
+        />
+      ))}
+
+      {/* members.json에 등록된 서클 NPC 멤버 4명 배치 (상태머신 + 근접 [!] 말풍선 + 추임새 연출) */}
+      {members.map((member, index) => (
+        <Npc
+          key={member.id}
+          member={member}
+          memberIndex={index}
+          route={space.routes[member.route] ?? []}
+          space={space}
+          playerStateRef={playerStateRef}
+          hasEntered={hasEntered}
+          isInteractionActive={canMove}
+          onSelect={handleSelectMember}
         />
       ))}
 
