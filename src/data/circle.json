@@ -1,0 +1,18 @@
+{
+  "name": "P.Taiko",
+  "tagline": "함께 두드리고 즐기는 지역 타이코 서클",
+  "description": "악기를 처음 잡아보는 초보자도 환영합니다! 주 1회 모여 신나게 북을 두드리고, 지역 축제와 작은 공연을 함께 준비하는 따뜻한 동아리입니다.",
+  "practiceInfo": "매주 토요일 14:00 ~ 17:00",
+  "links": [
+    {
+      "label": "인스타그램 구경하기",
+      "type": "instagram",
+      "url": "https://instagram.com/"
+    },
+    {
+      "label": "체험·가입 문의 (오픈채팅)",
+      "type": "chat",
+      "url": "https://open.kakao.com/"
+    }
+  ]
+}

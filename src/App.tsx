@@ -1,33 +1,50 @@
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import { Canvas } from '@react-three/fiber';
 import spacesData from './data/spaces.json';
 import instrumentsData from './data/instruments.json';
+import scheduleData from './data/schedule.json';
 import type { InstrumentConfig, MoveVector, PlayerState, SpaceConfig } from './types/world';
+import type { ScheduleEvent } from './types/content';
 import { audioManager } from './systems/audioManager';
 import type { TaikoHitType } from './systems/audioManager';
+import { getNextUpcomingEvent } from './utils/scheduleUtils';
+import { useScheduleEvents } from './hooks/useScheduleEvents';
 import { Scene } from './components/Scene';
 import { VirtualJoystick } from './components/ui/VirtualJoystick';
 import { LandingOverlay } from './components/ui/LandingOverlay';
 import { TaikoPlayOverlay } from './components/ui/TaikoPlayOverlay';
+import { ScheduleBanner } from './components/ui/ScheduleBanner';
+import { ScheduleCalendarModal } from './components/ui/ScheduleCalendarModal';
 
 // JSON 배열은 TypeScript가 일반 number[]로 추론하므로, 엄격한 3D 좌표 튜플 타입([x, y, z])으로 안전하게 연결
 const spaces = spacesData as unknown as SpaceConfig[];
 const instruments = instrumentsData as unknown as InstrumentConfig[];
+const fallbackScheduleEvents = scheduleData as ScheduleEvent[];
 
 /**
  * Taiko World 최상위 앱 컴포넌트
- * - 입장 화면(오디오 활성화), 3D 잔디 공원 탐색, 타이코 연주 모드, 상시 음소거 HUD를 연결합니다.
+ * - 입장 화면(오디오 활성화), 3D 잔디 공원 탐색, 상단 연주 일정 배너·캘린더, 타이코 연주 모드를 연결합니다.
  * - 플레이어 상태(위치·방향·행동)와 조이스틱 입력은 60fps 성능을 위해 useRef로 관리합니다.
  */
 export function App() {
   // MVP 1차 공간: 첫 번째 공간(잔디 공원)을 기본으로 불러옴
   const currentSpace = spaces[0];
 
-  // React useState: 화면 전환(입장 여부, 음소거, 근처 악기, 연주 모드)처럼 UI를 바꿔야 하는 상태 관리
+  // 구글 스프레드시트(VITE_SCHEDULE_CSV_URL)가 설정되어 있으면 실시간 일정을, 없으면 기본 JSON 일정을 사용
+  const { events: scheduleEvents } = useScheduleEvents(fallbackScheduleEvents);
+
+  // 오늘 날짜 기준으로 가장 가까운 예정 연주 1건 계산 (배너 및 캘린더 초기 월 표시에 사용)
+  const nextUpcomingEvent = useMemo(
+    () => getNextUpcomingEvent(scheduleEvents),
+    [scheduleEvents]
+  );
+
+  // React useState: 화면 전환(입장 여부, 음소거, 근처 악기, 연주 모드, 일정 캘린더 열림) 상태 관리
   const [hasEntered, setHasEntered] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [nearbyInstrument, setNearbyInstrument] = useState<InstrumentConfig | null>(null);
   const [activeInstrument, setActiveInstrument] = useState<InstrumentConfig | null>(null);
+  const [isScheduleOpen, setIsScheduleOpen] = useState(false);
 
   // 플레이어 상태 단일 객체: 매 프레임 업데이트되어도 React 전체가 다시 그려지지 않게 useRef로 관리
   const playerStateRef = useRef<PlayerState>({
@@ -67,10 +84,11 @@ export function App() {
 
   /**
    * 타이코 연주 모드 진입 핸들러
-   * - NPC 배경 연주 볼륨을 낮추는 덕킹을 켜고 연주 UI를 표시합니다.
+   * - 열려 있던 모달을 닫고, NPC 배경 연주 볼륨을 낮추는 덕킹을 켠 뒤 연주 UI를 표시합니다.
    */
   const handleEnterPlayMode = useCallback((instrument: InstrumentConfig) => {
     void audioManager.unlock();
+    setIsScheduleOpen(false);
     audioManager.setNpcDucking(true);
     setActiveInstrument(instrument);
   }, []);
@@ -100,6 +118,7 @@ export function App() {
   );
 
   const [spawnX, , spawnZ] = currentSpace.spawnPoint;
+  const isModalOpen = isScheduleOpen;
   const isExploring = hasEntered && activeInstrument === null;
 
   return (
@@ -120,6 +139,7 @@ export function App() {
           playerStateRef={playerStateRef}
           joystickVectorRef={joystickVectorRef}
           hasEntered={hasEntered}
+          isModalOpen={isModalOpen}
           activeInstrument={activeInstrument}
           nearbyInstrument={nearbyInstrument}
           onNearbyInstrumentChange={setNearbyInstrument}
@@ -128,14 +148,24 @@ export function App() {
         />
       </Canvas>
 
-      {/* 모바일 플로팅 가상 조이스틱 (탐색 모드일 때만 활성화) */}
+      {/* 모바일 플로팅 가상 조이스틱 (탐색 중이고 모달이 닫혀 있을 때만 활성화) */}
       <VirtualJoystick
         joystickVectorRef={joystickVectorRef}
-        disabled={!isExploring}
+        disabled={!isExploring || isModalOpen}
       />
 
       {/* 입장 전 화면 (첫 터치 시 오디오 활성화) */}
       {!hasEntered && <LandingOverlay onEnter={handleEnterWorld} />}
+
+      {/* 탐색 모드 상단 최단 연주 일정 배너 (터치 시 상세 캘린더 열림) */}
+      {isExploring && (
+        <div className="schedule-banner-wrap">
+          <ScheduleBanner
+            nextEvent={nextUpcomingEvent}
+            onOpenCalendar={() => setIsScheduleOpen(true)}
+          />
+        </div>
+      )}
 
       {/* 입장 후 상시 HUD: 우측 상단 음소거 토글 버튼 */}
       {hasEntered && (
@@ -145,12 +175,12 @@ export function App() {
           onClick={handleToggleMute}
           aria-label={isMuted ? '소리 켜기' : '소리 끄기'}
         >
-          {isMuted ? '🔇 소리 꺼짐' : '🔊 소리 켜짐'}
+          {isMuted ? '🔇 꺼짐' : '🔊 소리'}
         </button>
       )}
 
       {/* 탐색 모드에서 북 근처에 다가가면 표시되는 [연주하기] 버튼 */}
-      {isExploring && nearbyInstrument && (
+      {isExploring && !isModalOpen && nearbyInstrument && (
         <button
           type="button"
           className="play-prompt-btn"
@@ -166,6 +196,15 @@ export function App() {
           instrument={activeInstrument}
           onHit={handleTaikoHit}
           onExit={handleExitPlayMode}
+        />
+      )}
+
+      {/* 상세 월간 연주 일정 캘린더 모달 */}
+      {hasEntered && isScheduleOpen && (
+        <ScheduleCalendarModal
+          events={scheduleEvents}
+          nextEvent={nextUpcomingEvent}
+          onClose={() => setIsScheduleOpen(false)}
         />
       )}
 

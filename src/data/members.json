@@ -1,0 +1,78 @@
+[
+  {
+    "id": "m01",
+    "nickname": "돈타로",
+    "role": "오다이코 (큰 북)",
+    "illustration": "/images/characters/m01.webp",
+    "parts": {
+      "head": "head_a",
+      "outfit": "happi_red",
+      "color": "#c94632"
+    },
+    "route": "park_grass_a",
+    "profile": {
+      "experience": "타이코력 3년",
+      "personality": "에너지 넘치는 분위기 메이커",
+      "traits": "큰 북만 보면 눈이 반짝거림",
+      "favoriteTaiko": "오다이코 (큰 북)",
+      "oneLiner": "일단 한 번 크게 쳐보면 스트레스 싹 풀려요!"
+    }
+  },
+  {
+    "id": "m02",
+    "nickname": "카나",
+    "role": "시메다이코 (리듬 북)",
+    "illustration": "/images/characters/m02.webp",
+    "parts": {
+      "head": "head_b",
+      "outfit": "happi_teal",
+      "color": "#2f8f83"
+    },
+    "route": "park_grass_b",
+    "profile": {
+      "experience": "타이코력 2년",
+      "personality": "차분하지만 박자 앞에서는 칼각",
+      "traits": "걸을 때도 무의식중에 박자를 맞춤",
+      "favoriteTaiko": "시메다이코 (작은 고음 북)",
+      "oneLiner": "박치여도 괜찮아요, 같이 치다 보면 몸이 기억해요!"
+    }
+  },
+  {
+    "id": "m03",
+    "nickname": "도코",
+    "role": "나가도 다이코",
+    "illustration": "/images/characters/m03.webp",
+    "parts": {
+      "head": "head_c",
+      "outfit": "happi_ochre",
+      "color": "#d68c2b"
+    },
+    "route": "park_grass_c",
+    "profile": {
+      "experience": "타이코력 1년 6개월",
+      "personality": "다정하고 신입 챙기기 좋아하는 편",
+      "traits": "연습 끝나고 간식 추천 담당",
+      "favoriteTaiko": "나가도 다이코 (기본 중북)",
+      "oneLiner": "구경만 하러 오셔도 환영해요. 북채는 빌려드려요!"
+    }
+  },
+  {
+    "id": "m04",
+    "nickname": "바치",
+    "role": "피리 & 타이코 멀티",
+    "illustration": "/images/characters/m04.webp",
+    "parts": {
+      "head": "head_d",
+      "outfit": "happi_navy",
+      "color": "#3d5a99"
+    },
+    "route": "park_grass_d",
+    "profile": {
+      "experience": "타이코력 4년",
+      "personality": "유쾌하고 장난기 많은 아이디어 뱅크",
+      "traits": "새 리듬 패턴 만드는 걸 즐김",
+      "favoriteTaiko": "오케도 다이코 (어깨에 메는 북)",
+      "oneLiner": "우리 서클, 생각보다 훨씬 웃기고 편한 분위기예요!"
+    }
+  }
+]

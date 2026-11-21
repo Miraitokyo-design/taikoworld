@@ -19,6 +19,8 @@ interface SceneProps {
   joystickVectorRef: MutableRefObject<MoveVector>;
   /** 입장 완료 여부 (입장 전에는 이동 차단) */
   hasEntered: boolean;
+  /** 캘린더·서클 소개·프로필 등 모달이 열려 있는지 여부 (열려 있으면 이동/클릭 일시 정지) */
+  isModalOpen: boolean;
   /** 현재 연주 중인 악기 (없으면 null) */
   activeInstrument: InstrumentConfig | null;
   /** 플레이어가 가까이 다가가 있는 악기 (링 강조 표시용) */
@@ -40,6 +42,7 @@ export function Scene({
   playerStateRef,
   joystickVectorRef,
   hasEntered,
+  isModalOpen,
   activeInstrument,
   nearbyInstrument,
   onNearbyInstrumentChange,
@@ -52,7 +55,7 @@ export function Scene({
   // PC 바닥 클릭으로 지정된 목적지 상태 (DestinationMarker 표시용)
   const [targetPoint, setTargetPoint] = useState<[number, number] | null>(null);
 
-  const canMove = hasEntered && activeInstrument === null;
+  const canMove = hasEntered && !isModalOpen && activeInstrument === null;
 
   // useCallback: 불필요한 함수 재생성을 막기 위해 콜백을 기억하는 Hook
   const handleGroundClick = useCallback(
@@ -71,11 +74,11 @@ export function Scene({
 
   const handleSelectInstrument = useCallback(
     (instrument: InstrumentConfig) => {
-      if (!hasEntered) return;
+      if (!hasEntered || isModalOpen) return;
       setTargetPoint(null);
       onSelectInstrument(instrument);
     },
-    [hasEntered, onSelectInstrument]
+    [hasEntered, isModalOpen, onSelectInstrument]
   );
 
   return (
