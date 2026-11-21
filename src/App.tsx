@@ -1,10 +1,11 @@
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Canvas } from '@react-three/fiber';
 import spacesData from './data/spaces.json';
 import instrumentsData from './data/instruments.json';
 import scheduleData from './data/schedule.json';
+import circleData from './data/circle.json';
 import type { InstrumentConfig, MoveVector, PlayerState, SpaceConfig } from './types/world';
-import type { ScheduleEvent } from './types/content';
+import type { CircleInfo, ScheduleEvent } from './types/content';
 import { audioManager } from './systems/audioManager';
 import type { TaikoHitType } from './systems/audioManager';
 import { getNextUpcomingEvent } from './utils/scheduleUtils';
@@ -15,15 +16,18 @@ import { LandingOverlay } from './components/ui/LandingOverlay';
 import { TaikoPlayOverlay } from './components/ui/TaikoPlayOverlay';
 import { ScheduleBanner } from './components/ui/ScheduleBanner';
 import { ScheduleCalendarModal } from './components/ui/ScheduleCalendarModal';
+import { CircleInfoModal } from './components/ui/CircleInfoModal';
 
 // JSON 배열은 TypeScript가 일반 number[]로 추론하므로, 엄격한 3D 좌표 튜플 타입([x, y, z])으로 안전하게 연결
 const spaces = spacesData as unknown as SpaceConfig[];
 const instruments = instrumentsData as unknown as InstrumentConfig[];
 const fallbackScheduleEvents = scheduleData as ScheduleEvent[];
+const circleInfo = circleData as CircleInfo;
 
 /**
  * Taiko World 최상위 앱 컴포넌트
- * - 입장 화면(오디오 활성화), 3D 잔디 공원 탐색, 상단 연주 일정 배너·캘린더, 타이코 연주 모드를 연결합니다.
+ * - 입장 화면(오디오 활성화), 3D 잔디 공원 탐색, 상단 연주 일정 배너·캘린더,
+ *   서클 소개/문의 모달, 타이코 연주 모드를 연결합니다.
  * - 플레이어 상태(위치·방향·행동)와 조이스틱 입력은 60fps 성능을 위해 useRef로 관리합니다.
  */
 export function App() {
@@ -39,12 +43,13 @@ export function App() {
     [scheduleEvents]
   );
 
-  // React useState: 화면 전환(입장 여부, 음소거, 근처 악기, 연주 모드, 일정 캘린더 열림) 상태 관리
+  // React useState: 화면 전환(입장 여부, 음소거, 근처 악기, 연주 모드, 모달 열림) 상태 관리
   const [hasEntered, setHasEntered] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [nearbyInstrument, setNearbyInstrument] = useState<InstrumentConfig | null>(null);
   const [activeInstrument, setActiveInstrument] = useState<InstrumentConfig | null>(null);
   const [isScheduleOpen, setIsScheduleOpen] = useState(false);
+  const [isCircleOpen, setIsCircleOpen] = useState(false);
 
   // 플레이어 상태 단일 객체: 매 프레임 업데이트되어도 React 전체가 다시 그려지지 않게 useRef로 관리
   const playerStateRef = useRef<PlayerState>({
@@ -84,11 +89,12 @@ export function App() {
 
   /**
    * 타이코 연주 모드 진입 핸들러
-   * - 열려 있던 모달을 닫고, NPC 배경 연주 볼륨을 낮추는 덕킹을 켠 뒤 연주 UI를 표시합니다.
+   * - 열려 있던 모달을 모두 닫고, NPC 배경 연주 볼륨을 낮추는 덕킹을 켠 뒤 연주 UI를 표시합니다.
    */
   const handleEnterPlayMode = useCallback((instrument: InstrumentConfig) => {
     void audioManager.unlock();
     setIsScheduleOpen(false);
+    setIsCircleOpen(false);
     audioManager.setNpcDucking(true);
     setActiveInstrument(instrument);
   }, []);
@@ -118,8 +124,22 @@ export function App() {
   );
 
   const [spawnX, , spawnZ] = currentSpace.spawnPoint;
-  const isModalOpen = isScheduleOpen;
+  const isModalOpen = isScheduleOpen || isCircleOpen;
   const isExploring = hasEntered && activeInstrument === null;
+
+  // 북 근처에 있을 때 PC에서 Space 바를 눌러 바로 연주 모드로 진입할 수 있게 키보드 이벤트 연결
+  useEffect(() => {
+    if (!isExploring || isModalOpen || !nearbyInstrument) return;
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.code !== 'Space' || event.repeat) return;
+      event.preventDefault();
+      handleEnterPlayMode(nearbyInstrument);
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isExploring, isModalOpen, nearbyInstrument, handleEnterPlayMode]);
 
   return (
     <>
@@ -157,12 +177,15 @@ export function App() {
       {/* 입장 전 화면 (첫 터치 시 오디오 활성화) */}
       {!hasEntered && <LandingOverlay onEnter={handleEnterWorld} />}
 
-      {/* 탐색 모드 상단 최단 연주 일정 배너 (터치 시 상세 캘린더 열림) */}
+      {/* 탐색 모드 상단 정중앙 최단 연주 일정 배너 (터치 시 상세 캘린더 열림) */}
       {isExploring && (
         <div className="schedule-banner-wrap">
           <ScheduleBanner
             nextEvent={nextUpcomingEvent}
-            onOpenCalendar={() => setIsScheduleOpen(true)}
+            onOpenCalendar={() => {
+              setIsCircleOpen(false);
+              setIsScheduleOpen(true);
+            }}
           />
         </div>
       )}
@@ -175,18 +198,20 @@ export function App() {
           onClick={handleToggleMute}
           aria-label={isMuted ? '소리 켜기' : '소리 끄기'}
         >
-          {isMuted ? '🔇 꺼짐' : '🔊 소리'}
+          <span aria-hidden="true">{isMuted ? '🔇' : '🔊'}</span>
+          <span className="mute-toggle-label">{isMuted ? '꺼짐' : '소리'}</span>
         </button>
       )}
 
-      {/* 탐색 모드에서 북 근처에 다가가면 표시되는 [연주하기] 버튼 */}
+      {/* 탐색 모드에서 북 근처에 다가가면 표시되는 [연주하기] 버튼 (PC: Space 바로도 진입 가능) */}
       {isExploring && !isModalOpen && nearbyInstrument && (
         <button
           type="button"
           className="play-prompt-btn"
           onClick={() => handleEnterPlayMode(nearbyInstrument)}
         >
-          🥁 {nearbyInstrument.name} 연주하기
+          <span>🥁 {nearbyInstrument.name} 연주하기</span>
+          <span className="key-cap">Space</span>
         </button>
       )}
 
@@ -208,14 +233,35 @@ export function App() {
         />
       )}
 
-      {/* 탐색 모드일 때만 하단 공간 안내 배지 표시 */}
+      {/* 서클 소개 & 체험·가입 문의 링크 모달 */}
+      {hasEntered && isCircleOpen && (
+        <CircleInfoModal
+          circle={circleInfo}
+          onClose={() => setIsCircleOpen(false)}
+        />
+      )}
+
+      {/* 탐색 모드 하단 좌측 공간 안내 배지 & 하단 우측 [서클/문의] 버튼 */}
       {isExploring && (
-        <div className="space-badge">
-          <span>🌿 {currentSpace.name}</span>
-          <span className="space-badge-hint">
-            모바일: 화면 터치 조이스틱 · PC: WASD/클릭
-          </span>
-        </div>
+        <>
+          <div className="space-badge">
+            <span>🌿 {currentSpace.name}</span>
+            <span className="space-badge-hint">
+              모바일: 화면 터치 조이스틱 · PC: WASD/클릭
+            </span>
+          </div>
+
+          <button
+            type="button"
+            className="circle-info-btn"
+            onClick={() => {
+              setIsScheduleOpen(false);
+              setIsCircleOpen(true);
+            }}
+          >
+            💬 서클/문의
+          </button>
+        </>
       )}
     </>
   );

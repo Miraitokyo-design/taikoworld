@@ -83,9 +83,9 @@ export function Scene({
 
   return (
     <>
-      {/* 맑고 따뜻한 낮 하늘색 배경과 부드러운 원거리 안개 */}
+      {/* 맑고 따뜻한 낮 하늘색 배경과 부드러운 원거리 안개 (넓어진 원형 광장에 맞춰 시야 거리 확장) */}
       <color attach="background" args={['#cde9f6']} />
-      <fog attach="fog" args={['#cde9f6', 18, 36]} />
+      <fog attach="fog" args={['#cde9f6', 22, 46]} />
 
       {/* 하늘(위)과 잔디(아래)에서 은은하게 퍼지는 반구 조명 */}
       <hemisphereLight args={['#fffdf5', '#76b569', 1.1]} />

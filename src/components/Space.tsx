@@ -10,16 +10,19 @@ interface SpaceProps {
 
 /**
  * 장식용 임시 꽃의 고정 위치 목록
- * - 이동을 막지 않는 가벼운 소품으로, 광장에 따뜻한 분위기를 더해줍니다.
+ * - 1.5배 넓어진 원형 잔디 광장 가장자리 곳곳에 소박하게 배치해 따뜻한 공원 분위기를 살립니다.
  */
 const DECORATIVE_FLOWERS: Array<{ x: number; z: number; color: string }> = [
-  { x: -3.0, z: -2.4, color: '#ff8fab' },
-  { x: -2.6, z: -2.8, color: '#ffd166' },
-  { x: 3.2, z: -2.2, color: '#ffffff' },
-  { x: 3.6, z: -1.8, color: '#ff8fab' },
-  { x: -3.5, z: 2.0, color: '#ffd166' },
-  { x: 3.4, z: 2.3, color: '#ffffff' },
-  { x: 2.9, z: 2.8, color: '#ff8fab' },
+  { x: -4.2, z: -3.8, color: '#ff8fab' },
+  { x: -3.7, z: -4.3, color: '#ffd166' },
+  { x: 4.4, z: -3.5, color: '#ffffff' },
+  { x: 4.9, z: -2.9, color: '#ff8fab' },
+  { x: -4.8, z: 3.2, color: '#ffd166' },
+  { x: -4.1, z: 3.9, color: '#ffffff' },
+  { x: 4.6, z: 3.4, color: '#ffffff' },
+  { x: 3.9, z: 4.1, color: '#ff8fab' },
+  { x: 0.4, z: -6.8, color: '#ffd166' },
+  { x: -0.6, z: 6.7, color: '#ff8fab' },
 ];
 
 /**
@@ -79,19 +82,13 @@ function PlaceholderFlower({ x, z, color }: { x: number; z: number; color: strin
 
 /**
  * 잔디 공원 3D 공간을 그리는 컴포넌트
- * - spaces.json의 walkableBounds(이동 가능 경계)와 obstacles(나무 등) 데이터를 읽어 화면을 구성합니다.
- * - 잔디 바닥 클릭/터치 좌표를 받아 플레이어 이동 목적지로 전달합니다.
+ * - spaces.json의 walkableBounds(원형 또는 사각형 이동 경계)와 obstacles(나무 등)를 읽어 화면을 구성합니다.
+ * - PC 마우스 클릭 좌표를 받아 플레이어 이동 목적지로 전달합니다.
  * @param props.space - 현재 공간 설정 객체
  * @param props.onGroundClick - 바닥 클릭 시 [x, z] 좌표를 넘기는 콜백
  */
 export function Space({ space, onGroundClick }: SpaceProps) {
   const { walkableBounds, obstacles } = space;
-
-  // 이동 가능한 잔디 광장의 가로(width), 세로(depth) 크기 계산
-  const plazaWidth = walkableBounds.maxX - walkableBounds.minX;
-  const plazaDepth = walkableBounds.maxZ - walkableBounds.minZ;
-  const plazaCenterX = (walkableBounds.minX + walkableBounds.maxX) / 2;
-  const plazaCenterZ = (walkableBounds.minZ + walkableBounds.maxZ) / 2;
 
   // 장애물 중 id가 'tree_'로 시작하는 항목만 추려 나무로 배치
   const treeObstacles = obstacles.filter((obstacle) => obstacle.id.startsWith('tree_'));
@@ -110,35 +107,79 @@ export function Space({ space, onGroundClick }: SpaceProps) {
 
   return (
     <group name={space.id}>
-      {/* 공원 바깥 들판 바닥 (바깥을 눌러도 광장 경계 끝까지 자연스럽게 걸어가도록 클릭 허용) */}
+      {/* 공원 바깥을 감싸는 넓은 들판 바닥 */}
       <mesh
         rotation={[-Math.PI / 2, 0, 0]}
         position={[0, -0.04, 0]}
         onPointerDown={handleGroundPointerDown}
       >
-        <planeGeometry args={[60, 60]} />
+        <planeGeometry args={[80, 80]} />
         <meshStandardMaterial color="#87c976" roughness={0.95} />
       </mesh>
 
-      {/* 이동 가능한 잔디 광장 영역 */}
-      <mesh
-        rotation={[-Math.PI / 2, 0, 0]}
-        position={[plazaCenterX, 0, plazaCenterZ]}
-        onPointerDown={handleGroundPointerDown}
-      >
-        <planeGeometry args={[plazaWidth, plazaDepth]} />
-        <meshStandardMaterial color="#9ad983" roughness={0.95} />
-      </mesh>
+      {/* spaces.json의 walkableBounds 모양에 따라 원형 또는 사각형 잔디 광장 렌더링 */}
+      {walkableBounds.shape === 'circle' ? (
+        <>
+          {/* 이동 가능한 원형 잔디 광장 영역 */}
+          <mesh
+            rotation={[-Math.PI / 2, 0, 0]}
+            position={[walkableBounds.centerX, 0, walkableBounds.centerZ]}
+            onPointerDown={handleGroundPointerDown}
+          >
+            <circleGeometry args={[walkableBounds.radius, 64]} />
+            <meshStandardMaterial color="#9ad983" roughness={0.95} />
+          </mesh>
 
-      {/* 광장 가장자리 흙길 테두리 느낌 (바깥 테두리선) */}
-      <mesh
-        rotation={[-Math.PI / 2, 0, 0]}
-        position={[plazaCenterX, -0.02, plazaCenterZ]}
-        onPointerDown={handleGroundPointerDown}
-      >
-        <planeGeometry args={[plazaWidth + 0.6, plazaDepth + 0.6]} />
-        <meshStandardMaterial color="#d9c69e" roughness={0.95} />
-      </mesh>
+          {/* 원형 광장 바깥쪽 흙길 산책로 테두리 */}
+          <mesh
+            rotation={[-Math.PI / 2, 0, 0]}
+            position={[walkableBounds.centerX, -0.02, walkableBounds.centerZ]}
+            onPointerDown={handleGroundPointerDown}
+          >
+            <circleGeometry args={[walkableBounds.radius + 0.55, 64]} />
+            <meshStandardMaterial color="#d9c69e" roughness={0.95} />
+          </mesh>
+        </>
+      ) : (
+        <>
+          {/* 추후 사각형 공간(실내 연습실 등)을 위한 사각형 바닥 */}
+          <mesh
+            rotation={[-Math.PI / 2, 0, 0]}
+            position={[
+              (walkableBounds.minX + walkableBounds.maxX) / 2,
+              0,
+              (walkableBounds.minZ + walkableBounds.maxZ) / 2,
+            ]}
+            onPointerDown={handleGroundPointerDown}
+          >
+            <planeGeometry
+              args={[
+                walkableBounds.maxX - walkableBounds.minX,
+                walkableBounds.maxZ - walkableBounds.minZ,
+              ]}
+            />
+            <meshStandardMaterial color="#9ad983" roughness={0.95} />
+          </mesh>
+
+          <mesh
+            rotation={[-Math.PI / 2, 0, 0]}
+            position={[
+              (walkableBounds.minX + walkableBounds.maxX) / 2,
+              -0.02,
+              (walkableBounds.minZ + walkableBounds.maxZ) / 2,
+            ]}
+            onPointerDown={handleGroundPointerDown}
+          >
+            <planeGeometry
+              args={[
+                walkableBounds.maxX - walkableBounds.minX + 0.6,
+                walkableBounds.maxZ - walkableBounds.minZ + 0.6,
+              ]}
+            />
+            <meshStandardMaterial color="#d9c69e" roughness={0.95} />
+          </mesh>
+        </>
+      )}
 
       {/* spaces.json에 정의된 나무 배치 */}
       {treeObstacles.map((tree) => (

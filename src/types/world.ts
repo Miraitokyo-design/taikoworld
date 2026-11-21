@@ -5,15 +5,23 @@
 export type Vec3 = [number, number, number];
 
 /**
- * 플레이어가 이동할 수 있는 2D 바닥 경계(사각형) 타입
- * - 무거운 3D 물리 엔진 대신 X, Z 좌표 범위로 가볍게 경계를 제한합니다.
+ * 플레이어가 이동할 수 있는 2D 바닥 경계 타입 (사각형 또는 원형 지원)
+ * - 무거운 3D 물리 엔진 대신 2D 좌표 범위·반지름으로 가볍게 경계를 제한합니다.
  */
-export interface WalkableBounds {
-  minX: number;
-  maxX: number;
-  minZ: number;
-  maxZ: number;
-}
+export type WalkableBounds =
+  | {
+      shape?: 'rect';
+      minX: number;
+      maxX: number;
+      minZ: number;
+      maxZ: number;
+    }
+  | {
+      shape: 'circle';
+      centerX: number;
+      centerZ: number;
+      radius: number;
+    };
 
 /**
  * 공간 안의 장애물(북, 나무 등) 2D 원형 충돌 영역 타입

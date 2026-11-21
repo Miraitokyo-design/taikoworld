@@ -16,11 +16,11 @@ export function getDistance2D(ax: number, az: number, bx: number, bz: number): n
 }
 
 /**
- * 좌표를 이동 가능 경계(사각형) 안쪽으로 제한하는 함수
+ * 좌표를 이동 가능 경계(원형 또는 사각형) 안쪽으로 제한하는 함수
  * - 캐릭터 반지름만큼 안쪽으로 여유(margin)를 두어 발이 경계 밖으로 나가지 않게 합니다.
  * @param x - 검사할 X 좌표
  * @param z - 검사할 Z 좌표
- * @param bounds - spaces.json의 이동 가능 사각형 경계
+ * @param bounds - spaces.json의 이동 가능 경계 (원형 또는 사각형)
  * @param radius - 캐릭터 충돌 반지름
  * @returns 경계 안으로 보정된 { x, z } 좌표
  */
@@ -30,7 +30,25 @@ export function clampToWalkableBounds(
   bounds: WalkableBounds,
   radius: number = PLAYER_RADIUS
 ): { x: number; z: number } {
-  // 최소~최대 범위 안으로 값을 강제로 가둠 (Clamping)
+  // 원형 경계: 중심으로부터의 거리가 (광장 반지름 - 캐릭터 반지름)을 넘지 않도록 보정
+  if (bounds.shape === 'circle') {
+    const dx = x - bounds.centerX;
+    const dz = z - bounds.centerZ;
+    const distance = Math.hypot(dx, dz);
+    const maxRadius = Math.max(0, bounds.radius - radius);
+
+    if (distance > maxRadius && distance > 0) {
+      const ratio = maxRadius / distance;
+      return {
+        x: bounds.centerX + dx * ratio,
+        z: bounds.centerZ + dz * ratio,
+      };
+    }
+
+    return { x, z };
+  }
+
+  // 사각형 경계: 최소~최대 범위 안으로 값을 강제로 가둠 (Clamping)
   const clampedX = Math.max(bounds.minX + radius, Math.min(bounds.maxX - radius, x));
   const clampedZ = Math.max(bounds.minZ + radius, Math.min(bounds.maxZ - radius, z));
 

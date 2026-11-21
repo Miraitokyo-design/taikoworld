@@ -63,7 +63,7 @@ export function TaikoPlayOverlay({ instrument, onHit, onExit }: TaikoPlayOverlay
     [onHit]
   );
 
-  // PC 키보드 단축키(F/J: 돈, D/K: 카, ESC: 나가기) 등록
+  // PC 키보드 단축키(F/J: 돈, D/K: 카, Space/ESC: 월드로 돌아가기) 등록
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       // 키를 꾹 누르고 있을 때 OS 자동 반복 입력이 연타로 들어오는 것 방지
@@ -75,7 +75,7 @@ export function TaikoPlayOverlay({ instrument, onHit, onExit }: TaikoPlayOverlay
       } else if (event.code === 'KeyD' || event.code === 'KeyK') {
         event.preventDefault();
         triggerHit('ka');
-      } else if (event.code === 'Escape') {
+      } else if (event.code === 'Space' || event.code === 'Escape') {
         event.preventDefault();
         onExit();
       }
@@ -107,11 +107,8 @@ export function TaikoPlayOverlay({ instrument, onHit, onExit }: TaikoPlayOverlay
 
   return (
     <div className="taiko-play-overlay" data-ui-interactive="true">
-      {/* 상단 헤더: 월드로 돌아가기 버튼 + 악기 이름 */}
+      {/* 상단 중앙: 현재 연주 중인 악기 이름 */}
       <div className="taiko-play-header">
-        <button type="button" className="taiko-exit-btn" onClick={onExit}>
-          ← 월드로 돌아가기
-        </button>
         <div className="taiko-play-title">🥁 {instrument.name}</div>
       </div>
 
@@ -152,6 +149,12 @@ export function TaikoPlayOverlay({ instrument, onHit, onExit }: TaikoPlayOverlay
           </div>
         </div>
       </div>
+
+      {/* [연주하기] 버튼과 완전히 동일한 하단 중앙 위치 + Space 단축키로 통일 */}
+      <button type="button" className="taiko-exit-btn" onClick={onExit}>
+        <span>← 월드로 돌아가기</span>
+        <span className="key-cap">Space</span>
+      </button>
 
       {/* 하단 조작 안내 */}
       <div className="taiko-play-guide">
