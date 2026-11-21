@@ -29,7 +29,7 @@ MVP(1차 목표)는 가볍게 만들되, 나중에 공간·멤버·멀티플레�
 
 ## 3. 기술 스택 & 제약 사항
 - **스택**: Vite + TypeScript + React / Three.js + `@react-three/fiber` + `@react-three/drei` / Howler.js(또는 Web Audio API)
-- **배포**: Cloudflare Pages (GitHub 연동 자동 배포)
+- **배포**: Vercel (GitHub 연동 자동 배포)
 - **상태관리**: 처음엔 React 기본 State로 시작하고, Zustand는 진짜 필요해질 때만 도입한다.
 - **성능 예산 준수** (모바일 기준):
   - 첫 로딩 총 용량 10MB 이하, `devicePixelRatio` 최대 2 제한, 블롭 그림자 등 가벼운 그림자 우선

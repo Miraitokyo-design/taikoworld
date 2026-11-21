@@ -18,16 +18,16 @@ npm run preview  # 빌드된 배포 결과물 로컬 미리보기
 
 ---
 
-## Cloudflare Pages 배포 설정 (GitHub 연동 자동 배포)
+## Vercel 배포 설정 (GitHub 연동 자동 배포)
 
-Cloudflare Pages에서 이 GitHub 저장소를 연결할 때 아래 값을 그대로 입력하면 됩니다.
+Vercel은 이 프로젝트의 `vercel.json`과 `package.json`을 자동으로 인식합니다.
 
-| 설정 항목 | 입력 값 |
+| 설정 항목 | 자동 인식 값 |
 | --- | --- |
-| **Framework preset** | `None` (또는 `Vite`) |
-| **Build command** | `npm run build` |
-| **Build output directory** | `dist` |
-| **Root directory** | `/` (비워 두어도 됨) |
-| **Node.js version** (선택) | `20` 이상 (기본값으로 동작, 필요 시 환경변수 `NODE_VERSION=22` 지정) |
+| **Framework Preset** | `Vite` |
+| **Build Command** | `npm run build` |
+| **Output Directory** | `dist` |
+| **Root Directory** | `./` (기본값 유지) |
+| **Node.js Version** | `22.x` 이상 (`package.json`의 `engines` 설정 기준) |
 
-- `main` 브랜치에 `git push`할 때마다 Cloudflare Pages가 자동으로 새 버전을 빌드해 배포합니다.
+- `main` 브랜치에 `git push`할 때마다 Vercel이 자동으로 새 버전을 빌드해 배포합니다.
