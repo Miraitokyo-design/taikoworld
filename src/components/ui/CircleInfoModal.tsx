@@ -4,6 +4,8 @@ import type { CircleInfo, CircleLink } from '../../types/content';
 interface CircleInfoModalProps {
   /** circle.json에서 불러온 서클 소개 및 문의 링크 데이터 */
   circle: CircleInfo;
+  /** 메뉴로 돌아가기 콜백 (메뉴에서 진입했을 때 표시) */
+  onBackToMenu?: () => void;
   /** 모달 닫기 콜백 */
   onClose: () => void;
 }
@@ -42,7 +44,11 @@ function isSafeExternalUrl(url: string): boolean {
  * @param props.circle - 서클 정보 객체
  * @param props.onClose - 모달 닫기 핸들러
  */
-export function CircleInfoModal({ circle, onClose }: CircleInfoModalProps) {
+export function CircleInfoModal({
+  circle,
+  onBackToMenu,
+  onClose,
+}: CircleInfoModalProps) {
   // QR코드 이미지 파일이 아직 public/images/에 없을 때 깔끔한 안내 박스를 띄우기 위한 상태
   const [qrLoadFailed, setQrLoadFailed] = useState(false);
 
@@ -80,14 +86,25 @@ export function CircleInfoModal({ circle, onClose }: CircleInfoModalProps) {
             <div className="modal-kicker">🥁 타이코 서클 소개</div>
             <h2 className="modal-title">{circle.name}</h2>
           </div>
-          <button
-            type="button"
-            className="modal-close-btn"
-            onClick={onClose}
-            aria-label="서클 소개 창 닫기"
-          >
-            ✕
-          </button>
+          <div className="modal-header-actions">
+            {onBackToMenu && (
+              <button
+                type="button"
+                className="modal-back-btn"
+                onClick={onBackToMenu}
+              >
+                ← 메뉴
+              </button>
+            )}
+            <button
+              type="button"
+              className="modal-close-btn"
+              onClick={onClose}
+              aria-label="서클 소개 창 닫기"
+            >
+              ✕
+            </button>
+          </div>
         </div>
 
         {/* 서클 한 줄 슬로건 */}

@@ -1,13 +1,13 @@
 import { useCallback, useState } from 'react';
 import type { MutableRefObject } from 'react';
-import type { MemberConfig } from '../types/content';
+import type { MemberConfig, SongConfig, TaikoTrackDefinition } from '../types/content';
 import type { InstrumentConfig, MoveVector, PlayerState, SpaceConfig } from '../types/world';
 import { useKeyboardInput } from '../hooks/useKeyboardInput';
 import { resolvePlayerPosition } from '../systems/collision';
 import { Space } from './Space';
 import { Taiko } from './Taiko';
 import { Player } from './Player';
-import { Npc } from './Npc';
+import { NpcGroup } from './NpcGroup';
 import { DestinationMarker } from './DestinationMarker';
 
 interface SceneProps {
@@ -17,6 +17,10 @@ interface SceneProps {
   instruments: InstrumentConfig[];
   /** 공간에서 활동할 서클 NPC 멤버 목록 */
   members: MemberConfig[];
+  /** NPC 합주에서 사용할 타이코 곡 & 악보 목록 */
+  songs: SongConfig[];
+  /** taikoTracks.json 기반 악기별 사운드/색상 맵 */
+  tracksById: Record<string, TaikoTrackDefinition>;
   /** 플레이어의 위치·방향·행동을 담은 단일 상태 ref */
   playerStateRef: MutableRefObject<PlayerState>;
   /** 모바일 플로팅 조이스틱 방향 벡터 ref */
@@ -31,6 +35,8 @@ interface SceneProps {
   nearbyInstrument: InstrumentConfig | null;
   /** 근처 악기 변경 시 상위에 알리는 콜백 */
   onNearbyInstrumentChange: (instrument: InstrumentConfig | null) => void;
+  /** 가장 가까운 근접 NPC가 바뀔 때 상위에 알리는 콜백 (PC E 키 연동용) */
+  onNearbyMemberChange: (member: MemberConfig | null) => void;
   /** 북을 직접 클릭해 연주 모드로 들어갈 때 호출되는 콜백 */
   onSelectInstrument: (instrument: InstrumentConfig) => void;
   /** 3D 공간에서 NPC를 클릭/터치했을 때 프로필 카드를 여는 콜백 */
@@ -46,6 +52,8 @@ export function Scene({
   space,
   instruments,
   members,
+  songs,
+  tracksById,
   playerStateRef,
   joystickVectorRef,
   hasEntered,
@@ -53,6 +61,7 @@ export function Scene({
   activeInstrument,
   nearbyInstrument,
   onNearbyInstrumentChange,
+  onNearbyMemberChange,
   onSelectInstrument,
   onSelectMember,
   taikoHitPulseRef,
@@ -127,20 +136,18 @@ export function Scene({
         />
       ))}
 
-      {/* members.json에 등록된 서클 NPC 멤버 4명 배치 (상태머신 + 근접 [!] 말풍선 + 추임새 연출) */}
-      {members.map((member, index) => (
-        <Npc
-          key={member.id}
-          member={member}
-          memberIndex={index}
-          route={space.routes[member.route] ?? []}
-          space={space}
-          playerStateRef={playerStateRef}
-          hasEntered={hasEntered}
-          isInteractionActive={canMove}
-          onSelect={handleSelectMember}
-        />
-      ))}
+      {/* members.json 기반 서클 NPC 그룹 (랜덤 산책 + 바로 옆 3인 공통곡 합주 + [!] 말풍선 + 추임새) */}
+      <NpcGroup
+        members={members}
+        songs={songs}
+        tracksById={tracksById}
+        space={space}
+        playerStateRef={playerStateRef}
+        hasEntered={hasEntered}
+        isInteractionActive={canMove}
+        onNearbyMemberChange={onNearbyMemberChange}
+        onSelectMember={handleSelectMember}
+      />
 
       {/* 게스트 플레이어 캐릭터 (이동 + 2D 충돌 + 악기 근접 감지 + 카메라 제어) */}
       <Player

@@ -16,6 +16,8 @@ interface ScheduleCalendarModalProps {
   events: ScheduleEvent[];
   /** 오늘 기준 가장 가까운 예정 일정 (초기 표시 월/선택 날짜 결정용) */
   nextEvent: ScheduleEvent | null;
+  /** 메뉴로 돌아가기 콜백 (메뉴에서 진입했을 때 표시) */
+  onBackToMenu?: () => void;
   /** 모달 닫기 콜백 */
   onClose: () => void;
 }
@@ -28,6 +30,7 @@ interface ScheduleCalendarModalProps {
 export function ScheduleCalendarModal({
   events,
   nextEvent,
+  onBackToMenu,
   onClose,
 }: ScheduleCalendarModalProps) {
   const todayKey = useMemo(() => getTodayDateKey(), []);
@@ -114,14 +117,25 @@ export function ScheduleCalendarModal({
             <div className="modal-kicker">🥁 P.Taiko 공연 &amp; 체험 안내</div>
             <h2 className="modal-title">연주 일정 캘린더</h2>
           </div>
-          <button
-            type="button"
-            className="modal-close-btn"
-            onClick={onClose}
-            aria-label="일정 창 닫기"
-          >
-            ✕
-          </button>
+          <div className="modal-header-actions">
+            {onBackToMenu && (
+              <button
+                type="button"
+                className="modal-back-btn"
+                onClick={onBackToMenu}
+              >
+                ← 메뉴
+              </button>
+            )}
+            <button
+              type="button"
+              className="modal-close-btn"
+              onClick={onClose}
+              aria-label="일정 창 닫기"
+            >
+              ✕
+            </button>
+          </div>
         </div>
 
         {/* 월 이동 네비게이션 */}

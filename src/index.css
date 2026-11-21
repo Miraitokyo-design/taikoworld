@@ -158,6 +158,31 @@ body,
 /* ================================
    상시 HUD 버튼 (음소거 / 연주하기)
    ================================ */
+/* 좌측 상단 [☰ 메뉴] 버튼 (우측 음소거 버튼과 대칭 배치) */
+.menu-toggle-btn {
+  position: fixed;
+  top: 16px;
+  left: 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 9px 14px;
+  border: none;
+  border-radius: 999px;
+  background: rgba(255, 252, 245, 0.94);
+  color: #3d352e;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(61, 53, 46, 0.15);
+  z-index: 35;
+}
+
+.menu-toggle-btn:active {
+  transform: scale(0.96);
+}
+
 .mute-toggle-btn {
   position: fixed;
   top: 16px;
@@ -449,8 +474,19 @@ body,
   pointer-events: none;
 }
 
-/* 좁은 모바일 화면에서는 우측 음소거 버튼을 아이콘 전용으로 줄여 중앙 배너 폭을 넉넉히 확보 */
+/* 좁은 모바일 화면에서는 좌/우 상단 버튼을 아이콘 원형으로 줄여 중앙 배너 폭을 넉넉히 확보 */
 @media (max-width: 540px) {
+  .menu-toggle-btn {
+    left: 12px;
+    width: 38px;
+    height: 38px;
+    padding: 0;
+  }
+
+  .menu-toggle-label {
+    display: none;
+  }
+
   .mute-toggle-btn {
     right: 12px;
     width: 38px;
@@ -463,7 +499,7 @@ body,
   }
 
   .schedule-banner-wrap {
-    max-width: calc(100vw - 120px);
+    max-width: calc(100vw - 116px);
   }
 
   /* 좁은 모바일 화면에서는 하단 좌측 긴 조작 힌트를 숨겨 우측 [서클/문의] 버튼과 겹치지 않게 정리 */
@@ -559,6 +595,30 @@ body,
   justify-content: space-between;
   gap: 12px;
   margin-bottom: 14px;
+}
+
+.modal-header-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+/* 메뉴에서 들어온 하위 화면에서 다시 메뉴바로 돌아가는 버튼 */
+.modal-back-btn {
+  height: 34px;
+  padding: 0 11px;
+  border: none;
+  border-radius: 999px;
+  background: #f1e9dc;
+  color: #5c5045;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.modal-back-btn:active {
+  transform: scale(0.95);
 }
 
 .modal-kicker {
@@ -1063,6 +1123,13 @@ body,
   box-shadow: 0 8px 18px rgba(61, 53, 46, 0.16);
 }
 
+.member-avatar-frame--small {
+  width: 52px;
+  height: 52px;
+  border-width: 2.5px;
+  box-shadow: 0 4px 10px rgba(61, 53, 46, 0.12);
+}
+
 .member-portrait-img,
 .member-portrait-svg {
   width: 100%;
@@ -1238,4 +1305,1084 @@ body,
     opacity: 0;
     transform: translateY(-32px) scale(0.96);
   }
+}
+
+/* [!] 말풍선 우측 상단에 붙는 PC용 E 단축키 배지 (터치 모바일에서는 자동 숨김) */
+.npc-alert-key {
+  position: absolute;
+  top: -8px;
+  right: -12px;
+  padding: 2px 5px;
+  border-radius: 6px;
+  background: #3d352e;
+  color: #fffcf5;
+  font-size: 10px;
+  font-weight: 800;
+  line-height: 1.1;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.22);
+}
+
+.modal-key-hint {
+  margin-top: 14px;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 600;
+  color: #8c7b6b;
+}
+
+.key-cap--dark {
+  background: #efe7d8;
+  border-color: #d6c8b0;
+  color: #4f4338;
+}
+
+@media (hover: none) and (pointer: coarse) {
+  .npc-alert-key,
+  .modal-key-hint {
+    display: none;
+  }
+}
+
+/* ================================
+   통합 메뉴바 모달 & 멤버 도감 모달
+   ================================ */
+.menu-modal-card,
+.directory-modal-card {
+  max-width: 400px;
+}
+
+.menu-list,
+.directory-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.menu-item-btn,
+.directory-item-btn {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 12px 14px;
+  border: 1.5px solid #efe6d7;
+  border-radius: 16px;
+  background: #ffffff;
+  color: #3d352e;
+  text-align: left;
+  cursor: pointer;
+  transition: transform 0.12s ease, border-color 0.12s ease, background 0.12s ease;
+}
+
+.menu-item-btn:active,
+.directory-item-btn:active {
+  transform: scale(0.98);
+  background: #fff8ee;
+  border-color: #e4c7a4;
+}
+
+.menu-item-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  background: #fff3e6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.menu-item-body,
+.directory-item-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.menu-item-title {
+  font-size: 14px;
+  font-weight: 800;
+  color: #3d352e;
+}
+
+.menu-item-desc {
+  font-size: 12px;
+  font-weight: 500;
+  color: #7c6f63;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.menu-item-arrow,
+.directory-item-arrow {
+  flex-shrink: 0;
+  color: #9b8c7e;
+  font-size: 14px;
+}
+
+.menu-item-pill {
+  flex-shrink: 0;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: #f2e8d7;
+  color: #5c5045;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.menu-guide-box {
+  margin-top: 14px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: #f7f2e7;
+}
+
+.menu-guide-title {
+  font-size: 12px;
+  font-weight: 800;
+  color: #7c6b5b;
+  margin-bottom: 6px;
+}
+
+.menu-guide-list {
+  margin: 0;
+  padding-left: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: #5c5045;
+}
+
+.menu-guide-list code {
+  padding: 1px 5px;
+  border-radius: 5px;
+  background: #eae0ce;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.directory-subtitle {
+  margin: 0 0 12px;
+  font-size: 13px;
+  color: #7a6d61;
+}
+
+.directory-item-top {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.directory-item-name {
+  font-size: 15px;
+  font-weight: 800;
+  color: #3d352e;
+}
+
+.directory-item-role {
+  padding: 2px 7px;
+  border-radius: 999px;
+  color: #ffffff;
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.directory-item-meta {
+  font-size: 12px;
+  font-weight: 600;
+  color: #847465;
+}
+
+/* 멤버 프로필 내 연주 가능 곡 칩 목록 */
+.member-song-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 2px;
+}
+
+.member-song-chip {
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: #fff3e6;
+  border: 1px solid #f0cfa9;
+  color: #8c4a27;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+/* ================================
+   멀티 레이어 타이코 악보 모달 (가로 타임라인 + 재생 바)
+   ================================ */
+.songbook-modal-card {
+  max-width: min(94vw, 680px);
+}
+
+.song-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.song-tab-btn {
+  flex: 1;
+  min-width: 100px;
+  padding: 8px 10px;
+  border: 1.5px solid #eadfcd;
+  border-radius: 12px;
+  background: #ffffff;
+  color: #5c5045;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.song-tab-btn.is-active {
+  background: #d94b38;
+  border-color: #d94b38;
+  color: #ffffff;
+}
+
+.song-info-box {
+  padding: 14px;
+  border-radius: 16px;
+  background: #f7f2e7;
+  margin-bottom: 12px;
+}
+
+.song-info-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.song-info-title {
+  font-size: 16px;
+  font-weight: 800;
+  color: #3d352e;
+}
+
+.song-info-subtitle {
+  font-size: 12px;
+  font-weight: 600;
+  color: #8c4a27;
+  margin-top: 2px;
+}
+
+.song-difficulty-badge {
+  flex-shrink: 0;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: #fff3e2;
+  border: 1px solid #ecc69b;
+  color: #9b5122;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.song-info-desc {
+  margin: 0 0 10px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: #52473d;
+}
+
+.song-meta-row {
+  display: flex;
+  gap: 12px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #6b5848;
+  margin-bottom: 10px;
+}
+
+.song-players-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.song-players-label {
+  font-size: 11px;
+  font-weight: 800;
+  color: #847465;
+}
+
+.song-players-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.song-player-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: #ffffff;
+  border: 1.5px solid #d9c69e;
+  font-size: 12px;
+  font-weight: 700;
+  color: #3d352e;
+}
+
+.song-player-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.song-controls {
+  margin-bottom: 12px;
+}
+
+.song-play-btn {
+  width: 100%;
+  padding: 12px 16px;
+  border: none;
+  border-radius: 14px;
+  background: #d94b38;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 6px 14px rgba(217, 75, 56, 0.28);
+}
+
+.song-play-btn.is-playing {
+  background: #3d352e;
+  box-shadow: 0 6px 14px rgba(61, 53, 46, 0.24);
+}
+
+.song-play-btn:active {
+  transform: scale(0.98);
+}
+
+.song-score-section {
+  border-top: 1px solid #ece3d3;
+  padding-top: 12px;
+}
+
+.song-score-heading {
+  font-size: 12px;
+  font-weight: 800;
+  color: #7c6b5b;
+  margin-bottom: 8px;
+}
+
+.song-score-grid {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 5px;
+}
+
+.score-cell {
+  height: 32px;
+  border-radius: 9px;
+  font-size: 11px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1.5px solid transparent;
+  transition: transform 0.08s ease, box-shadow 0.08s ease;
+}
+
+.score-cell.is-rest {
+  background: #f3ede1;
+  color: #b2a495;
+}
+
+.score-cell.is-don {
+  background: #fde5df;
+  color: #b93b2d;
+}
+
+.score-cell.is-ka {
+  background: #e2f5f2;
+  color: #1f766b;
+}
+
+.score-cell.is-u {
+  background: #fef1d8;
+  color: #a66718;
+}
+
+.score-cell.is-sa {
+  background: #ece9fb;
+  color: #5a48a8;
+}
+
+.score-cell.is-fue {
+  background: #e3f0fd;
+  color: #2563a8;
+}
+
+.score-cell.is-combo {
+  background: linear-gradient(135deg, #fde5df 0%, #e3f0fd 100%);
+  color: #3d352e;
+  font-size: 9.5px;
+}
+
+.score-cell.is-current {
+  transform: scale(1.1);
+  border-color: #3d352e;
+  box-shadow: 0 4px 10px rgba(61, 53, 46, 0.25);
+  z-index: 2;
+}
+
+.song-score-legend {
+  margin: 8px 0 0;
+  font-size: 11px;
+  font-weight: 600;
+  color: #8c7b6b;
+  text-align: center;
+}
+
+/* 멀티 레이어 타임라인 컨테이너 */
+.layer-score-section {
+  border-top: 1px solid #ece3d3;
+  padding-top: 12px;
+}
+
+.layer-score-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.layer-timeline-wrapper {
+  display: flex;
+  border: 1.5px solid #e7dbc7;
+  border-radius: 16px;
+  background: #ffffff;
+  overflow: hidden;
+}
+
+/* 좌측 고정 악기 트랙 헤더 열 */
+.layer-track-labels {
+  flex-shrink: 0;
+  width: 108px;
+  background: #faf5eb;
+  border-right: 1.5px solid #e7dbc7;
+  display: flex;
+  flex-direction: column;
+  z-index: 3;
+}
+
+.layer-ruler-corner {
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 800;
+  color: #8c7b6b;
+  border-bottom: 1px solid #ece3d3;
+}
+
+.layer-track-label {
+  height: 44px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 0 6px 0 0;
+  border-bottom: 1px solid #f0e8da;
+}
+
+.layer-track-label:last-child {
+  border-bottom: none;
+}
+
+.layer-track-label.is-muted {
+  opacity: 0.45;
+}
+
+.layer-track-bar {
+  width: 5px;
+  height: 26px;
+  border-radius: 0 4px 4px 0;
+  flex-shrink: 0;
+}
+
+.layer-track-name {
+  flex: 1;
+  min-width: 0;
+  font-size: 12px;
+  font-weight: 800;
+  color: #3d352e;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.layer-mute-btn {
+  width: 24px;
+  height: 24px;
+  border: none;
+  border-radius: 7px;
+  background: #efe7d8;
+  font-size: 11px;
+  cursor: pointer;
+  flex-shrink: 0;
+  padding: 0;
+}
+
+/* 우측 가로 스크롤 타임라인 영역 */
+.layer-timeline-scroll {
+  flex: 1;
+  overflow-x: auto;
+  overflow-y: hidden;
+  touch-action: pan-x pan-y;
+  -webkit-overflow-scrolling: touch;
+}
+
+.layer-timeline-inner {
+  position: relative;
+}
+
+/* 재생 시 좌우로 이동하는 세로 플레이헤드 바 */
+.layer-playhead-bar {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  background: rgba(217, 75, 56, 0.14);
+  border-left: 2.5px solid #d94b38;
+  pointer-events: none;
+  transition: transform 0.08s linear;
+  z-index: 2;
+}
+
+.layer-ruler-row {
+  display: flex;
+  height: 28px;
+  background: #f8f2e7;
+  border-bottom: 1px solid #ece3d3;
+}
+
+.layer-ruler-cell {
+  width: 40px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 700;
+  color: #9b8c7e;
+  border-left: 1px solid #f0e8da;
+}
+
+.layer-ruler-cell.is-measure-start {
+  border-left: 2px solid #d8c6aa;
+  color: #6b5848;
+  font-weight: 800;
+}
+
+.layer-ruler-cell.is-current {
+  color: #d94b38;
+  font-weight: 900;
+}
+
+.layer-steps-row {
+  display: flex;
+  height: 44px;
+  border-bottom: 1px solid #f0e8da;
+}
+
+.layer-steps-row:last-child {
+  border-bottom: none;
+}
+
+.layer-steps-row.is-muted {
+  opacity: 0.35;
+}
+
+.layer-step-cell {
+  width: 40px;
+  height: 44px;
+  flex-shrink: 0;
+  padding: 4px 2px;
+  border: none;
+  border-left: 1px solid #f3ede2;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.layer-step-cell.is-rest {
+  cursor: default;
+}
+
+.layer-step-cell.is-measure-start {
+  border-left: 2px solid #e2d3ba;
+}
+
+.layer-rest-dot {
+  color: #cfc4b4;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.layer-note-chip {
+  width: 34px;
+  height: 28px;
+  border-radius: 8px;
+  color: #ffffff;
+  font-size: 10.5px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 6px rgba(45, 34, 24, 0.16);
+  transition: transform 0.08s ease, filter 0.08s ease;
+}
+
+.layer-step-cell.is-hitting .layer-note-chip {
+  transform: scale(1.16);
+  filter: brightness(1.12);
+  box-shadow: 0 4px 12px rgba(217, 75, 56, 0.42);
+}
+
+/* ================================
+   타이코의 종류와 역사 안내 모달
+   ================================ */
+.guide-modal-card {
+  max-width: 460px;
+}
+
+.guide-intro {
+  margin: 0 0 12px;
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: #5c5045;
+}
+
+.guide-tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.guide-tab-btn {
+  padding: 10px 12px;
+  border: 1.5px solid #eadfcd;
+  border-radius: 12px;
+  background: #ffffff;
+  color: #5c5045;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.guide-tab-btn.is-active {
+  background: #d94b38;
+  border-color: #d94b38;
+  color: #ffffff;
+}
+
+.guide-list,
+.guide-history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.guide-instrument-card {
+  padding: 13px 14px;
+  border-radius: 14px;
+  background: #faf5eb;
+  border-left: 5px solid #c94632;
+}
+
+.guide-instrument-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.guide-instrument-name {
+  font-size: 16px;
+  font-weight: 900;
+  color: #3d352e;
+  margin-right: 6px;
+}
+
+.guide-instrument-reading {
+  font-size: 12px;
+  font-weight: 700;
+  color: #8c7b6b;
+}
+
+.guide-sample-btn {
+  padding: 5px 10px;
+  border: none;
+  border-radius: 999px;
+  background: #ffffff;
+  color: #3d352e;
+  font-size: 11px;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(61, 53, 46, 0.12);
+}
+
+.guide-sample-btn:active {
+  transform: scale(0.95);
+}
+
+.guide-instrument-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-bottom: 6px;
+}
+
+.guide-tag {
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #ffffff;
+  border: 1px solid #e7dbc7;
+  font-size: 11px;
+  font-weight: 700;
+  color: #6b5848;
+}
+
+.guide-instrument-role {
+  font-size: 12.5px;
+  font-weight: 800;
+  color: #8c4a27;
+  margin-bottom: 4px;
+}
+
+.guide-instrument-desc {
+  margin: 0;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: #52473d;
+}
+
+.guide-history-card {
+  padding: 13px 15px;
+  border-radius: 14px;
+  background: #faf5eb;
+  border: 1px solid #ece2cf;
+}
+
+.guide-history-era {
+  font-size: 11px;
+  font-weight: 800;
+  color: #c94632;
+  margin-bottom: 3px;
+}
+
+.guide-history-title {
+  font-size: 14.5px;
+  font-weight: 800;
+  color: #3d352e;
+  margin-bottom: 5px;
+}
+
+.guide-history-desc {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.55;
+  color: #52473d;
+}
+
+.guide-edit-notice {
+  margin: 12px 0 0;
+  font-size: 11px;
+  line-height: 1.45;
+  color: #8c7b6b;
+  text-align: center;
+}
+
+/* 지역 타이코 단체 소개 카드 (転太鼓舞, 鶴亀太鼓 등) */
+.guide-groups-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.guide-group-card {
+  padding: 15px 16px;
+  border-radius: 16px;
+  background: #faf5eb;
+  border: 1.5px solid #eadfcd;
+}
+
+.guide-group-affiliation {
+  display: inline-block;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: #fdeae2;
+  color: #b93b2d;
+  font-size: 11px;
+  font-weight: 800;
+  margin-bottom: 6px;
+}
+
+.guide-group-title-row {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.guide-group-name {
+  font-size: 18px;
+  font-weight: 900;
+  color: #3d352e;
+}
+
+.guide-group-reading {
+  font-size: 12px;
+  font-weight: 700;
+  color: #8c7b6b;
+}
+
+.guide-group-tagline {
+  font-size: 13px;
+  font-weight: 800;
+  color: #8c4a27;
+  margin-bottom: 6px;
+}
+
+.guide-group-desc {
+  margin: 0 0 10px;
+  font-size: 13px;
+  line-height: 1.55;
+  color: #52473d;
+}
+
+.guide-group-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+/* ================================
+   직접 작곡하기 (Composer) UI 스타일
+   ================================ */
+.song-mode-tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.song-mode-btn {
+  padding: 10px 12px;
+  border: 1.5px solid #eadfcd;
+  border-radius: 12px;
+  background: #ffffff;
+  color: #5c5045;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.song-mode-btn.is-active {
+  background: #3d352e;
+  border-color: #3d352e;
+  color: #fffcf5;
+}
+
+.composer-toast {
+  margin-bottom: 10px;
+  padding: 9px 12px;
+  border-radius: 12px;
+  background: #e9f6ef;
+  border: 1px solid #b5e0c8;
+  color: #1f6b47;
+  font-size: 12.5px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.song-view-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px dashed #e2d5bf;
+}
+
+.song-sub-btn {
+  padding: 7px 11px;
+  border: 1px solid #dfd2bc;
+  border-radius: 10px;
+  background: #ffffff;
+  color: #4f4338;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.song-sub-btn.is-danger {
+  color: #c94632;
+  border-color: #f0c5bc;
+  background: #fff6f4;
+}
+
+.composer-panel {
+  padding: 13px 14px;
+  border-radius: 16px;
+  background: #f7f2e7;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.composer-row {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: 10px;
+}
+
+@media (max-width: 540px) {
+  .composer-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+.composer-field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.composer-label {
+  font-size: 11.5px;
+  font-weight: 800;
+  color: #7c6b5b;
+}
+
+.composer-input {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1.5px solid #dfd2bc;
+  border-radius: 10px;
+  background: #ffffff;
+  color: #3d352e;
+  font-size: 13px;
+  font-weight: 700;
+  font-family: inherit;
+}
+
+.composer-inline-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.composer-measure-btns {
+  display: flex;
+  gap: 6px;
+}
+
+.composer-chip-btn {
+  padding: 5px 10px;
+  border: 1.5px solid #dfd2bc;
+  border-radius: 999px;
+  background: #ffffff;
+  color: #5c5045;
+  font-size: 11.5px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.composer-chip-btn.is-active {
+  background: #d94b38;
+  border-color: #d94b38;
+  color: #ffffff;
+}
+
+.composer-tracks-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.composer-track-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.composer-track-chip {
+  padding: 5px 10px;
+  border-radius: 999px;
+  border: 1.5px solid #d9c69e;
+  background: #ffffff;
+  color: #3d352e;
+  font-size: 11.5px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.composer-track-chip.is-included {
+  color: #ffffff;
+}
+
+.song-controls-bar {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.composer-action-btns {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr 0.8fr;
+  gap: 6px;
+}
+
+.composer-action-btn {
+  padding: 9px 10px;
+  border: 1.5px solid #e2d5bf;
+  border-radius: 12px;
+  background: #ffffff;
+  color: #3d352e;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.composer-action-btn.is-primary {
+  background: #2f8f83;
+  border-color: #2f8f83;
+  color: #ffffff;
+}
+
+.composer-action-btn:active {
+  transform: scale(0.97);
+}
+
+.layer-step-cell.is-editable {
+  cursor: pointer;
+}
+
+.layer-step-cell.is-editable:hover {
+  background: rgba(217, 75, 56, 0.07);
 }

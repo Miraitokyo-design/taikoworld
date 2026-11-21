@@ -1,0 +1,98 @@
+[
+  {
+    "id": "fue",
+    "shortName": "笛",
+    "fullName": "笛 (시노부에 · 피리)",
+    "category": "wind",
+    "color": "#2f74c0",
+    "summary": "전체 멜로디를 연주하는 대나무 피리 (4개 음계: レ·ミ·ソ·ラ)",
+    "notes": ["レ", "ミ", "ソ", "ラ"],
+    "audioFiles": {
+      "レ": "/audio/taiko/fue_re.mp3",
+      "ミ": "/audio/taiko/fue_mi.mp3",
+      "ソ": "/audio/taiko/fue_so.mp3",
+      "ラ": "/audio/taiko/fue_ra.mp3"
+    }
+  },
+  {
+    "id": "shime",
+    "shortName": "締め",
+    "fullName": "締め (시메다이코)",
+    "category": "floor_stand",
+    "color": "#238a7c",
+    "summary": "바닥에 台(받침대)를 두고 치며 전체 곡의 템포를 리드 (높고 빠른 음: う·さ)",
+    "notes": ["う", "さ"],
+    "audioFiles": {
+      "う": "/audio/taiko/shime_u.mp3",
+      "さ": "/audio/taiko/shime_sa.mp3"
+    }
+  },
+  {
+    "id": "shaku_2",
+    "shortName": "尺(2)",
+    "fullName": "尺 2 (샤쿠 2 · 어깨북)",
+    "category": "shoulder",
+    "color": "#d68c2b",
+    "summary": "어깨에 매고 양손으로 치는 타이코 — 기본 3음(う·さ·かっ)",
+    "notes": ["う", "さ", "かっ"],
+    "audioFiles": {
+      "う": "/audio/taiko/shaku2_u.mp3",
+      "さ": "/audio/taiko/shaku2_sa.mp3",
+      "かっ": "/audio/taiko/shaku2_ka.mp3"
+    }
+  },
+  {
+    "id": "shaku_4",
+    "shortName": "尺(4)",
+    "fullName": "尺 4 (샤쿠 4 · 어깨북)",
+    "category": "shoulder",
+    "color": "#e07a2f",
+    "summary": "어깨에 매고 양손으로 치는 타이코 — 기본 3음(う·さ·かっ)",
+    "notes": ["う", "さ", "かっ"],
+    "audioFiles": {
+      "う": "/audio/taiko/shaku4_u.mp3",
+      "さ": "/audio/taiko/shaku4_sa.mp3",
+      "かっ": "/audio/taiko/shaku4_ka.mp3"
+    }
+  },
+  {
+    "id": "shaku_6",
+    "shortName": "尺(6)",
+    "fullName": "尺 6 (샤쿠 6 · 어깨북)",
+    "category": "shoulder",
+    "color": "#c96228",
+    "summary": "어깨에 매고 양손으로 치는 타이코 — 기본 3음(う·さ·かっ)",
+    "notes": ["う", "さ", "かっ"],
+    "audioFiles": {
+      "う": "/audio/taiko/shaku6_u.mp3",
+      "さ": "/audio/taiko/shaku6_sa.mp3",
+      "かっ": "/audio/taiko/shaku6_ka.mp3"
+    }
+  },
+  {
+    "id": "oki",
+    "shortName": "沖",
+    "fullName": "沖 (오키 · 큰 어깨북)",
+    "category": "shoulder",
+    "color": "#c94632",
+    "summary": "어깨에 매는 큰 타이코 — 묵직하고 웅장한 저음(どん·かっ)",
+    "notes": ["どん", "かっ"],
+    "audioFiles": {
+      "どん": "/audio/taiko/oki_don.mp3",
+      "かっ": "/audio/taiko/oki_ka.mp3"
+    }
+  },
+  {
+    "id": "chappa",
+    "shortName": "チャッパ",
+    "fullName": "チャッパ (차파 · 미니 심벌즈)",
+    "category": "hand",
+    "color": "#8c4fb8",
+    "summary": "양손에 들고 맞부딪혀 쨍쨍~ 울리는 금속 타악기(チャン·チッ)",
+    "notes": ["チャン", "チッ"],
+    "audioFiles": {
+      "チャン": "/audio/taiko/chappa_chan.mp3",
+      "チッ": "/audio/taiko/chappa_chi.mp3"
+    }
+  }
+]

@@ -46,7 +46,6 @@ export interface CircleInfo {
 
 /**
  * 모듈식 NPC 캐릭터 외형 파츠 타입
- * - 공통 뼈대 위에 머리·의상·색상을 조합해 멤버별 개성을 표현합니다.
  */
 export interface MemberParts {
   head: string;
@@ -78,5 +77,112 @@ export interface MemberConfig {
   illustration: string;
   parts: MemberParts;
   route: string;
+  /** 이 멤버가 합주할 수 있는 곡 ID 목록 (songs.json의 id와 연결) */
+  playableSongs: string[];
   profile: MemberProfile;
+}
+
+/**
+ * 악보 레이어에서 사용하는 악기 ID 타입
+ * - 尺(2,4,6), 沖, 締め, 笛, チャッパ + 추후 서서 치는 타이코(standing_*) 확장 가능
+ */
+export type TrackInstrumentId =
+  | 'shaku_2'
+  | 'shaku_4'
+  | 'shaku_6'
+  | 'oki'
+  | 'shime'
+  | 'fue'
+  | 'chappa'
+  | string;
+
+/**
+ * 악기 연주 자세/분류 타입 (추후 서서 치는 타이코 확장을 위한 카테고리)
+ */
+export type InstrumentCategory = 'shoulder' | 'floor_stand' | 'standing' | 'wind' | 'hand';
+
+/**
+ * 레이어 악보에 등록되는 개별 타이코/악기 정의 — src/data/taikoTracks.json과 1:1 대응
+ */
+export interface TaikoTrackDefinition {
+  id: TrackInstrumentId;
+  /** 짧은 트랙 라벨 (예: "尺(4)", "沖", "締め", "笛", "チャッパ") */
+  shortName: string;
+  /** 전체 이름 */
+  fullName: string;
+  /** 연주 자세/분류 */
+  category: InstrumentCategory;
+  /** 레이어 좌측 헤더 강조 색상 */
+  color: string;
+  /** 합주에서의 역할 한 줄 설명 */
+  summary: string;
+  /** 이 악기가 악보에서 사용하는 기본 음 기호 목록 (추후 직접 작곡 시 선택 팔레트로 활용) */
+  notes: string[];
+  /** 실제 음원 교체 시 음 기호별 .mp3 파일 경로 맵 (선택) */
+  audioFiles?: Record<string, string>;
+}
+
+/**
+ * 한 곡 안의 개별 악기 레이어(트랙) 타입
+ * - 추후 직접 작곡(Composer) 모드에서도 동일한 구조를 그대로 편집·저장할 수 있습니다.
+ */
+export interface SongLayer {
+  instrumentId: TrackInstrumentId;
+  /** 박자(8분음표) 단위의 음표 배열 ("-"는 쉼표) */
+  steps: string[];
+}
+
+/**
+ * 멀티 레이어 타이코 곡 설정 타입 — src/data/songs.json과 1:1 대응
+ */
+export interface SongConfig {
+  id: string;
+  title: string;
+  subtitle: string;
+  bpm: number;
+  difficulty: '입문' | '보통' | '중급';
+  minPlayers: number;
+  /** 한 마디당 스텝 수 (기본 8 = 4/4박자 8분음표 기준) */
+  stepsPerMeasure: number;
+  /** 곡 전체 길이 (스텝 수) */
+  totalSteps: number;
+  description: string;
+  /** 이 곡에서 실제로 연주되는 타이코/악기 레이어 목록만 포함 */
+  layers: SongLayer[];
+}
+
+/**
+ * "타이코의 종류와 역사" 안내 데이터 타입 — src/data/taikoGuide.json과 1:1 대응
+ */
+export interface TaikoGuideInstrumentItem {
+  id: string;
+  trackId?: TrackInstrumentId;
+  name: string;
+  reading: string;
+  posture: string;
+  role: string;
+  soundsLabel: string;
+  description: string;
+  sampleNote?: string;
+}
+
+/**
+ * 지역 타이코 단체 소개 항목 타입 — src/data/taikoGuide.json과 1:1 대응
+ */
+export interface LocalTaikoGroupItem {
+  id: string;
+  name: string;
+  reading: string;
+  /** 소속 대학/지역 정보 (예: "조형대학 타이코 서클") */
+  affiliation: string;
+  tagline: string;
+  description: string;
+  tags: string[];
+}
+
+export interface TaikoGuideData {
+  intro: string;
+  editNotice: string;
+  instruments: TaikoGuideInstrumentItem[];
+  localGroups: LocalTaikoGroupItem[];
 }

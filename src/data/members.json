@@ -2,7 +2,7 @@
   {
     "id": "m01",
     "nickname": "돈타로",
-    "role": "오다이코 (큰 북)",
+    "role": "沖 (큰 어깨북)",
     "illustration": "/images/characters/m01.webp",
     "parts": {
       "head": "head_a",
@@ -10,19 +10,20 @@
       "color": "#c94632"
     },
     "route": "park_grass_a",
+    "playableSongs": ["song_matsuri", "song_daichi"],
     "profile": {
       "experience": "타이코력 3년",
       "status": "OO대학 3학년",
       "personality": "에너지 넘치는 분위기 메이커",
       "traits": "큰 북만 보면 눈이 반짝거림",
-      "favoriteTaiko": "오다이코 (큰 북)",
+      "favoriteTaiko": "沖 (오키 · 큰 어깨북)",
       "oneLiner": "일단 한 번 크게 쳐보면 스트레스 싹 풀려요!"
     }
   },
   {
     "id": "m02",
     "nickname": "카나",
-    "role": "시메다이코 (리듬 북)",
+    "role": "締め (리드 북)",
     "illustration": "/images/characters/m02.webp",
     "parts": {
       "head": "head_b",
@@ -30,19 +31,20 @@
       "color": "#2f8f83"
     },
     "route": "park_grass_b",
+    "playableSongs": ["song_matsuri", "song_kaze", "song_daichi"],
     "profile": {
       "experience": "타이코력 2년",
       "status": "OO대학 2학년",
       "personality": "차분하지만 박자 앞에서는 칼각",
       "traits": "걸을 때도 무의식중에 박자를 맞춤",
-      "favoriteTaiko": "시메다이코 (작은 고음 북)",
+      "favoriteTaiko": "締め (시메다이코)",
       "oneLiner": "박치여도 괜찮아요, 같이 치다 보면 몸이 기억해요!"
     }
   },
   {
     "id": "m03",
     "nickname": "도코",
-    "role": "나가도 다이코",
+    "role": "尺(4) 어깨북",
     "illustration": "/images/characters/m03.webp",
     "parts": {
       "head": "head_c",
@@ -50,19 +52,20 @@
       "color": "#d68c2b"
     },
     "route": "park_grass_c",
+    "playableSongs": ["song_matsuri", "song_kaze", "song_daichi"],
     "profile": {
       "experience": "타이코력 1년 6개월",
       "status": "OO대학 1학년",
       "personality": "다정하고 신입 챙기기 좋아하는 편",
       "traits": "연습 끝나고 간식 추천 담당",
-      "favoriteTaiko": "나가도 다이코 (기본 중북)",
+      "favoriteTaiko": "尺 (샤쿠 · 어깨북)",
       "oneLiner": "구경만 하러 오셔도 환영해요. 북채는 빌려드려요!"
     }
   },
   {
     "id": "m04",
     "nickname": "바치",
-    "role": "피리 & 타이코 멀티",
+    "role": "笛 (피리)",
     "illustration": "/images/characters/m04.webp",
     "parts": {
       "head": "head_d",
@@ -70,13 +73,56 @@
       "color": "#3d5a99"
     },
     "route": "park_grass_d",
+    "playableSongs": ["song_matsuri", "song_kaze"],
     "profile": {
       "experience": "타이코력 4년",
       "status": "OO대학 25년 졸",
       "personality": "유쾌하고 장난기 많은 아이디어 뱅크",
-      "traits": "새 리듬 패턴 만드는 걸 즐김",
-      "favoriteTaiko": "오케도 다이코 (어깨에 메는 북)",
+      "traits": "새 피리 선율과 리듬 패턴 만드는 걸 즐김",
+      "favoriteTaiko": "笛 (시노부에 · 피리)",
       "oneLiner": "우리 서클, 생각보다 훨씬 웃기고 편한 분위기예요!"
+    }
+  },
+  {
+    "id": "m05",
+    "nickname": "챠피",
+    "role": "チャッパ (미니 심벌즈)",
+    "illustration": "/images/characters/m05.webp",
+    "parts": {
+      "head": "head_b",
+      "outfit": "happi_purple",
+      "color": "#8c4fb8"
+    },
+    "route": "park_grass_a",
+    "playableSongs": ["song_matsuri", "song_kaze"],
+    "profile": {
+      "experience": "타이코력 2년",
+      "status": "OO대학 2학년",
+      "personality": "밝고 리액션이 큰 응원 단장 타입",
+      "traits": "추임새 타이밍을 기가 막히게 잡음",
+      "favoriteTaiko": "チャッパ (차파)",
+      "oneLiner": "쨍쨍~ 차파 소리 하나로 축제 분위기가 확 살아나요!"
+    }
+  },
+  {
+    "id": "m06",
+    "nickname": "로쿠",
+    "role": "尺(6) 어깨북",
+    "illustration": "/images/characters/m06.webp",
+    "parts": {
+      "head": "head_c",
+      "outfit": "happi_green",
+      "color": "#4c8f46"
+    },
+    "route": "park_grass_d",
+    "playableSongs": ["song_matsuri", "song_daichi", "song_kaze"],
+    "profile": {
+      "experience": "타이코력 5년",
+      "status": "OO대학 24년 졸",
+      "personality": "든든하고 후배들에게 친절한 베테랑",
+      "traits": "어깨북 자세 교정을 알기 쉽게 알려줌",
+      "favoriteTaiko": "尺(6) (샤쿠 6)",
+      "oneLiner": "처음엔 어색해도 한 곡 완주하고 나면 짜릿해요!"
     }
   }
 ]
