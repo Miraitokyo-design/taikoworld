@@ -1,9 +1,13 @@
 [
   {
     "id": "taiko_nagado_01",
-    "name": "나가도 다이코",
+    "name": "타이코",
     "modelPath": "/models/instruments/inst_taiko_nagado.glb",
-    "position": [0, 0, -1],
+    "position": [
+      0,
+      0,
+      -1
+    ],
     "interactRadius": 1.8,
     "sounds": {
       "don": "/audio/taiko/nagado_don.mp3",

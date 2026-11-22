@@ -4,6 +4,8 @@ import type { CircleInfo, CircleLink } from '../../types/content';
 interface CircleInfoModalProps {
   /** circle.json에서 불러온 서클 소개 및 문의 링크 데이터 */
   circle: CircleInfo;
+  /** siteTexts.json에서 불러온 상단 소제목 문구 */
+  kickerText: string;
   /** 메뉴로 돌아가기 콜백 (메뉴에서 진입했을 때 표시) */
   onBackToMenu?: () => void;
   /** 모달 닫기 콜백 */
@@ -46,6 +48,7 @@ function isSafeExternalUrl(url: string): boolean {
  */
 export function CircleInfoModal({
   circle,
+  kickerText,
   onBackToMenu,
   onClose,
 }: CircleInfoModalProps) {
@@ -84,7 +87,7 @@ export function CircleInfoModal({
         {/* 모달 헤더 */}
         <div className="modal-header">
           <div>
-            <div className="modal-kicker">🥁 타이코 서클 소개</div>
+            <div className="modal-kicker">{kickerText}</div>
             <h2 className="modal-title">{circle.name}</h2>
           </div>
           <div className="modal-header-actions">

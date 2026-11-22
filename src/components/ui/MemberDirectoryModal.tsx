@@ -1,9 +1,11 @@
 import { useEffect } from 'react';
-import type { MemberConfig } from '../../types/content';
+import type { MemberConfig, SiteTextsConfig } from '../../types/content';
 import { getTaikoGroupById } from '../../utils/characterAppearance';
 import { MemberAvatar } from './MemberProfileModal';
 
 interface MemberDirectoryModalProps {
+  /** siteTexts.json에서 불러온 멤버 도감 제목·안내 문구 */
+  texts: SiteTextsConfig['modals'];
   /** members.json 또는 구글 시트에서 불러온 전체 서클 멤버 목록 */
   members: MemberConfig[];
   /** 캐릭터 일러스트 카드를 선택했을 때 상세 프로필 카드를 여는 콜백 */
@@ -21,6 +23,7 @@ interface MemberDirectoryModalProps {
  * - 일러스트 카드를 누르면 해당 멤버의 상세 프로필 카드(MemberProfileModal)가 열립니다.
  */
 export function MemberDirectoryModal({
+  texts,
   members,
   onSelectMember,
   onBackToMenu,
@@ -52,8 +55,8 @@ export function MemberDirectoryModal({
       >
         <div className="modal-header">
           <div>
-            <div className="modal-kicker">👥 P.Taiko 멤버 도감</div>
-            <h2 className="modal-title">서클 멤버</h2>
+            <div className="modal-kicker">{texts.memberDirectoryKicker}</div>
+            <h2 className="modal-title">{texts.memberDirectoryTitle}</h2>
           </div>
           <div className="modal-header-actions">
             {onBackToMenu && (
@@ -76,9 +79,7 @@ export function MemberDirectoryModal({
           </div>
         </div>
 
-        <p className="directory-subtitle">
-          캐릭터 일러스트를 눌러 세부 프로필을 확인해 보세요!
-        </p>
+        <p className="directory-subtitle">{texts.memberDirectorySubtitle}</p>
 
         {/* 한 화면에 최대한 많은 멤버를 한눈에 보여주는 일러스트 중심 컴팩트 그리드 */}
         <div className="directory-grid">

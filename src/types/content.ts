@@ -379,6 +379,50 @@ export interface WorldEnvironmentConfig {
 }
 
 /**
+ * 입장 화면·메인 HUD·메뉴 이름 등 사이트 전반의 한글 UI 문구 설정 — src/data/siteTexts.json과 1:1 대응
+ * - 코드를 열지 않고 siteTexts.json 1개 파일만 수정해 메뉴명과 안내 문구를 바꿀 수 있습니다.
+ */
+export interface SiteTextsConfig {
+  landing: {
+    badge: string;
+    title: string;
+    descriptionLine1: string;
+    descriptionLine2: string;
+    enterButton: string;
+    audioNote: string;
+  };
+  hud: {
+    menuButton: string;
+    customizeButton: string;
+    circleButton: string;
+    controlHint: string;
+    ensembleJoinSuffix: string;
+  };
+  menu: {
+    kicker: string;
+    title: string;
+    scheduleTitle: string;
+    scheduleFallbackDesc: string;
+    membersTitle: string;
+    membersDesc: string;
+    songsTitle: string;
+    songsDesc: string;
+    taikoGuideTitle: string;
+    taikoGuideDesc: string;
+    circleTitle: string;
+    circleDesc: string;
+    environmentHeading: string;
+    soundHeading: string;
+  };
+  modals: {
+    memberDirectoryKicker: string;
+    memberDirectoryTitle: string;
+    memberDirectorySubtitle: string;
+    circleKicker: string;
+  };
+}
+
+/**
  * "타이코의 종류와 역사" 안내 데이터 타입 — src/data/taikoGuide.json과 1:1 대응
  */
 export interface TaikoGuideInstrumentItem {

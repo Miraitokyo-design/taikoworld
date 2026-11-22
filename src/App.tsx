@@ -10,6 +10,7 @@ import taikoTracksData from './data/taikoTracks.json';
 import taikoGuideData from './data/taikoGuide.json';
 import themesData from './data/themes.json';
 import worldEnvironmentsData from './data/worldEnvironments.json';
+import siteTextsData from './data/siteTexts.json';
 import type {
   GroupHideoutConfig,
   InstrumentConfig,
@@ -24,6 +25,7 @@ import type {
   MemberConfig,
   ScheduleEvent,
   SeasonThemeCatalog,
+  SiteTextsConfig,
   SongConfig,
   TaikoGuideData,
   TaikoTrackDefinition,
@@ -106,6 +108,7 @@ const taikoTracks = taikoTracksData as unknown as TaikoTrackDefinition[];
 const taikoGuide = taikoGuideData as TaikoGuideData;
 const seasonCatalog = themesData as unknown as SeasonThemeCatalog;
 const worldEnvironments = worldEnvironmentsData as WorldEnvironmentConfig[];
+const siteTexts = siteTextsData as SiteTextsConfig;
 
 /** 사용자가 선택한 기본 배경 테마를 브라우저에 기억하는 키 */
 const ENV_STORAGE_KEY = 'taikoworld_world_env_v1';
@@ -618,7 +621,9 @@ export function App() {
       />
 
       {/* 입장 전 화면 (첫 터치 시 오디오 활성화) */}
-      {!hasEntered && <LandingOverlay onEnter={handleEnterWorld} />}
+      {!hasEntered && (
+        <LandingOverlay texts={siteTexts.landing} onEnter={handleEnterWorld} />
+      )}
 
       {/* 탐색 모드 상단 좌측 [☰ 메뉴] 버튼 */}
       {showWorldHud && (
@@ -632,7 +637,7 @@ export function App() {
           aria-label="메뉴 열기"
         >
           <span aria-hidden="true">☰</span>
-          <span className="menu-toggle-label">메뉴</span>
+          <span className="menu-toggle-label">{siteTexts.hud.menuButton}</span>
         </button>
       )}
 
@@ -727,7 +732,7 @@ export function App() {
           }}
         >
           <span>
-            🥁 「{nearbyEnsemble.songTitle.split(' (')[0]}」 합주 참가하기
+            🥁 「{nearbyEnsemble.songTitle.split(' (')[0]}」 {siteTexts.hud.ensembleJoinSuffix}
           </span>
           <span className="key-cap">E</span>
         </button>
@@ -763,6 +768,7 @@ export function App() {
         {/* 통합 메뉴바 모달 */}
         {hasEntered && isMenuOpen && (
           <MenuModal
+            texts={siteTexts.menu}
             nextEvent={nextUpcomingEvent}
             songCount={songs.length + customSongs.length}
             environments={worldEnvironments}
@@ -820,6 +826,7 @@ export function App() {
         {/* 전체 서클 멤버 도감 모달 */}
         {hasEntered && isMemberDirectoryOpen && (
           <MemberDirectoryModal
+            texts={siteTexts.modals}
             members={members}
             onSelectMember={(member) => {
               setIsMemberDirectoryOpen(false);
@@ -858,10 +865,11 @@ export function App() {
           />
         )}
 
-        {/* 서클 소개 & 대학교 홈페이지 · 인스타그램 QR 모달 */}
+        {/* 서클 소개 & 대학교 홈페이지 · 인스타그램/사이트 QR 모달 */}
         {hasEntered && isCircleOpen && (
           <CircleInfoModal
             circle={circleInfo}
+            kickerText={siteTexts.modals.circleKicker}
             onBackToMenu={openedFromMenu ? handleBackToMenu : undefined}
             onClose={closeAllModals}
           />
@@ -902,9 +910,7 @@ export function App() {
                 ? ` · ${deployedSeasonTheme.emoji} ${deployedSeasonTheme.name}`
                 : ''}
             </span>
-            <span className="space-badge-hint">
-              모바일: 화면 터치 조이스틱 · PC: WASD · E(멤버·아지트) · Space(연주)
-            </span>
+            <span className="space-badge-hint">{siteTexts.hud.controlHint}</span>
           </div>
 
           <div className="bottom-right-actions">
@@ -918,7 +924,7 @@ export function App() {
                 setIsCustomizing(true);
               }}
             >
-              🎨 꾸미기
+              {siteTexts.hud.customizeButton}
             </button>
 
             <button
@@ -929,7 +935,7 @@ export function App() {
                 setIsCircleOpen(true);
               }}
             >
-              💬 서클/문의
+              {siteTexts.hud.circleButton}
             </button>
           </div>
         </>

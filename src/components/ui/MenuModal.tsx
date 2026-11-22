@@ -2,11 +2,14 @@ import { useEffect } from 'react';
 import type {
   ScheduleEvent,
   SeasonThemeConfig,
+  SiteTextsConfig,
   WorldEnvironmentConfig,
 } from '../../types/content';
 import { formatShortDate } from '../../utils/scheduleUtils';
 
 interface MenuModalProps {
+  /** siteTexts.json에서 불러온 메뉴 항목 이름·설명 문구 */
+  texts: SiteTextsConfig['menu'];
   /** 가장 가까운 예정 연주 1건 (메뉴 항목 보조 안내용) */
   nextEvent: ScheduleEvent | null;
   /** 등록된 타이코 곡 수 */
@@ -47,6 +50,7 @@ interface MenuModalProps {
  * - 시즌 테마(크리스마스·졸업·입학·오봉 등)는 운영자 일괄 배포로 적용되므로 메뉴에서 제외합니다.
  */
 export function MenuModal({
+  texts,
   nextEvent,
   songCount,
   environments,
@@ -97,8 +101,8 @@ export function MenuModal({
       >
         <div className="modal-header">
           <div>
-            <div className="modal-kicker">🌿 P.Taiko 3D 가상공간</div>
-            <h2 className="modal-title">메뉴</h2>
+            <div className="modal-kicker">{texts.kicker}</div>
+            <h2 className="modal-title">{texts.title}</h2>
           </div>
           <button
             type="button"
@@ -110,18 +114,18 @@ export function MenuModal({
           </button>
         </div>
 
-        {/* 핵심 메뉴 항목 목록 */}
+        {/* 핵심 메뉴 항목 목록 (문구는 src/data/siteTexts.json에서 일괄 관리) */}
         <div className="menu-list">
           <button type="button" className="menu-item-btn" onClick={onOpenSchedule}>
             <span className="menu-item-icon" aria-hidden="true">
               📅
             </span>
             <span className="menu-item-body">
-              <span className="menu-item-title">연주 일정 캘린더</span>
+              <span className="menu-item-title">{texts.scheduleTitle}</span>
               <span className="menu-item-desc">
                 {nextEvent
                   ? `다음 연주: ${formatShortDate(nextEvent.date)} ${nextEvent.title}`
-                  : '월간 공연 및 체험 일정 확인'}
+                  : texts.scheduleFallbackDesc}
               </span>
             </span>
             <span className="menu-item-arrow" aria-hidden="true">
@@ -134,10 +138,8 @@ export function MenuModal({
               👥
             </span>
             <span className="menu-item-body">
-              <span className="menu-item-title">멤버 정보</span>
-              <span className="menu-item-desc">
-                캐릭터 일러스트로 서클 멤버 프로필 구경하기
-              </span>
+              <span className="menu-item-title">{texts.membersTitle}</span>
+              <span className="menu-item-desc">{texts.membersDesc}</span>
             </span>
             <span className="menu-item-arrow" aria-hidden="true">
               ▸
@@ -150,11 +152,9 @@ export function MenuModal({
             </span>
             <span className="menu-item-body">
               <span className="menu-item-title">
-                곡 정보 · 레이어 악보 / 직접 작곡 ({songCount}곡)
+                {texts.songsTitle} ({songCount}곡)
               </span>
-              <span className="menu-item-desc">
-                레이어 볼륨·강약 조절 및 나만의 타이코 곡 직접 작곡하기
-              </span>
+              <span className="menu-item-desc">{texts.songsDesc}</span>
             </span>
             <span className="menu-item-arrow" aria-hidden="true">
               ▸
@@ -166,10 +166,8 @@ export function MenuModal({
               📖
             </span>
             <span className="menu-item-body">
-              <span className="menu-item-title">타이코 종류 · 지역 단체 소개</span>
-              <span className="menu-item-desc">
-                어깨북·시메·피리·차파 특징과 지역 서클(転太鼓舞·鶴亀会)
-              </span>
+              <span className="menu-item-title">{texts.taikoGuideTitle}</span>
+              <span className="menu-item-desc">{texts.taikoGuideDesc}</span>
             </span>
             <span className="menu-item-arrow" aria-hidden="true">
               ▸
@@ -181,10 +179,8 @@ export function MenuModal({
               💬
             </span>
             <span className="menu-item-body">
-              <span className="menu-item-title">서클 소개 · 문의 / 인스타 QR</span>
-              <span className="menu-item-desc">
-                정기 연습 안내, 인스타그램 QR, 대학교 홈페이지
-              </span>
+              <span className="menu-item-title">{texts.circleTitle}</span>
+              <span className="menu-item-desc">{texts.circleDesc}</span>
             </span>
             <span className="menu-item-arrow" aria-hidden="true">
               ▸
@@ -195,7 +191,7 @@ export function MenuModal({
           <div className="menu-sound-card">
             <div className="menu-theme-head">
               <span className="menu-sound-heading" style={{ marginBottom: 0 }}>
-                🗺️ 배경 테마
+                {texts.environmentHeading}
               </span>
               {deployedSeasonTheme.id !== 'default' && (
                 <span className="menu-theme-status">
@@ -221,7 +217,7 @@ export function MenuModal({
 
           {/* 세분화된 소리 & 볼륨 설정 (직접 연주 vs NPC 합주) */}
           <div className="menu-sound-card">
-            <div className="menu-sound-heading">🔊 소리 · 볼륨 설정</div>
+            <div className="menu-sound-heading">{texts.soundHeading}</div>
             <div className="menu-sound-rows">
               <div className="sound-channel-box">
                 <button

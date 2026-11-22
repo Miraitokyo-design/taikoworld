@@ -1,7 +1,7 @@
 [
   {
     "id": "m01",
-    "nickname": "돈타로",
+    "nickname": "どん",
     "role": "沖 (큰 어깨북)",
     "illustration": "/images/characters/m01.webp",
     "appearance": {
@@ -35,7 +35,7 @@
   },
   {
     "id": "m02",
-    "nickname": "카나",
+    "nickname": "まひ",
     "role": "締め (리드 북)",
     "illustration": "/images/characters/m02.webp",
     "appearance": {
@@ -69,7 +69,7 @@
   },
   {
     "id": "m03",
-    "nickname": "도코",
+    "nickname": "はち",
     "role": "尺(4) 어깨북",
     "illustration": "/images/characters/m03.webp",
     "appearance": {
@@ -103,7 +103,7 @@
   },
   {
     "id": "m04",
-    "nickname": "바치",
+    "nickname": "ぐっさん",
     "role": "笛 (피리)",
     "illustration": "/images/characters/m04.webp",
     "appearance": {
@@ -137,7 +137,7 @@
   },
   {
     "id": "m05",
-    "nickname": "챠피",
+    "nickname": "龍",
     "role": "チャッパ (미니 심벌즈)",
     "illustration": "/images/characters/m05.webp",
     "appearance": {
@@ -159,7 +159,7 @@
       }
     },
     "route": "park_grass_a",
-    "playableSongs": ["song_matsuri", "song_kaze"],
+    "playableSongs": ["song_matsuri", "song_kaze", "song_carol_taiko"],
     "profile": {
       "experience": "타이코력 2년",
       "status": "조형대학 2학년",
@@ -171,7 +171,7 @@
   },
   {
     "id": "m06",
-    "nickname": "로쿠",
+    "nickname": "勇魚",
     "role": "尺(6) 어깨북",
     "illustration": "/images/characters/m06.webp",
     "appearance": {

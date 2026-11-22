@@ -1,0 +1,39 @@
+{
+  "landing": {
+    "badge": "🥁 Taiko World",
+    "title": "Taiko World",
+    "descriptionLine1": "따뜻한 잔디 공원을 돌아다니며",
+    "descriptionLine2": "직접 타이코를 두드려 보세요!",
+    "enterButton": "타이코 월드 입장",
+    "audioNote": "🔊 입장 시 북 연주 소리가 활성화됩니다"
+  },
+  "hud": {
+    "menuButton": "메뉴",
+    "customizeButton": "🎨 꾸미기",
+    "circleButton": "💬 서클/문의",
+    "controlHint": "모바일: 화면 터치 조이스틱 · PC: WASD · E(멤버·아지트·합주) · Space(연주)",
+    "ensembleJoinSuffix": "합주 참가하기"
+  },
+  "menu": {
+    "kicker": "🌿 Taiko 3D 가상공간",
+    "title": "메뉴",
+    "scheduleTitle": "연주 일정 캘린더",
+    "scheduleFallbackDesc": "월간 공연 및 체험 일정 확인",
+    "membersTitle": "멤버 정보",
+    "membersDesc": "캐릭터 일러스트로 서클 멤버 프로필 구경하기",
+    "songsTitle": "곡 정보 · 레이어 악보 / 직접 작곡",
+    "songsDesc": "레이어 볼륨·강약 조절 및 나만의 타이코 곡 직접 작곡하기",
+    "taikoGuideTitle": "타이코 종류 · 지역 단체 소개",
+    "taikoGuideDesc": "어깨북·시메·피리·차파 특징과 지역 서클(転太鼓舞·鶴亀会)",
+    "circleTitle": "서클 소개 · 문의 / 인스타 QR",
+    "circleDesc": "정기 연습 안내, 인스타그램 QR, 대학교 홈페이지",
+    "environmentHeading": "🗺️ 배경 테마",
+    "soundHeading": "🔊 소리 · 볼륨 설정"
+  },
+  "modals": {
+    "memberDirectoryKicker": "👥 멤버 도감",
+    "memberDirectoryTitle": "서클 멤버",
+    "memberDirectorySubtitle": "캐릭터 일러스트를 눌러 세부 프로필을 확인해 보세요!",
+    "circleKicker": "🥁 타이코 서클 소개"
+  }
+}

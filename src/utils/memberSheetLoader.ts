@@ -194,10 +194,12 @@ function resolvePlayableSongs(rawSongs: string, songs: SongConfig[]): string[] {
       const lowerId = song.id.toLowerCase();
       const lowerTitle = song.title.toLowerCase();
       const shortTitle = lowerTitle.split(' (')[0].trim();
+      const firstWord = shortTitle.split(/\s+/)[0] ?? '';
       return (
         lowerId === lowerToken ||
         lowerTitle.includes(lowerToken) ||
-        lowerToken.includes(shortTitle)
+        lowerToken.includes(shortTitle) ||
+        (firstWord.length >= 2 && lowerToken.includes(firstWord))
       );
     });
 
