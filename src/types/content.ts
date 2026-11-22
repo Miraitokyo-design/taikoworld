@@ -42,6 +42,8 @@ export interface CircleInfo {
   links: CircleLink[];
   /** 인스타그램 QR코드를 표시할 네모박스 설정 (선택) */
   instagramQr?: CircleQrInfo;
+  /** 이 사이트(Taiko World) 공유용 QR코드를 표시할 네모박스 설정 (선택) */
+  siteQr?: CircleQrInfo;
 }
 
 /**

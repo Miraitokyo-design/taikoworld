@@ -981,17 +981,24 @@ body,
   text-align: right;
 }
 
-/* 인스타그램 QR코드 네모박스 영역 */
-.circle-qr-section {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+/* 인스타그램 QR & 이 사이트 QR 나란히 2칸 배치 영역 */
+.circle-qr-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
   margin-bottom: 18px;
 }
 
+.circle-qr-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
 .circle-qr-box {
-  width: 152px;
-  height: 152px;
+  width: 100%;
+  max-width: 148px;
+  aspect-ratio: 1 / 1;
   border-radius: 18px;
   background: #ffffff;
   border: 2px dashed #d9c69e;
@@ -3089,4 +3096,102 @@ body,
   color: #5c4e41;
   text-align: right;
   font-variant-numeric: tabular-nums;
+}
+
+/* ================================
+   합동 연주 참가 버튼 [E] & 참가 중 즉석 연주 미니 바
+   ================================ */
+.ensemble-join-btn {
+  position: fixed;
+  left: 50%;
+  bottom: 72px;
+  transform: translateX(-50%);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 13px 22px;
+  border: 2px solid #fff8eb;
+  border-radius: 999px;
+  background: #2f8f83;
+  color: #ffffff;
+  font-size: 15px;
+  font-weight: 800;
+  white-space: nowrap;
+  cursor: pointer;
+  box-shadow: 0 10px 24px rgba(47, 143, 131, 0.38);
+  z-index: 26;
+  animation: promptPopIn 0.18s ease-out;
+}
+
+.ensemble-join-btn:active {
+  transform: translateX(-50%) scale(0.96);
+}
+
+.ensemble-jam-bar {
+  position: fixed;
+  left: 50%;
+  bottom: 66px;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  max-width: calc(100vw - 24px);
+  border-radius: 20px;
+  background: rgba(255, 252, 245, 0.96);
+  border: 1.5px solid rgba(255, 244, 224, 0.98);
+  box-shadow: 0 12px 28px rgba(32, 26, 20, 0.22);
+  z-index: 30;
+  animation: promptPopIn 0.18s ease-out;
+}
+
+.ensemble-jam-title {
+  font-size: 12px;
+  font-weight: 800;
+  color: #2f8f83;
+}
+
+.ensemble-jam-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px;
+}
+
+.ensemble-jam-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 8px 12px;
+  border: none;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: transform 0.08s ease;
+}
+
+.ensemble-jam-btn:active {
+  transform: scale(0.94);
+}
+
+.ensemble-jam-btn--primary {
+  background: #d94b38;
+  color: #ffffff;
+}
+
+.ensemble-jam-btn--secondary {
+  background: #d68c2b;
+  color: #ffffff;
+}
+
+.ensemble-jam-btn--kakegoe {
+  background: #2f8f83;
+  color: #ffffff;
+}
+
+.ensemble-jam-btn--exit {
+  background: #efe7d8;
+  color: #4f443a;
 }

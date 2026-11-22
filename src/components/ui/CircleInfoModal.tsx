@@ -50,7 +50,8 @@ export function CircleInfoModal({
   onClose,
 }: CircleInfoModalProps) {
   // QR코드 이미지 파일이 아직 public/images/에 없을 때 깔끔한 안내 박스를 띄우기 위한 상태
-  const [qrLoadFailed, setQrLoadFailed] = useState(false);
+  const [instaQrFailed, setInstaQrFailed] = useState(false);
+  const [siteQrFailed, setSiteQrFailed] = useState(false);
 
   // ESC 키로 모달 닫기 지원
   useEffect(() => {
@@ -121,30 +122,60 @@ export function CircleInfoModal({
           <span className="circle-practice-value">{circle.practiceInfo}</span>
         </div>
 
-        {/* 인스타그램 QR코드를 넣을 수 있는 정사각형 네모박스 영역 */}
-        {circle.instagramQr && (
-          <div className="circle-qr-section">
-            <div className="circle-qr-box">
-              {!qrLoadFailed ? (
-                <img
-                  src={circle.instagramQr.imagePath}
-                  alt="P.Taiko 인스타그램 QR코드"
-                  className="circle-qr-image"
-                  onError={() => setQrLoadFailed(true)}
-                />
-              ) : (
-                <div className="circle-qr-placeholder">
-                  <span className="circle-qr-placeholder-icon" aria-hidden="true">
-                    📸
-                  </span>
-                  <span className="circle-qr-placeholder-title">인스타그램 QR</span>
-                  <span className="circle-qr-placeholder-hint">
-                    public/images/instagram-qr.png
-                  </span>
+        {/* 인스타그램 QR코드 & 이 사이트(Taiko World) QR코드 나란히 배치 */}
+        {(circle.instagramQr || circle.siteQr) && (
+          <div className="circle-qr-row">
+            {circle.instagramQr && (
+              <div className="circle-qr-card">
+                <div className="circle-qr-box">
+                  {!instaQrFailed ? (
+                    <img
+                      src={circle.instagramQr.imagePath}
+                      alt="P.Taiko 인스타그램 QR코드"
+                      className="circle-qr-image"
+                      onError={() => setInstaQrFailed(true)}
+                    />
+                  ) : (
+                    <div className="circle-qr-placeholder">
+                      <span className="circle-qr-placeholder-icon" aria-hidden="true">
+                        📸
+                      </span>
+                      <span className="circle-qr-placeholder-title">인스타그램 QR</span>
+                      <span className="circle-qr-placeholder-hint">
+                        public/images/instagram-qr.png
+                      </span>
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
-            <p className="circle-qr-caption">{circle.instagramQr.caption}</p>
+                <p className="circle-qr-caption">{circle.instagramQr.caption}</p>
+              </div>
+            )}
+
+            {circle.siteQr && (
+              <div className="circle-qr-card">
+                <div className="circle-qr-box">
+                  {!siteQrFailed ? (
+                    <img
+                      src={circle.siteQr.imagePath}
+                      alt="Taiko World 사이트 공유 QR코드"
+                      className="circle-qr-image"
+                      onError={() => setSiteQrFailed(true)}
+                    />
+                  ) : (
+                    <div className="circle-qr-placeholder">
+                      <span className="circle-qr-placeholder-icon" aria-hidden="true">
+                        🌐
+                      </span>
+                      <span className="circle-qr-placeholder-title">이 사이트 QR</span>
+                      <span className="circle-qr-placeholder-hint">
+                        public/images/site-qr.png
+                      </span>
+                    </div>
+                  )}
+                </div>
+                <p className="circle-qr-caption">{circle.siteQr.caption}</p>
+              </div>
+            )}
           </div>
         )}
 

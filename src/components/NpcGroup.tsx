@@ -3,7 +3,12 @@ import type { MutableRefObject } from 'react';
 import { useFrame } from '@react-three/fiber';
 import type { Group, Mesh } from 'three';
 import type { MemberConfig, SongConfig, TaikoTrackDefinition } from '../types/content';
-import type { PlayerAction, PlayerState, SpaceConfig } from '../types/world';
+import type {
+  NearbyEnsembleInfo,
+  PlayerAction,
+  PlayerState,
+  SpaceConfig,
+} from '../types/world';
 import { getDistance2D } from '../systems/collision';
 import { createNpcGroupState, stepNpcGroup } from '../systems/npcStateMachine';
 import { audioManager } from '../systems/audioManager';
@@ -24,14 +29,20 @@ interface NpcGroupProps {
   hasEntered: boolean;
   /** 탐색 화면이 활성화되어 NPC 상호작용(! 말풍선)을 표시할 수 있는지 여부 */
   isInteractionActive: boolean;
+  /** 플레이어가 현재 합주에 함께 참가 중인지 여부 */
+  isPlayerJoinedEnsemble: boolean;
   /** 플레이어에게 가장 가까운 근접 NPC가 바뀔 때 App에 알리는 콜백 (PC E 키 연동용) */
   onNearbyMemberChange: (member: MemberConfig | null) => void;
+  /** 플레이어가 합주 중인 그룹 옆에 다가갔거나 합주가 끝났을 때 App에 알리는 콜백 */
+  onNearbyEnsembleChange: (info: NearbyEnsembleInfo | null) => void;
   /** 가까워진 NPC를 클릭/탭했을 때 프로필 카드를 여는 콜백 */
   onSelectMember: (member: MemberConfig) => void;
 }
 
 /** 플레이어가 NPC에 가까워졌다고 판정하는 거리 (m) */
 const NPC_INTERACT_RADIUS = 2.2;
+/** 플레이어가 합주 중인 NPC 옆으로 다가가 함께 연주 참가할 수 있는 거리 (m) */
+const ENSEMBLE_JOIN_RADIUS = 3.5;
 
 /**
  * 공원의 모든 NPC 멤버들을 하나의 루프에서 통합 관리하는 컴포넌트
@@ -47,7 +58,9 @@ export function NpcGroup({
   playerStateRef,
   hasEntered,
   isInteractionActive,
+  isPlayerJoinedEnsemble,
   onNearbyMemberChange,
+  onNearbyEnsembleChange,
   onSelectMember,
 }: NpcGroupProps) {
   // 전체 NPC 그룹 런타임 상태 + 합주 상태 (단일 useRef로 60fps 관리)
@@ -68,8 +81,9 @@ export function NpcGroup({
     members.map(() => ({ current: 1 }))
   );
 
-  // 현재 [!] 말풍선이 떠 있는 가장 가까운 NPC ID
+  // 현재 [!] 말풍선이 떠 있는 가장 가까운 NPC ID 및 근접 합주 시그니처
   const lastNearbyIdRef = useRef<string | null>(null);
+  const lastEnsembleSigRef = useRef<string | null>(null);
   const [nearbyMemberId, setNearbyMemberId] = useState<string | null>(null);
 
   // 멤버별 머리 위 추임새 텍스트 상태 맵
@@ -161,6 +175,51 @@ export function NpcGroup({
       lastNearbyIdRef.current = nextNearbyId;
       setNearbyMemberId(nextNearbyId);
       onNearbyMemberChange(closestMember);
+    }
+
+    // 2-2) 합주 중인 NPC 그룹 옆에 플레이어가 접근했는지 감지 -> [E] 합주 참가하기 연동
+    let nextEnsembleInfo: NearbyEnsembleInfo | null = null;
+    if (
+      isInteractionActive &&
+      ensemble.isActive &&
+      ensemble.activeSong &&
+      ensemble.participantIndices.length > 0
+    ) {
+      let sumX = 0;
+      let sumZ = 0;
+      let minDist = Infinity;
+      for (const idx of ensemble.participantIndices) {
+        const p = npcs[idx].position;
+        sumX += p[0];
+        sumZ += p[2];
+        const d = getDistance2D(px, pz, p[0], p[2]);
+        if (d < minDist) minDist = d;
+      }
+      const centerX = sumX / ensemble.participantIndices.length;
+      const centerZ = sumZ / ensemble.participantIndices.length;
+      const distToCenter = getDistance2D(px, pz, centerX, centerZ);
+
+      if (
+        isPlayerJoinedEnsemble ||
+        minDist <= ENSEMBLE_JOIN_RADIUS ||
+        distToCenter <= ENSEMBLE_JOIN_RADIUS
+      ) {
+        nextEnsembleInfo = {
+          songId: ensemble.activeSong.id,
+          songTitle: ensemble.activeSong.title,
+          participantCount: ensemble.participantIndices.length,
+          facingRotationY: ensemble.facingRotationY,
+          center: [centerX, centerZ],
+        };
+      }
+    }
+
+    const nextEnsembleSig = nextEnsembleInfo
+      ? `${nextEnsembleInfo.songId}:${nextEnsembleInfo.participantCount}:${nextEnsembleInfo.facingRotationY.toFixed(2)}`
+      : null;
+    if (nextEnsembleSig !== lastEnsembleSigRef.current) {
+      lastEnsembleSigRef.current = nextEnsembleSig;
+      onNearbyEnsembleChange(nextEnsembleInfo);
     }
 
     // 3) 3인 이상 공통곡 합주 중 멀티 레이어 악보의 음표와 다이나믹 볼륨을 그대로 재생

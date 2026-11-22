@@ -23,7 +23,7 @@
       }
     },
     "route": "park_grass_a",
-    "playableSongs": ["song_matsuri", "song_daichi"],
+    "playableSongs": ["song_matsuri", "song_daichi", "song_carol_taiko"],
     "profile": {
       "experience": "타이코력 3년",
       "status": "조형대학 3학년",
@@ -57,7 +57,7 @@
       }
     },
     "route": "park_grass_b",
-    "playableSongs": ["song_matsuri", "song_kaze", "song_daichi"],
+    "playableSongs": ["song_matsuri", "song_kaze", "song_daichi", "song_carol_taiko"],
     "profile": {
       "experience": "타이코력 2년",
       "status": "기술대학 2학년",
@@ -91,7 +91,7 @@
       }
     },
     "route": "park_grass_c",
-    "playableSongs": ["song_matsuri", "song_kaze", "song_daichi"],
+    "playableSongs": ["song_matsuri", "song_kaze", "song_daichi", "song_carol_taiko"],
     "profile": {
       "experience": "타이코력 1년 6개월",
       "status": "조형대학 1학년",

@@ -1,17 +1,20 @@
 import { useRef } from 'react';
 import type { MutableRefObject } from 'react';
 import { useFrame } from '@react-three/fiber';
+import { Html } from '@react-three/drei';
 import { Vector3 } from 'three';
-import type { Group } from 'three';
+import type { Group, Mesh } from 'three';
 import type { CharacterAppearance } from '../types/content';
 import type {
   GroupHideoutConfig,
   InstrumentConfig,
   MoveVector,
+  NearbyEnsembleInfo,
   PlayerAction,
   PlayerState,
   SpaceConfig,
 } from '../types/world';
+import { getTaikoGroupById } from '../utils/characterAppearance';
 import { getDistance2D, resolvePlayerPosition } from '../systems/collision';
 import { getKeyboardDirection, lerpAngle } from '../systems/inputController';
 import { Character } from './Character';
@@ -35,6 +38,12 @@ interface PlayerProps {
   customizeRotationOffset: number;
   /** 꾸미기 프리뷰 중 연주('play') 포즈 테스트 여부 */
   isCustomizePlaying: boolean;
+  /** 플레이어가 현재 참가 중인 NPC 합주 정보 (미참가 시 null) */
+  joinedEnsemble: NearbyEnsembleInfo | null;
+  /** 합주 참가 중 이동 입력(WASD/조이스틱)이 들어오면 자연스럽게 참가 종료하는 콜백 */
+  onLeaveEnsemble: () => void;
+  /** 합주 참가 중 플레이어 머리 위로 떠오르는 추임새 텍스트 */
+  playerKakegoe: { id: number; text: string } | null;
   /** PC 마우스 바닥 클릭으로 지정된 이동 목적지 [x, z] */
   targetPoint: [number, number] | null;
   /** 목적지 도착 또는 키보드·조이스틱 전환 시 목적지 표시를 지우는 콜백 */
@@ -70,6 +79,9 @@ export function Player({
   isCustomizing,
   customizeRotationOffset,
   isCustomizePlaying,
+  joinedEnsemble,
+  onLeaveEnsemble,
+  playerKakegoe,
   targetPoint,
   onClearTarget,
   onNearbyInstrumentChange,
@@ -78,7 +90,9 @@ export function Player({
   joystickVectorRef,
 }: PlayerProps) {
   const rootGroupRef = useRef<Group>(null);
+  const ensembleRingRef = useRef<Mesh>(null);
   const actionRef = useRef<PlayerAction>(playerStateRef.current.action);
+  const group = getTaikoGroupById(appearance.groupId);
 
   // 장애물에 걸렸을 때 멈추기 위한 타이머 & 직전 근처 악기/아지트 ID
   const stuckTimeRef = useRef(0);
@@ -147,6 +161,53 @@ export function Player({
       cameraLookAtRef.current.lerp(desiredLookAtRef.current, Math.min(delta * 7, 1));
       state.camera.lookAt(cameraLookAtRef.current);
       return;
+    }
+
+    // A-3) NPC 합주에 함께 참가 중일 때:
+    // - 이동 입력(WASD/방향키/조이스틱)을 주면 자동으로 합주에서 벗어나 다시 자유 탐색
+    // - 아니면 NPC들과 같은 방향(facingRotationY)을 바라보며 연주('play') 자세와 리듬 링 표시
+    if (joinedEnsemble && canMove) {
+      const keyDir = getKeyboardDirection(pressedKeysRef.current);
+      const joyVec = joystickVectorRef.current;
+      const joyMag = Math.hypot(joyVec.x, joyVec.z);
+
+      if (keyDir.x !== 0 || keyDir.z !== 0 || joyMag > 0.15) {
+        onLeaveEnsemble();
+      } else {
+        player.action = 'play';
+        actionRef.current = 'play';
+        player.rotationY = lerpAngle(
+          player.rotationY,
+          joinedEnsemble.facingRotationY,
+          delta * 8
+        );
+
+        const [px, py, pz] = player.position;
+        if (rootGroupRef.current) {
+          rootGroupRef.current.position.set(px, py, pz);
+          rootGroupRef.current.rotation.y = player.rotationY;
+        }
+
+        if (ensembleRingRef.current) {
+          ensembleRingRef.current.visible = true;
+          const pulse = 1 + Math.sin(state.clock.getElapsedTime() * 8) * 0.14;
+          ensembleRingRef.current.scale.set(pulse, pulse, 1);
+        }
+
+        // 플레이어와 합주 NPC 그룹이 함께 예쁘게 잡히는 약간 가까운 쿼터뷰 카메라
+        const midX = (px + joinedEnsemble.center[0]) * 0.5;
+        const midZ = (pz + joinedEnsemble.center[1]) * 0.5;
+        desiredCameraPosRef.current.set(midX, 6.2, midZ + 7.2);
+        state.camera.position.lerp(desiredCameraPosRef.current, Math.min(delta * 4.5, 1));
+        desiredLookAtRef.current.set(midX, 0.55, midZ - 0.2);
+        cameraLookAtRef.current.lerp(desiredLookAtRef.current, Math.min(delta * 5.5, 1));
+        state.camera.lookAt(cameraLookAtRef.current);
+        return;
+      }
+    }
+
+    if (ensembleRingRef.current) {
+      ensembleRingRef.current.visible = false;
     }
 
     const [curX, , curZ] = player.position;
@@ -300,7 +361,32 @@ export function Player({
       position={[initialX, initialY, initialZ]}
       rotation={[0, playerStateRef.current.rotationY, 0]}
     >
+      {/* NPC 합주 참가 중일 때만 발밑에 빛나는 단체 컬러 리듬 링 */}
+      <mesh
+        ref={ensembleRingRef}
+        visible={false}
+        rotation={[-Math.PI / 2, 0, 0]}
+        position={[0, 0.02, 0]}
+      >
+        <ringGeometry args={[0.46, 0.58, 24]} />
+        <meshBasicMaterial color={group.happiColor} transparent opacity={0.78} />
+      </mesh>
+
       <Character appearance={appearance} actionRef={actionRef} />
+
+      {/* 합주 참가 중 플레이어가 외치는 추임새(それ！ / はっ / ちょいさ〜！) */}
+      {playerKakegoe && (
+        <Html
+          position={[0, 1.88, 0]}
+          center
+          zIndexRange={[10, 0]}
+          style={{ pointerEvents: 'none' }}
+        >
+          <div key={playerKakegoe.id} className="npc-kakegoe-text">
+            {playerKakegoe.text}
+          </div>
+        </Html>
+      )}
     </group>
   );
 }

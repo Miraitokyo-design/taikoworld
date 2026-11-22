@@ -98,6 +98,19 @@ export interface InstrumentConfig {
 export type PlayerAction = 'idle' | 'walk' | 'play';
 
 /**
+ * 현재 공원에서 진행 중인 NPC 합주 근처에 플레이어가 다가가 참가할 수 있을 때 전달되는 정보
+ */
+export interface NearbyEnsembleInfo {
+  songId: string;
+  songTitle: string;
+  participantCount: number;
+  /** 합주 NPC들이 통일해 바라보고 있는 방향 각도 (라디안) */
+  facingRotationY: number;
+  /** 합주 그룹의 대략적 중심 [x, z] */
+  center: [number, number];
+}
+
+/**
  * 플레이어 상태를 하나로 묶어 관리하는 단일 객체 타입
  */
 export interface PlayerState {

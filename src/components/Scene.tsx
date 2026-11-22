@@ -10,6 +10,7 @@ import type {
   GroupHideoutConfig,
   InstrumentConfig,
   MoveVector,
+  NearbyEnsembleInfo,
   PlayerState,
   SpaceConfig,
 } from '../types/world';
@@ -54,6 +55,10 @@ interface SceneProps {
   customizeRotationOffset: number;
   /** 꾸미기 프리뷰 중 연주('play') 포즈 테스트 여부 */
   isCustomizePlaying: boolean;
+  /** 플레이어가 현재 함께 참가 중인 NPC 합주 정보 (미참가 시 null) */
+  joinedEnsemble: NearbyEnsembleInfo | null;
+  /** 합주 참가 중 플레이어 머리 위에 띄울 추임새 텍스트 */
+  playerKakegoe: { id: number; text: string } | null;
   /** 현재 연주 중인 악기 (없으면 null) */
   activeInstrument: InstrumentConfig | null;
   /** 플레이어가 가까이 다가가 있는 악기 (링 강조 표시용) */
@@ -64,6 +69,10 @@ interface SceneProps {
   onNearbyInstrumentChange: (instrument: InstrumentConfig | null) => void;
   /** 가장 가까운 근접 NPC가 바뀔 때 상위에 알리는 콜백 (PC E 키 연동용) */
   onNearbyMemberChange: (member: MemberConfig | null) => void;
+  /** 근처 진행 중인 NPC 합주 상태가 바뀔 때 상위에 알리는 콜백 (E 합주 참가 연동용) */
+  onNearbyEnsembleChange: (info: NearbyEnsembleInfo | null) => void;
+  /** 합주 참가 중 이동 입력으로 자연스럽게 나갈 때 호출되는 콜백 */
+  onLeaveEnsemble: () => void;
   /** 근처 지역 단체 아지트가 바뀔 때 상위에 알리는 콜백 (PC E 키 연동용) */
   onNearbyHideoutChange: (hideout: GroupHideoutConfig | null) => void;
   /** 북을 직접 클릭해 연주 모드로 들어갈 때 호출되는 콜백 */
@@ -94,11 +103,15 @@ export function Scene({
   isCustomizing,
   customizeRotationOffset,
   isCustomizePlaying,
+  joinedEnsemble,
+  playerKakegoe,
   activeInstrument,
   nearbyInstrument,
   nearbyHideout,
   onNearbyInstrumentChange,
   onNearbyMemberChange,
+  onNearbyEnsembleChange,
+  onLeaveEnsemble,
   onNearbyHideoutChange,
   onSelectInstrument,
   onSelectMember,
@@ -123,11 +136,14 @@ export function Scene({
   const handleGroundClick = useCallback(
     (rawPoint: [number, number]) => {
       if (!canMove) return;
+      if (joinedEnsemble) {
+        onLeaveEnsemble();
+      }
       // 장애물 안이나 광장 바깥을 클릭해도 이동 가능한 가장 가까운 지점으로 보정
       const safePoint = resolvePlayerPosition(rawPoint[0], rawPoint[1], space);
       setTargetPoint([safePoint.x, safePoint.z]);
     },
-    [space, canMove]
+    [space, canMove, joinedEnsemble, onLeaveEnsemble]
   );
 
   const handleClearTarget = useCallback(() => {
@@ -226,11 +242,13 @@ export function Scene({
         playerStateRef={playerStateRef}
         hasEntered={hasEntered}
         isInteractionActive={canMove}
+        isPlayerJoinedEnsemble={joinedEnsemble !== null}
         onNearbyMemberChange={onNearbyMemberChange}
+        onNearbyEnsembleChange={onNearbyEnsembleChange}
         onSelectMember={handleSelectMember}
       />
 
-      {/* 게스트 플레이어 캐릭터 (이동 + 2D 충돌 + 악기 근접 감지 + 카메라 제어) */}
+      {/* 게스트 플레이어 캐릭터 (이동 + 2D 충돌 + 악기 근접 감지 + 합주 참가 + 카메라 제어) */}
       <Player
         playerStateRef={playerStateRef}
         appearance={playerAppearance}
@@ -241,6 +259,9 @@ export function Scene({
         isCustomizing={isCustomizing}
         customizeRotationOffset={customizeRotationOffset}
         isCustomizePlaying={isCustomizePlaying}
+        joinedEnsemble={joinedEnsemble}
+        onLeaveEnsemble={onLeaveEnsemble}
+        playerKakegoe={playerKakegoe}
         targetPoint={targetPoint}
         onClearTarget={handleClearTarget}
         onNearbyInstrumentChange={onNearbyInstrumentChange}

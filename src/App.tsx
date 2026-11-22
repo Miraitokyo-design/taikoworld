@@ -14,6 +14,7 @@ import type {
   GroupHideoutConfig,
   InstrumentConfig,
   MoveVector,
+  NearbyEnsembleInfo,
   PlayerState,
   SpaceConfig,
 } from './types/world';
@@ -30,6 +31,7 @@ import type {
 } from './types/content';
 import { audioManager } from './systems/audioManager';
 import type { TaikoHitType } from './systems/audioManager';
+import { TAIKO_KAKEGOE_PHRASES } from './systems/npcStateMachine';
 import { getNextUpcomingEvent } from './utils/scheduleUtils';
 import { loadCustomSongs, saveCustomSongs } from './utils/customSongsStorage';
 import {
@@ -198,10 +200,17 @@ export function App() {
   const [npcVolume, setNpcVolume] = useState(0.85);
   const [isSoundPopoverOpen, setIsSoundPopoverOpen] = useState(false);
 
-  // 3D 근접 상호작용 대상 상태 (북 / NPC / 지역 단체 아지트)
+  // 3D 근접 상호작용 대상 상태 (북 / NPC / 지역 단체 아지트 / 진행 중인 NPC 합주)
   const [nearbyInstrument, setNearbyInstrument] = useState<InstrumentConfig | null>(null);
   const [nearbyMember, setNearbyMember] = useState<MemberConfig | null>(null);
   const [nearbyHideout, setNearbyHideout] = useState<GroupHideoutConfig | null>(null);
+  const [nearbyEnsemble, setNearbyEnsemble] = useState<NearbyEnsembleInfo | null>(null);
+  const [isJoinedEnsemble, setIsJoinedEnsemble] = useState(false);
+  const [playerKakegoe, setPlayerKakegoe] = useState<{ id: number; text: string } | null>(
+    null
+  );
+  const playerKakegoeSeqRef = useRef(0);
+  const playerKakegoeTimerRef = useRef<number | null>(null);
   const [activeInstrument, setActiveInstrument] = useState<InstrumentConfig | null>(null);
 
   // 모달 열림 상태
@@ -276,6 +285,7 @@ export function App() {
     setIsCircleOpen(false);
     setIsCustomizing(false);
     setIsCustomizePlaying(false);
+    setIsJoinedEnsemble(false);
     setSelectedMember(null);
     setOpenedFromMenu(false);
     setGuideOpenedFromHideout(false);
@@ -411,6 +421,67 @@ export function App() {
     [activeInstrument]
   );
 
+  /** NPC 합주에 사용자가 함께 참가할 때 현재 장비 중인 악기의 주음/보조음을 즉시 울리는 핸들러 */
+  const handleEnsembleJamHit = useCallback(
+    (slot: 'primary' | 'secondary') => {
+      void audioManager.unlock();
+      const equipped = playerAppearance.equippedInstrument;
+      const trackId =
+        equipped !== 'none' && equipped !== 'uchiwa' && tracksById[equipped]
+          ? equipped
+          : 'shaku_4';
+      const trackDef = tracksById[trackId];
+      const notes = trackDef?.notes ?? ['どん', 'かっ'];
+      const note =
+        slot === 'primary'
+          ? notes[0] ?? 'どん'
+          : notes[notes.length - 1] ?? notes[0] ?? 'かっ';
+      audioManager.playTrackNote(trackId, note, {
+        soundUrl: trackDef?.audioFiles?.[note],
+        isNpc: false,
+        volume: 0.95,
+      });
+    },
+    [playerAppearance.equippedInstrument]
+  );
+
+  /** 합주 참가 중 플레이어 머리 위로 신나는 추임새(それ！ / はっ / ちょいさ〜！)를 띄우는 핸들러 */
+  const handlePlayerKakegoe = useCallback(() => {
+    const nextId = ++playerKakegoeSeqRef.current;
+    const text =
+      TAIKO_KAKEGOE_PHRASES[
+        Math.floor(Math.random() * TAIKO_KAKEGOE_PHRASES.length)
+      ];
+    setPlayerKakegoe({ id: nextId, text });
+    if (playerKakegoeTimerRef.current !== null) {
+      window.clearTimeout(playerKakegoeTimerRef.current);
+    }
+    playerKakegoeTimerRef.current = window.setTimeout(() => {
+      setPlayerKakegoe((prev) => (prev?.id === nextId ? null : prev));
+    }, 1350);
+  }, []);
+
+  /** 합주 참가 해제 핸들러 */
+  const handleLeaveEnsemble = useCallback(() => {
+    setIsJoinedEnsemble(false);
+  }, []);
+
+  // NPC 합주가 끝나면 사용자 합주 참가 상태도 자동으로 해제
+  useEffect(() => {
+    if (!nearbyEnsemble && isJoinedEnsemble) {
+      setIsJoinedEnsemble(false);
+    }
+  }, [nearbyEnsemble, isJoinedEnsemble]);
+
+  // 언마운트 시 플레이어 추임새 타이머 정리
+  useEffect(() => {
+    return () => {
+      if (playerKakegoeTimerRef.current !== null) {
+        window.clearTimeout(playerKakegoeTimerRef.current);
+      }
+    };
+  }, []);
+
   const [spawnX, , spawnZ] = currentSpace.spawnPoint;
   const isModalOpen =
     isMenuOpen ||
@@ -423,27 +494,51 @@ export function App() {
     selectedMember !== null;
   const isExploring = hasEntered && activeInstrument === null;
   const showWorldHud = isExploring && !isCustomizing;
+  const activeJoinedEnsemble =
+    isExploring && !isModalOpen && isJoinedEnsemble ? nearbyEnsemble : null;
 
-  // 메뉴·팝업 창이 열려 있거나 북 연주 모드 중일 때 배경 NPC 합주 소리를 자동으로 줄임(덕킹)
+  // 메뉴·팝업 창이 열려 있거나 중앙 북 단독 연주 모드일 때만 NPC 배경 볼륨 덕킹 (합주 참가 중에는 그대로!)
   useEffect(() => {
     const shouldDuckNpc = isModalOpen || isSoundPopoverOpen || activeInstrument !== null;
     audioManager.setNpcDucking(shouldDuckNpc);
   }, [isModalOpen, isSoundPopoverOpen, activeInstrument]);
 
-  // PC 단축키(탐색 모드):
-  // - 북 근처에서는 Space로 연주 모드 진입
-  // - NPC 또는 지역 단체 아지트 근처([!] 말풍선 표시 중)에서는 E로 해당 정보 창 열기
+  // PC 단축키(탐색 모드 + 합주 참가 모드):
+  // - 합주 참가 중: E/ESC 나가기, F/J 강타, D/K 테두리/보조음, Space 추임새!
+  // - 합주 근처 미참가: E로 합주 참가!
+  // - 일반 탐색: 북 근처 Space 연주, NPC/아지트 근처 E 정보 열기
   useEffect(() => {
     if (!isExploring || isModalOpen) return;
 
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.repeat) return;
 
+      if (activeJoinedEnsemble) {
+        if (event.code === 'KeyE' || event.code === 'Escape') {
+          event.preventDefault();
+          setIsJoinedEnsemble(false);
+        } else if (event.code === 'KeyF' || event.code === 'KeyJ') {
+          event.preventDefault();
+          handleEnsembleJamHit('primary');
+        } else if (event.code === 'KeyD' || event.code === 'KeyK') {
+          event.preventDefault();
+          handleEnsembleJamHit('secondary');
+        } else if (event.code === 'Space') {
+          event.preventDefault();
+          handlePlayerKakegoe();
+        }
+        return;
+      }
+
       if (event.code === 'Space' && nearbyInstrument) {
         event.preventDefault();
         handleEnterPlayMode(nearbyInstrument);
       } else if (event.code === 'KeyE') {
-        if (nearbyMember) {
+        if (nearbyEnsemble) {
+          event.preventDefault();
+          setIsJoinedEnsemble(true);
+          handlePlayerKakegoe();
+        } else if (nearbyMember) {
           event.preventDefault();
           closeAllModals();
           setSelectedMember(nearbyMember);
@@ -459,10 +554,14 @@ export function App() {
   }, [
     isExploring,
     isModalOpen,
+    activeJoinedEnsemble,
+    nearbyEnsemble,
     nearbyInstrument,
     nearbyMember,
     nearbyHideout,
     handleEnterPlayMode,
+    handleEnsembleJamHit,
+    handlePlayerKakegoe,
     handleOpenHideoutGuide,
     closeAllModals,
   ]);
@@ -495,11 +594,15 @@ export function App() {
           isCustomizing={isCustomizing}
           customizeRotationOffset={customizeRotationOffset}
           isCustomizePlaying={isCustomizePlaying}
+          joinedEnsemble={activeJoinedEnsemble}
+          playerKakegoe={playerKakegoe}
           activeInstrument={activeInstrument}
           nearbyInstrument={nearbyInstrument}
           nearbyHideout={nearbyHideout}
           onNearbyInstrumentChange={setNearbyInstrument}
           onNearbyMemberChange={setNearbyMember}
+          onNearbyEnsembleChange={setNearbyEnsemble}
+          onLeaveEnsemble={handleLeaveEnsemble}
           onNearbyHideoutChange={setNearbyHideout}
           onSelectInstrument={handleEnterPlayMode}
           onSelectMember={handleSelectMember}
@@ -563,17 +666,88 @@ export function App() {
         />
       )}
 
-      {/* 탐색 모드에서 북 근처에 다가가면 표시되는 [연주하기] 버튼 (PC: Space) */}
-      {isExploring && !isModalOpen && nearbyInstrument && (
+      {/* 합주 참가 중 전용 하단 미니 즉석 연주 바 (강타 / 테두리 / 추임새 / 나가기) */}
+      {activeJoinedEnsemble && (
+        <div className="ensemble-jam-bar" data-ui-interactive="true">
+          <div className="ensemble-jam-title">
+            🎵 「{activeJoinedEnsemble.songTitle.split(' (')[0]}」 함께 합주 중!
+          </div>
+          <div className="ensemble-jam-actions">
+            <button
+              type="button"
+              className="ensemble-jam-btn ensemble-jam-btn--primary"
+              onPointerDown={(e) => {
+                e.stopPropagation();
+                handleEnsembleJamHit('primary');
+              }}
+            >
+              <span>🥁 강타</span>
+              <span className="key-cap">F/J</span>
+            </button>
+            <button
+              type="button"
+              className="ensemble-jam-btn ensemble-jam-btn--secondary"
+              onPointerDown={(e) => {
+                e.stopPropagation();
+                handleEnsembleJamHit('secondary');
+              }}
+            >
+              <span>🥢 테두리</span>
+              <span className="key-cap">D/K</span>
+            </button>
+            <button
+              type="button"
+              className="ensemble-jam-btn ensemble-jam-btn--kakegoe"
+              onClick={() => handlePlayerKakegoe()}
+            >
+              <span>📣 추임새</span>
+              <span className="key-cap">Space</span>
+            </button>
+            <button
+              type="button"
+              className="ensemble-jam-btn ensemble-jam-btn--exit"
+              onClick={handleLeaveEnsemble}
+            >
+              <span>나가기</span>
+              <span className="key-cap key-cap--dark">E</span>
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* 합주 중인 NPC 옆에 다가갔을 때 표시되는 [🥁 합주 참가하기 (E)] 버튼 */}
+      {isExploring && !isModalOpen && !activeJoinedEnsemble && nearbyEnsemble && (
         <button
           type="button"
-          className="play-prompt-btn"
-          onClick={() => handleEnterPlayMode(nearbyInstrument)}
+          className="ensemble-join-btn"
+          data-ui-interactive="true"
+          onClick={() => {
+            setIsJoinedEnsemble(true);
+            handlePlayerKakegoe();
+          }}
         >
-          <span>🥁 {nearbyInstrument.name} 연주하기</span>
-          <span className="key-cap">Space</span>
+          <span>
+            🥁 「{nearbyEnsemble.songTitle.split(' (')[0]}」 합주 참가하기
+          </span>
+          <span className="key-cap">E</span>
         </button>
       )}
+
+      {/* 탐색 모드에서 북 근처에 다가가면 표시되는 [연주하기] 버튼 (PC: Space) */}
+      {isExploring &&
+        !isModalOpen &&
+        !activeJoinedEnsemble &&
+        !nearbyEnsemble &&
+        nearbyInstrument && (
+          <button
+            type="button"
+            className="play-prompt-btn"
+            onClick={() => handleEnterPlayMode(nearbyInstrument)}
+          >
+            <span>🥁 {nearbyInstrument.name} 연주하기</span>
+            <span className="key-cap">Space</span>
+          </button>
+        )}
 
       {/* 타이코 연주 모드 전용 오버레이 */}
       {hasEntered && activeInstrument && (

@@ -17,6 +17,10 @@
   ],
   "instagramQr": {
     "imagePath": "/images/instagram-qr.png",
-    "caption": "스마트폰 카메라로 인스타그램 QR 스캔"
+    "caption": "인스타그램 QR"
+  },
+  "siteQr": {
+    "imagePath": "/images/site-qr.png",
+    "caption": "Taiko World 사이트 QR"
   }
 }
