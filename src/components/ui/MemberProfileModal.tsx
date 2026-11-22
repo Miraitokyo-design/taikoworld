@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import type { MemberConfig, SongConfig } from '../../types/content';
+import { getTaikoGroupById } from '../../utils/characterAppearance';
 
 interface MemberProfileModalProps {
   /** 클릭/터치 또는 E 키로 선택된 서클 NPC 멤버 데이터 */
@@ -12,10 +13,12 @@ interface MemberProfileModalProps {
 
 /**
  * 실제 2D 캐릭터 일러스트 파일(public/images/characters/*.webp)이 아직 없을 때
- * 멤버의 파츠 색상과 머리 스타일에 맞춰 자동으로 그려주는 귀여운 SVG 임시 일러스트 컴포넌트
+ * 멤버의 소속 단체(토끼/거북이 종족 + 하피 색상)와 헤어 스타일에 맞춰 그려주는 SVG 임시 일러스트
  */
 function PlaceholderCharacterPortrait({ member }: { member: MemberConfig }) {
-  const { color, head } = member.parts;
+  const group = getTaikoGroupById(member.appearance.groupId);
+  const { hair } = member.appearance;
+  const color = group.happiColor;
 
   return (
     <svg
@@ -28,45 +31,72 @@ function PlaceholderCharacterPortrait({ member }: { member: MemberConfig }) {
       <circle cx="60" cy="60" r="58" fill="#fff5e4" />
       <circle cx="60" cy="60" r="52" fill={color} opacity="0.16" />
 
-      {/* 하피 상의(어깨/몸통) */}
+      {/* 거북이 종족일 때 어깨 뒤로 살짝 보이는 등껍질 */}
+      {group.species === 'turtle' && (
+        <ellipse cx="60" cy="94" rx="40" ry="22" fill={group.accentColor} />
+      )}
+
+      {/* 단체 공통 하피 상의 */}
       <path d="M24 118 C26 88, 38 78, 60 78 C82 78, 94 88, 96 118 Z" fill={color} />
       {/* 하피 깃 포인트 */}
-      <path d="M48 79 L60 98 L72 79" fill="none" stroke="#fff8eb" strokeWidth="4" />
+      <path
+        d="M48 79 L60 98 L72 79"
+        fill="none"
+        stroke={group.happiBorderColor}
+        strokeWidth="4.5"
+      />
 
-      {/* 얼굴 */}
-      <circle cx="60" cy="54" r="24" fill="#ffe0bd" />
+      {/* 토끼 종족일 때 머리 위로 올라온 긴 귀 */}
+      {group.species === 'rabbit' && (
+        <g>
+          <ellipse cx="47" cy="24" rx="7" ry="18" transform="rotate(-10 47 24)" fill={group.bodyColor} />
+          <ellipse cx="47" cy="25" rx="3.5" ry="12" transform="rotate(-10 47 25)" fill={group.accentColor} />
+          <ellipse cx="73" cy="24" rx="7" ry="18" transform="rotate(10 73 24)" fill={group.bodyColor} />
+          <ellipse cx="73" cy="25" rx="3.5" ry="12" transform="rotate(10 73 25)" fill={group.accentColor} />
+        </g>
+      )}
 
-      {/* 파츠별 머리 스타일 (head_a ~ head_d) */}
-      {head === 'head_b' && (
+      {/* 얼굴 (종족 피부/털 색상) */}
+      <circle cx="60" cy="56" r="24" fill={group.bodyColor} />
+
+      {/* 파츠별 머리 스타일 */}
+      {hair === 'hair_bun' && (
         <g>
-          <circle cx="60" cy="24" r="10" fill="#3a2f2a" />
-          <rect x="49" y="30" width="22" height="5" rx="2.5" fill={color} />
+          <circle cx="60" cy="28" r="9" fill="#3a2f2a" />
+          <rect x="50" y="33" width="20" height="4.5" rx="2.2" fill={color} />
         </g>
       )}
-      {head === 'head_c' && (
+      {hair === 'hair_cap' && (
         <g>
-          <path d="M36 44 C38 26, 82 26, 84 44 Z" fill={color} />
-          <rect x="34" y="42" width="52" height="6" rx="3" fill="#3d352e" />
+          <path d="M38 46 C40 31, 80 31, 82 46 Z" fill={color} />
+          <rect x="36" y="44" width="48" height="5.5" rx="2.7" fill={group.happiBorderColor} />
         </g>
       )}
-      {head === 'head_d' && (
+      {hair === 'hair_spiky' && (
         <g>
-          <polygon points="44,34 52,18 58,32" fill="#2f2a28" />
-          <polygon points="56,32 66,16 74,34" fill="#2f2a28" />
-          <rect x="36" y="37" width="48" height="6" rx="3" fill="#f6c445" />
+          <polygon points="45,38 52,24 58,36" fill="#2f2a28" />
+          <polygon points="56,36 65,23 73,38" fill="#2f2a28" />
+          <rect x="36" y="39" width="48" height="5.5" rx="2.7" fill={group.obiColor} />
         </g>
       )}
-      {(head === 'head_a' || !['head_b', 'head_c', 'head_d'].includes(head)) && (
-        <rect x="36" y="36" width="48" height="7" rx="3.5" fill="#e04f3e" />
+      {hair === 'hair_bob' && (
+        <g>
+          <path d="M36 52 C38 35, 82 35, 84 52 L80 46 L40 46 Z" fill="#46342a" />
+          <rect x="34" y="48" width="7" height="18" rx="3.5" fill="#46342a" />
+          <rect x="79" y="48" width="7" height="18" rx="3.5" fill="#46342a" />
+        </g>
+      )}
+      {hair === 'hair_hachimaki' && (
+        <rect x="36" y="38" width="48" height="6.5" rx="3.2" fill="#e04f3e" />
       )}
 
       {/* 눈, 볼터치, 미소 */}
-      <circle cx="51" cy="55" r="3" fill="#2b2623" />
-      <circle cx="69" cy="55" r="3" fill="#2b2623" />
-      <ellipse cx="44" cy="61" rx="4" ry="2.4" fill="#ff9b9b" opacity="0.55" />
-      <ellipse cx="76" cy="61" rx="4" ry="2.4" fill="#ff9b9b" opacity="0.55" />
+      <circle cx="51" cy="57" r="3.2" fill="#2b2623" />
+      <circle cx="69" cy="57" r="3.2" fill="#2b2623" />
+      <ellipse cx="44" cy="63" rx="4.2" ry="2.4" fill="#ff9b9b" opacity="0.55" />
+      <ellipse cx="76" cy="63" rx="4.2" ry="2.4" fill="#ff9b9b" opacity="0.55" />
       <path
-        d="M54 63 Q60 69 66 63"
+        d="M54 65 Q60 71 66 65"
         fill="none"
         stroke="#6b4432"
         strokeWidth="2.5"
@@ -78,7 +108,7 @@ function PlaceholderCharacterPortrait({ member }: { member: MemberConfig }) {
 
 /**
  * 멤버 프로필 카드와 멤버 도감 목록에서 공용으로 사용하는 원형 캐릭터 아바타 컴포넌트
- * - 실제 일러스트 파일이 있으면 이미지를, 아직 없으면 파츠 맞춤형 SVG 초상화를 표시합니다.
+ * - 실제 일러스트 파일이 있으면 이미지를, 아직 없으면 단체·종족 맞춤형 SVG 초상화를 표시합니다.
  */
 export function MemberAvatar({
   member,
@@ -88,6 +118,7 @@ export function MemberAvatar({
   size?: 'small' | 'large';
 }) {
   const [imageFailed, setImageFailed] = useState(false);
+  const group = getTaikoGroupById(member.appearance.groupId);
 
   useEffect(() => {
     setImageFailed(false);
@@ -98,7 +129,7 @@ export function MemberAvatar({
       className={`member-avatar-frame ${
         size === 'small' ? 'member-avatar-frame--small' : ''
       }`}
-      style={{ borderColor: member.parts.color }}
+      style={{ borderColor: group.happiColor }}
     >
       {!imageFailed ? (
         <img
@@ -139,6 +170,7 @@ export function MemberProfileModal({
   }, [onClose]);
 
   const { profile } = member;
+  const group = getTaikoGroupById(member.appearance.groupId);
   const memberSongs = songs.filter((song) => member.playableSongs.includes(song.id));
 
   return (
@@ -162,9 +194,9 @@ export function MemberProfileModal({
             <div>
               <div
                 className="member-role-badge"
-                style={{ backgroundColor: member.parts.color }}
+                style={{ backgroundColor: group.happiColor }}
               >
-                🥁 {member.role}
+                {group.species === 'rabbit' ? '🐰' : '🐢'} {group.name} · {member.role}
               </div>
               <h2 className="modal-title member-nickname">{member.nickname}</h2>
               <div className="member-exp-text">

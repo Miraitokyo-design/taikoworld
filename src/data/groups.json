@@ -1,0 +1,32 @@
+[
+  {
+    "id": "group_tentaikomai",
+    "name": "転太鼓舞",
+    "reading": "텐타이코마이",
+    "affiliation": "조형대학 타이코 서클",
+    "species": "rabbit",
+    "speciesLabel": "토끼",
+    "happiColor": "#c96a2b",
+    "happiBorderColor": "#1c1917",
+    "obiColor": "#f4d35e",
+    "bodyColor": "#fff4eb",
+    "accentColor": "#f7b5c4",
+    "happiTexture": "/textures/happi/happi_tentaikomai.webp",
+    "bodyModelPath": "/models/characters/char_body_rabbit.glb"
+  },
+  {
+    "id": "group_tsurukamedaiko",
+    "name": "鶴亀太鼓",
+    "reading": "츠루카메타이코",
+    "affiliation": "기술대학 타이코 서클",
+    "species": "turtle",
+    "speciesLabel": "거북이",
+    "happiColor": "#1d2d50",
+    "happiBorderColor": "#e6eef8",
+    "obiColor": "#e8b948",
+    "bodyColor": "#93c572",
+    "accentColor": "#4b7b43",
+    "happiTexture": "/textures/happi/happi_tsurukamedaiko.webp",
+    "bodyModelPath": "/models/characters/char_body_turtle.glb"
+  }
+]

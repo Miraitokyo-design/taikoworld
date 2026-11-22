@@ -45,12 +45,101 @@ export interface CircleInfo {
 }
 
 /**
- * 모듈식 NPC 캐릭터 외형 파츠 타입
+ * 지역 타이코 단체별 고정 동물 캐릭터 종족 타입
+ * - 転太鼓舞 = rabbit(토끼), 鶴亀太鼓 = turtle(거북이) (추후 새 단체 추가 시 확장)
  */
-export interface MemberParts {
-  head: string;
-  outfit: string;
-  color: string;
+export type CharacterSpecies = 'rabbit' | 'turtle';
+
+/** 2D 캔버스 얼굴 — 눈 모양 종류 */
+export type FaceEyeStyle = 'round' | 'happy' | 'sleepy' | 'sparkle';
+
+/** 2D 캔버스 얼굴 — 코 모양 종류 */
+export type FaceNoseStyle = 'dot' | 'rabbit' | 'triangle';
+
+/** 2D 캔버스 얼굴 — 입 모양 종류 */
+export type FaceMouthStyle = 'smile' | 'cat' | 'calm' | 'grin';
+
+/** 캐릭터 머리 / 장식 파츠 ID */
+export type CharacterHairStyle =
+  | 'hair_none'
+  | 'hair_hachimaki'
+  | 'hair_bun'
+  | 'hair_cap'
+  | 'hair_spiky'
+  | 'hair_bob';
+
+/** 캐릭터가 몸이나 손에 장비하는 타이코/악기 ID */
+export type EquippedInstrumentId =
+  | 'none'
+  | 'shaku_2'
+  | 'shaku_4'
+  | 'shaku_6'
+  | 'oki'
+  | 'shime'
+  | 'fue'
+  | 'chappa';
+
+/**
+ * 2D CanvasTexture(256x256)로 얼굴을 합성할 때 사용하는 세부 커스터마이징 설정
+ */
+export interface CharacterFaceConfig {
+  eyes: FaceEyeStyle;
+  /** 눈 크기 배율 (0.75 ~ 1.3) */
+  eyeScale: number;
+  /** 눈 상하 위치 오프셋 (-12 ~ 12 px) */
+  eyeY: number;
+  /** 눈 좌우 간격 오프셋 (-8 ~ 8 px) */
+  eyeSpacing: number;
+  nose: FaceNoseStyle;
+  /** 코 크기 배율 (0.75 ~ 1.3) */
+  noseScale: number;
+  /** 코 상하 위치 오프셋 (-10 ~ 10 px) */
+  noseY: number;
+  mouth: FaceMouthStyle;
+  /** 입 크기 배율 (0.75 ~ 1.3) */
+  mouthScale: number;
+  /** 입 상하 위치 오프셋 (-10 ~ 10 px) */
+  mouthY: number;
+  /** 분홍 볼터치 표시 여부 */
+  blush: boolean;
+}
+
+/**
+ * 플레이어와 NPC가 공통으로 사용하는 5-레이어 모듈식 캐릭터 외형 설정
+ * - 단체(groupId)를 선택하면 해당 단체의 동물 종족과 공통 法被(하피)가 자동으로 결정됩니다.
+ */
+export interface CharacterAppearance {
+  groupId: string;
+  hair: CharacterHairStyle;
+  equippedInstrument: EquippedInstrumentId;
+  face: CharacterFaceConfig;
+}
+
+/**
+ * 지역 타이코 단체 설정 타입 — src/data/groups.json과 1:1 대응
+ * - 각 단체마다 고정된 동물 종족과 공통 法被(하피) 색·텍스처를 정의합니다.
+ */
+export interface TaikoGroupConfig {
+  id: string;
+  name: string;
+  reading: string;
+  affiliation: string;
+  species: CharacterSpecies;
+  speciesLabel: string;
+  /** 단체 공통 法被(하피) 주 색상 */
+  happiColor: string;
+  /** 단체 공통 法被(하피) 테두리·깃 색상 */
+  happiBorderColor: string;
+  /** 허리띠(오비) 색상 */
+  obiColor: string;
+  /** 동물 캐릭터 피부/털 기본 색상 */
+  bodyColor: string;
+  /** 포인트 색상 (토끼 귀 안쪽 / 거북이 등껍질 등) */
+  accentColor: string;
+  /** 추후 실제 3D 하피 GLB에 입힐 512px 텍스처 경로 */
+  happiTexture: string;
+  /** 추후 실제 종족 바디 GLB 경로 */
+  bodyModelPath: string;
 }
 
 /**
@@ -59,7 +148,7 @@ export interface MemberParts {
  */
 export interface MemberProfile {
   experience: string;
-  /** 현재 소속/학년·졸업 여부 표시 (예: "OO대학 3학년", "OO대학 25년 졸") */
+  /** 현재 소속/학년·졸업 여부 표시 (예: "조형대학 3학년", "기술대학 25년 졸") */
   status: string;
   personality: string;
   traits: string;
@@ -75,7 +164,8 @@ export interface MemberConfig {
   nickname: string;
   role: string;
   illustration: string;
-  parts: MemberParts;
+  /** 5-레이어 모듈식 캐릭터 외형 (소속 단체·헤어·장비 악기·2D 캔버스 얼굴) */
+  appearance: CharacterAppearance;
   route: string;
   /** 이 멤버가 합주할 수 있는 곡 ID 목록 (songs.json의 id와 연결) */
   playableSongs: string[];
@@ -161,8 +251,67 @@ export interface SongConfig {
   /** 곡 전체 길이 (스텝 수) */
   totalSteps: number;
   description: string;
+  /** 시즌 테마 전용 곡인 경우 연결되는 테마 ID (예: "christmas") */
+  seasonThemeId?: string;
   /** 이 곡에서 실제로 연주되는 타이코/악기 레이어 목록만 포함 */
   layers: SongLayer[];
+}
+
+/** 시즌 테마에서 사용하는 가벼운 날씨 파티클 종류 */
+export type ThemeWeatherType = 'none' | 'snow' | 'sakura' | 'firefly' | 'sparkle';
+
+/** 시즌 소품의 임시 로우폴리 형태 종류 (실제 GLB 투입 전 미리보기용) */
+export type ThemePropVariant =
+  | 'xmas_tree'
+  | 'event_arch'
+  | 'obon_yagura'
+  | 'summer_decor';
+
+/**
+ * 시즌 테마에서 공간에 추가 배치하는 3D 이벤트 소품 설정 타입
+ */
+export interface ThemePropConfig {
+  id: string;
+  /** 실제 Blender GLB 경로 (파일이 생기면 GlbModel이 자동으로 교체) */
+  modelPath: string;
+  /** GLB가 없을 때 표시할 임시 3D 소품 디자인 종류 */
+  variant: ThemePropVariant;
+  /** 월드 배치 좌표 [x, y, z] */
+  position: [number, number, number];
+  /** 소품을 통과하지 않도록 자동 추가되는 2D 원형 장애물 반경 (m) */
+  obstacleRadius: number;
+}
+
+/**
+ * 시즌 · 이벤트 테마 설정 타입 — src/data/themes.json과 1:1 대응
+ * - 달력 날짜(dateRange)에 따라 자동 전환되거나 메뉴에서 수동 미리보기할 수 있습니다.
+ */
+export interface SeasonThemeConfig {
+  id: string;
+  name: string;
+  emoji: string;
+  /** 자동 적용 기간 (MM-DD 형식, default 테마는 null) */
+  dateRange: { start: string; end: string } | null;
+  /** 하늘색 및 원거리 안개 색상 */
+  skyColor: string;
+  /** 반구 조명 상단(하늘) 색 */
+  ambientSkyColor: string;
+  /** 반구 조명 하단(바닥 반사) 색 */
+  ambientGroundColor: string;
+  /** 주 조명(태양/달빛) 색상 */
+  sunColor: string;
+  /** 주 조명 세기 */
+  sunIntensity: number;
+  /** 날씨 파티클 종류 */
+  weather: ThemeWeatherType;
+  /** 월드 중앙 배너(졸업/입학 문구 등)에 표시할 텍스트 */
+  bannerText?: string;
+  /** 배너 보조 문구 */
+  bannerSubText?: string;
+  /** 해당 시즌에만 표시되는 3D 이벤트 소품 목록 */
+  props: ThemePropConfig[];
+  /** 해당 시즌 추천 곡 ID 목록 */
+  featuredSongs: string[];
 }
 
 /**

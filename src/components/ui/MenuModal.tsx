@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import type { ScheduleEvent } from '../../types/content';
+import type { ScheduleEvent, SeasonThemeConfig } from '../../types/content';
 import { formatShortDate } from '../../utils/scheduleUtils';
 
 interface MenuModalProps {
@@ -9,6 +9,14 @@ interface MenuModalProps {
   memberCount: number;
   /** 등록된 타이코 곡 수 */
   songCount: number;
+  /** themes.json에서 불러온 전체 시즌 테마 목록 */
+  themes: SeasonThemeConfig[];
+  /** 오늘 날짜 기준으로 자동 결정된 시즌 테마 */
+  autoTheme: SeasonThemeConfig;
+  /** 사용자가 미리보기로 수동 선택한 테마 ID (null이면 날짜 자동 모드) */
+  manualThemeId: string | null;
+  /** 시즌 테마 미리보기 선택 콜백 (null 전달 시 자동 모드 복귀) */
+  onSelectThemePreview: (themeId: string | null) => void;
   /** 직접 연주 소리 ON/OFF 여부 */
   isPlayerSoundOn: boolean;
   /** NPC 합주 소리 ON/OFF 여부 */
@@ -26,12 +34,17 @@ interface MenuModalProps {
 
 /**
  * 화면 좌측 상단 [☰ 메뉴] 버튼을 눌렀을 때 열리는 통합 메뉴바 모달 컴포넌트
- * - 연주 일정, 멤버 정보, 곡 정보/직접 작곡, 타이코 종류·지역 단체, 서클/문의, 세부 소리 설정을 제공합니다.
+ * - 연주 일정, 멤버 정보, 곡 정보/직접 작곡, 타이코 종류·지역 단체, 서클/문의,
+ *   시즌 테마 미리보기, 세부 소리 설정을 제공합니다.
  */
 export function MenuModal({
   nextEvent,
   memberCount,
   songCount,
+  themes,
+  autoTheme,
+  manualThemeId,
+  onSelectThemePreview,
   isPlayerSoundOn,
   isNpcSoundOn,
   onOpenSchedule,
@@ -162,6 +175,39 @@ export function MenuModal({
               ▸
             </span>
           </button>
+
+          {/* 시즌 · 이벤트 테마 미리보기 선택기 (기본: 오늘 날짜 자동 적용) */}
+          <div className="menu-sound-card">
+            <div className="menu-theme-head">
+              <span className="menu-sound-heading" style={{ marginBottom: 0 }}>
+                🎭 시즌 · 이벤트 테마
+              </span>
+              <span className="menu-theme-status">
+                {manualThemeId === null
+                  ? `자동 (${autoTheme.emoji} ${autoTheme.name})`
+                  : '미리보기 중'}
+              </span>
+            </div>
+            <div className="menu-theme-grid">
+              <button
+                type="button"
+                className={`menu-theme-pill ${manualThemeId === null ? 'is-active' : ''}`}
+                onClick={() => onSelectThemePreview(null)}
+              >
+                📅 자동
+              </button>
+              {themes.map((theme) => (
+                <button
+                  key={theme.id}
+                  type="button"
+                  className={`menu-theme-pill ${manualThemeId === theme.id ? 'is-active' : ''}`}
+                  onClick={() => onSelectThemePreview(theme.id)}
+                >
+                  {theme.emoji} {theme.name}
+                </button>
+              ))}
+            </div>
+          </div>
 
           {/* 세분화된 소리 설정 (직접 연주 vs NPC 합주) */}
           <div className="menu-sound-card">

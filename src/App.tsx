@@ -8,6 +8,7 @@ import membersData from './data/members.json';
 import songsData from './data/songs.json';
 import taikoTracksData from './data/taikoTracks.json';
 import taikoGuideData from './data/taikoGuide.json';
+import themesData from './data/themes.json';
 import type {
   GroupHideoutConfig,
   InstrumentConfig,
@@ -16,9 +17,11 @@ import type {
   SpaceConfig,
 } from './types/world';
 import type {
+  CharacterAppearance,
   CircleInfo,
   MemberConfig,
   ScheduleEvent,
+  SeasonThemeConfig,
   SongConfig,
   TaikoGuideData,
   TaikoTrackDefinition,
@@ -27,7 +30,17 @@ import { audioManager } from './systems/audioManager';
 import type { TaikoHitType } from './systems/audioManager';
 import { getNextUpcomingEvent } from './utils/scheduleUtils';
 import { loadCustomSongs, saveCustomSongs } from './utils/customSongsStorage';
+import {
+  loadOrCreateGuestAppearance,
+  saveGuestAppearance,
+} from './utils/characterAppearance';
+import {
+  buildSpaceWithThemeObstacles,
+  getThemeById,
+  resolveThemeByDate,
+} from './utils/themeResolver';
 import { useScheduleEvents } from './hooks/useScheduleEvents';
+import { useMembers } from './hooks/useMembers';
 import { Scene } from './components/Scene';
 import { VirtualJoystick } from './components/ui/VirtualJoystick';
 import { LandingOverlay } from './components/ui/LandingOverlay';
@@ -72,16 +85,22 @@ const MenuModal = lazy(() =>
     default: m.MenuModal,
   }))
 );
+const CharacterCustomizerPanel = lazy(() =>
+  import('./components/ui/CharacterCustomizerPanel').then((m) => ({
+    default: m.CharacterCustomizerPanel,
+  }))
+);
 
 // JSON 배열은 TypeScript가 일반 number[]로 추론하므로, 엄격한 타입으로 안전하게 연결
 const spaces = spacesData as unknown as SpaceConfig[];
 const instruments = instrumentsData as unknown as InstrumentConfig[];
 const fallbackScheduleEvents = scheduleData as ScheduleEvent[];
 const circleInfo = circleData as CircleInfo;
-const members = membersData as MemberConfig[];
+const fallbackMembers = membersData as MemberConfig[];
 const songs = songsData as SongConfig[];
 const taikoTracks = taikoTracksData as unknown as TaikoTrackDefinition[];
 const taikoGuide = taikoGuideData as TaikoGuideData;
+const seasonThemes = themesData as unknown as SeasonThemeConfig[];
 
 // 악기 ID로 트랙 정보(이름·색상·음원 경로)를 즉시 조회하는 맵 생성
 const tracksById: Record<string, TaikoTrackDefinition> = Object.fromEntries(
@@ -96,10 +115,29 @@ const tracksById: Record<string, TaikoTrackDefinition> = Object.fromEntries(
  */
 export function App() {
   // MVP 1차 공간: 첫 번째 공간(잔디 공원)을 기본으로 불러옴
-  const currentSpace = spaces[0];
+  const baseSpace = spaces[0];
+
+  // 시즌·이벤트 테마: 오늘 날짜 기준 자동 선택 + 메뉴에서 수동 미리보기 전환 지원
+  const autoTheme = useMemo(() => resolveThemeByDate(seasonThemes), []);
+  const [manualThemeId, setManualThemeId] = useState<string | null>(null);
+  const activeTheme = useMemo(
+    () =>
+      (manualThemeId ? getThemeById(seasonThemes, manualThemeId) : undefined) ??
+      autoTheme,
+    [manualThemeId, autoTheme]
+  );
+
+  // 활성 시즌 소품(트리, 아치, 야구라 등)의 2D 원형 장애물을 공원 공간에 자동 합산
+  const currentSpace = useMemo(
+    () => buildSpaceWithThemeObstacles(baseSpace, activeTheme),
+    [baseSpace, activeTheme]
+  );
 
   // 구글 스프레드시트(VITE_SCHEDULE_CSV_URL)가 설정되어 있으면 실시간 일정을, 없으면 기본 JSON 일정을 사용
   const { events: scheduleEvents } = useScheduleEvents(fallbackScheduleEvents);
+
+  // 구글 스프레드시트(VITE_MEMBERS_CSV_URL)가 설정되어 있으면 실시간 멤버 목록을, 없으면 기본 JSON 멤버를 사용
+  const { members } = useMembers(fallbackMembers, songs);
 
   // 오늘 날짜 기준으로 가장 가까운 예정 연주 1건 계산
   const nextUpcomingEvent = useMemo(
@@ -109,6 +147,16 @@ export function App() {
 
   // 브라우저 localStorage에 저장된 사용자 작곡 곡 목록 상태
   const [customSongs, setCustomSongs] = useState<SongConfig[]>(() => loadCustomSongs());
+
+  // 게스트 캐릭터 외형 상태: 첫 방문이면 랜덤 생성 후 자동 저장, 재방문이면 기존 캐릭터 복원
+  const [playerAppearance, setPlayerAppearance] = useState<CharacterAppearance>(() =>
+    loadOrCreateGuestAppearance()
+  );
+
+  // 캐릭터 꾸미기 모드 상태 (열림 여부, 3D 회전 각도, 연주 포즈 테스트)
+  const [isCustomizing, setIsCustomizing] = useState(false);
+  const [customizeRotationOffset, setCustomizeRotationOffset] = useState(0);
+  const [isCustomizePlaying, setIsCustomizePlaying] = useState(false);
 
   // 화면 진입 및 세분화 소리 설정 상태 (직접 연주 소리 / NPC 합주 소리 개별 제어)
   const [hasEntered, setHasEntered] = useState(false);
@@ -168,6 +216,21 @@ export function App() {
     });
   }, []);
 
+  /** 게스트 캐릭터 외형 변경 시 3D 화면에 즉시 반영하고 localStorage에 자동 저장하는 핸들러 */
+  const handleChangePlayerAppearance = useCallback((next: CharacterAppearance) => {
+    setPlayerAppearance(next);
+    saveGuestAppearance(next);
+  }, []);
+
+  /** 꾸미기 프리뷰 중 캐릭터를 좌/우로 회전하거나 정면(0)으로 되돌리는 핸들러 */
+  const handleRotateCustomizePreview = useCallback((deltaRadians: number | 'reset') => {
+    if (deltaRadians === 'reset') {
+      setCustomizeRotationOffset(0);
+      return;
+    }
+    setCustomizeRotationOffset((prev) => prev + deltaRadians);
+  }, []);
+
   /** 열려 있는 모든 정보 모달 및 팝오버를 한 번에 닫는 보조 함수 */
   const closeAllModals = useCallback(() => {
     setIsSoundPopoverOpen(false);
@@ -177,6 +240,8 @@ export function App() {
     setIsSongBookOpen(false);
     setIsTaikoGuideOpen(false);
     setIsCircleOpen(false);
+    setIsCustomizing(false);
+    setIsCustomizePlaying(false);
     setSelectedMember(null);
     setOpenedFromMenu(false);
     setGuideOpenedFromHideout(false);
@@ -276,8 +341,10 @@ export function App() {
     isSongBookOpen ||
     isTaikoGuideOpen ||
     isCircleOpen ||
+    isCustomizing ||
     selectedMember !== null;
   const isExploring = hasEntered && activeInstrument === null;
+  const showWorldHud = isExploring && !isCustomizing;
 
   // 메뉴·팝업 창이 열려 있거나 북 연주 모드 중일 때 배경 NPC 합주 소리를 자동으로 줄임(덕킹)
   useEffect(() => {
@@ -337,14 +404,19 @@ export function App() {
       >
         <Scene
           space={currentSpace}
+          activeTheme={activeTheme}
           instruments={instruments}
           members={members}
           songs={songs}
           tracksById={tracksById}
           playerStateRef={playerStateRef}
+          playerAppearance={playerAppearance}
           joystickVectorRef={joystickVectorRef}
           hasEntered={hasEntered}
           isModalOpen={isModalOpen}
+          isCustomizing={isCustomizing}
+          customizeRotationOffset={customizeRotationOffset}
+          isCustomizePlaying={isCustomizePlaying}
           activeInstrument={activeInstrument}
           nearbyInstrument={nearbyInstrument}
           nearbyHideout={nearbyHideout}
@@ -368,7 +440,7 @@ export function App() {
       {!hasEntered && <LandingOverlay onEnter={handleEnterWorld} />}
 
       {/* 탐색 모드 상단 좌측 [☰ 메뉴] 버튼 */}
-      {isExploring && (
+      {showWorldHud && (
         <button
           type="button"
           className="menu-toggle-btn"
@@ -384,7 +456,7 @@ export function App() {
       )}
 
       {/* 탐색 모드 상단 정중앙 최단 연주 일정 배너 */}
-      {isExploring && (
+      {showWorldHud && (
         <div className="schedule-banner-wrap">
           <ScheduleBanner
             nextEvent={nextUpcomingEvent}
@@ -438,6 +510,10 @@ export function App() {
             nextEvent={nextUpcomingEvent}
             memberCount={members.length}
             songCount={songs.length + customSongs.length}
+            themes={seasonThemes}
+            autoTheme={autoTheme}
+            manualThemeId={manualThemeId}
+            onSelectThemePreview={setManualThemeId}
             isPlayerSoundOn={isPlayerSoundOn}
             isNpcSoundOn={isNpcSoundOn}
             onOpenSchedule={() => {
@@ -540,28 +616,63 @@ export function App() {
             onClose={() => setSelectedMember(null)}
           />
         )}
+
+        {/* 캐릭터 꾸미기 패널 (3D 클로즈업 프리뷰 + 실시간 저장 + 시트용 얼굴코드 복사) */}
+        {hasEntered && isCustomizing && (
+          <CharacterCustomizerPanel
+            appearance={playerAppearance}
+            onChangeAppearance={handleChangePlayerAppearance}
+            isPreviewPlaying={isCustomizePlaying}
+            onTogglePreviewPlay={() => setIsCustomizePlaying((prev) => !prev)}
+            onRotatePreview={handleRotateCustomizePreview}
+            onClose={() => {
+              setIsCustomizing(false);
+              setIsCustomizePlaying(false);
+            }}
+          />
+        )}
       </Suspense>
 
-      {/* 탐색 모드 하단 좌측 공간 안내 배지 & 하단 우측 [서클/문의] 버튼 */}
-      {isExploring && (
+      {/* 탐색 모드 하단 좌측 공간 안내 배지 & 하단 우측 [🎨 꾸미기] · [💬 서클/문의] 버튼 */}
+      {showWorldHud && (
         <>
           <div className="space-badge">
-            <span>🌿 {currentSpace.name}</span>
+            <span>
+              🌿 {currentSpace.name}
+              {activeTheme.id !== 'default'
+                ? ` · ${activeTheme.emoji} ${activeTheme.name}`
+                : ''}
+            </span>
             <span className="space-badge-hint">
               모바일: 화면 터치 조이스틱 · PC: WASD · E(멤버·아지트) · Space(연주)
             </span>
           </div>
 
-          <button
-            type="button"
-            className="circle-info-btn"
-            onClick={() => {
-              closeAllModals();
-              setIsCircleOpen(true);
-            }}
-          >
-            💬 서클/문의
-          </button>
+          <div className="bottom-right-actions">
+            <button
+              type="button"
+              className="customize-open-btn"
+              onClick={() => {
+                closeAllModals();
+                setCustomizeRotationOffset(0);
+                setIsCustomizePlaying(false);
+                setIsCustomizing(true);
+              }}
+            >
+              🎨 꾸미기
+            </button>
+
+            <button
+              type="button"
+              className="circle-info-btn"
+              onClick={() => {
+                closeAllModals();
+                setIsCircleOpen(true);
+              }}
+            >
+              💬 서클/문의
+            </button>
+          </div>
         </>
       )}
     </>

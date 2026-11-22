@@ -229,5 +229,83 @@
         ]
       }
     ]
+  },
+  {
+    "id": "song_carol_taiko",
+    "title": "징글벨 타이코 (캐롤 🎄)",
+    "subtitle": "크리스마스 시즌 특별 편곡 — 피리·尺(4)·沖·차파 4중주",
+    "bpm": 122,
+    "difficulty": "입문",
+    "minPlayers": 3,
+    "stepsPerMeasure": 8,
+    "totalSteps": 32,
+    "seasonThemeId": "christmas",
+    "description": "크리스마스 트리가 세워진 겨울 공원에서 함께 즐길 수 있는 신나는 타이코 캐롤 편곡입니다. 차파의 쨍쨍한 종소리와 피리 선율이 어우러집니다.",
+    "layers": [
+      {
+        "instrumentId": "fue",
+        "volume": 0.92,
+        "steps": [
+          "ミ", "-", "ミ", "-", "ミ", "-", "-", "-",
+          "ミ", "-", "ミ", "-", "ミ", "-", "-", "-",
+          "ミ", "-", "ソ", "-", "レ", "-", "ミ", "-",
+          "ソ", "-", "-", "-", "-", "-", "-", "-"
+        ],
+        "dynamics": [
+          "normal", "normal", "normal", "normal", "strong", "normal", "normal", "normal",
+          "normal", "normal", "normal", "normal", "strong", "normal", "normal", "normal",
+          "cresc", "cresc", "cresc", "cresc", "cresc", "cresc", "cresc", "cresc",
+          "strong", "normal", "normal", "normal", "normal", "normal", "normal", "normal"
+        ]
+      },
+      {
+        "instrumentId": "shaku_4",
+        "volume": 0.85,
+        "steps": [
+          "う", "-", "さ", "-", "う", "-", "かっ", "-",
+          "う", "-", "さ", "-", "う", "-", "かっ", "-",
+          "う", "さ", "う", "さ", "う", "-", "さ", "-",
+          "う", "-", "かっ", "-", "う", "-", "-", "-"
+        ],
+        "dynamics": [
+          "normal", "normal", "weak", "normal", "normal", "normal", "strong", "normal",
+          "normal", "normal", "weak", "normal", "normal", "normal", "strong", "normal",
+          "cresc", "cresc", "cresc", "cresc", "cresc", "cresc", "cresc", "cresc",
+          "strong", "normal", "strong", "normal", "strong", "normal", "normal", "normal"
+        ]
+      },
+      {
+        "instrumentId": "oki",
+        "volume": 0.9,
+        "steps": [
+          "どん", "-", "-", "-", "どん", "-", "-", "-",
+          "どん", "-", "-", "-", "どん", "-", "かっ", "-",
+          "どん", "-", "どん", "-", "どん", "-", "-", "-",
+          "どん", "-", "-", "どん", "どん", "-", "-", "-"
+        ],
+        "dynamics": [
+          "normal", "normal", "normal", "normal", "normal", "normal", "normal", "normal",
+          "normal", "normal", "normal", "normal", "strong", "normal", "weak", "normal",
+          "cresc", "cresc", "cresc", "cresc", "strong", "normal", "normal", "normal",
+          "strong", "normal", "normal", "normal", "strong", "normal", "normal", "normal"
+        ]
+      },
+      {
+        "instrumentId": "chappa",
+        "volume": 0.8,
+        "steps": [
+          "チャン", "-", "チッ", "-", "チャン", "-", "チッ", "-",
+          "チャン", "-", "チッ", "-", "チャン", "-", "チッ", "-",
+          "チャン", "-", "チッ", "-", "チャン", "-", "チッ", "-",
+          "チャン", "チッ", "チャン", "チッ", "チャン", "-", "-", "-"
+        ],
+        "dynamics": [
+          "weak", "normal", "weak", "normal", "normal", "normal", "weak", "normal",
+          "weak", "normal", "weak", "normal", "normal", "normal", "weak", "normal",
+          "cresc", "cresc", "cresc", "cresc", "cresc", "cresc", "cresc", "cresc",
+          "strong", "normal", "strong", "normal", "strong", "normal", "normal", "normal"
+        ]
+      }
+    ]
   }
 ]

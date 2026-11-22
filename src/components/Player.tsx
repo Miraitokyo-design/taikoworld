@@ -3,7 +3,7 @@ import type { MutableRefObject } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { Vector3 } from 'three';
 import type { Group } from 'three';
-import type { MemberParts } from '../types/content';
+import type { CharacterAppearance } from '../types/content';
 import type {
   GroupHideoutConfig,
   InstrumentConfig,
@@ -19,6 +19,8 @@ import { Character } from './Character';
 interface PlayerProps {
   /** 플레이어의 위치·방향·행동을 하나로 관리하는 단일 상태 ref */
   playerStateRef: MutableRefObject<PlayerState>;
+  /** 게스트 캐릭터의 5-레이어 외형 설정 (첫 방문 시 랜덤 생성 + localStorage 저장) */
+  appearance: CharacterAppearance;
   /** 경계 및 장애물 충돌 계산에 쓰이는 현재 공간 데이터 */
   space: SpaceConfig;
   /** 거리 감지에 사용하는 악기 목록 */
@@ -27,6 +29,12 @@ interface PlayerProps {
   activeInstrument: InstrumentConfig | null;
   /** 입장 화면이나 모달 표시 중에는 이동 입력을 잠시 막는 옵션 */
   canMove: boolean;
+  /** 캐릭터 꾸미기 모드 활성화 여부 (true일 때 캐릭터 정면 클로즈업 카메라 작동) */
+  isCustomizing: boolean;
+  /** 꾸미기 프리뷰 중 캐릭터 좌/우 회전 각도(라디안) */
+  customizeRotationOffset: number;
+  /** 꾸미기 프리뷰 중 연주('play') 포즈 테스트 여부 */
+  isCustomizePlaying: boolean;
   /** PC 마우스 바닥 클릭으로 지정된 이동 목적지 [x, z] */
   targetPoint: [number, number] | null;
   /** 목적지 도착 또는 키보드·조이스틱 전환 시 목적지 표시를 지우는 콜백 */
@@ -41,13 +49,6 @@ interface PlayerProps {
   joystickVectorRef: MutableRefObject<MoveVector>;
 }
 
-/** 게스트 캐릭터 기본 파츠 (NPC와 동일한 모듈식 Character 컴포넌트 재사용) */
-const GUEST_PLAYER_PARTS: MemberParts = {
-  head: 'head_a',
-  outfit: 'happi_blue',
-  color: '#3b7dd8',
-};
-
 /** 캐릭터 걷기 속도 (초당 미터) */
 const MOVE_SPEED = 3.8;
 /** 목적지에 도착했다고 판정할 거리 임계값 (m) */
@@ -57,14 +58,18 @@ const CAMERA_OFFSET = new Vector3(0, 8.2, 9.2);
 
 /**
  * 게스트 캐릭터의 이동(조이스틱 + WASD + 클릭), 2D 충돌, 악기 근접 감지, 카메라 제어를 처리하는 컴포넌트
- * - 외형과 걷기/연주 애니메이션은 NPC와 동일한 모듈식 Character 컴포넌트를 공유합니다.
+ * - 외형과 걷기/연주 애니메이션은 NPC와 동일한 5-레이어 모듈식 Character 컴포넌트를 공유합니다.
  */
 export function Player({
   playerStateRef,
+  appearance,
   space,
   instruments,
   activeInstrument,
   canMove,
+  isCustomizing,
+  customizeRotationOffset,
+  isCustomizePlaying,
   targetPoint,
   onClearTarget,
   onNearbyInstrumentChange,
@@ -108,6 +113,38 @@ export function Player({
 
       desiredLookAtRef.current.set(ix, iy + 0.88, iz);
       cameraLookAtRef.current.lerp(desiredLookAtRef.current, Math.min(delta * 6, 1));
+      state.camera.lookAt(cameraLookAtRef.current);
+      return;
+    }
+
+    // A-2) 캐릭터 꾸미기 모드일 때: 캐릭터를 카메라 정면(+Z)으로 부드럽게 돌리고 클로즈업
+    // - 모바일(세로 화면)은 하단 시트를 피해 캐릭터를 화면 위쪽에 배치
+    // - PC(가로 화면)는 우측 패널을 피해 캐릭터를 화면 왼쪽에 배치
+    if (isCustomizing) {
+      const previewAction: PlayerAction = isCustomizePlaying ? 'play' : 'idle';
+      player.action = previewAction;
+      actionRef.current = previewAction;
+
+      const [px, py, pz] = player.position;
+      const targetRot = customizeRotationOffset;
+      player.rotationY = lerpAngle(player.rotationY, targetRot, delta * 10);
+
+      if (rootGroupRef.current) {
+        rootGroupRef.current.position.set(px, py, pz);
+        rootGroupRef.current.rotation.y = player.rotationY;
+      }
+
+      const isMobilePortrait = state.size.width < 768;
+      if (isMobilePortrait) {
+        desiredCameraPosRef.current.set(px, py + 1.05, pz + 3.15);
+        desiredLookAtRef.current.set(px, py + 0.36, pz);
+      } else {
+        desiredCameraPosRef.current.set(px + 0.62, py + 1.12, pz + 2.75);
+        desiredLookAtRef.current.set(px + 0.62, py + 0.72, pz);
+      }
+
+      state.camera.position.lerp(desiredCameraPosRef.current, Math.min(delta * 6, 1));
+      cameraLookAtRef.current.lerp(desiredLookAtRef.current, Math.min(delta * 7, 1));
       state.camera.lookAt(cameraLookAtRef.current);
       return;
     }
@@ -263,7 +300,7 @@ export function Player({
       position={[initialX, initialY, initialZ]}
       rotation={[0, playerStateRef.current.rotationY, 0]}
     >
-      <Character parts={GUEST_PLAYER_PARTS} actionRef={actionRef} />
+      <Character appearance={appearance} actionRef={actionRef} />
     </group>
   );
 }

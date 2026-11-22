@@ -5,6 +5,7 @@ import { Html } from '@react-three/drei';
 import type { Group, Mesh } from 'three';
 import type { MemberConfig } from '../types/content';
 import type { PlayerAction, Vec3 } from '../types/world';
+import { getTaikoGroupById } from '../utils/characterAppearance';
 import { Character } from './Character';
 
 interface NpcProps {
@@ -80,6 +81,8 @@ export const Npc = memo(function Npc({
     document.body.style.cursor = 'auto';
   };
 
+  const group = getTaikoGroupById(member.appearance.groupId);
+
   return (
     <group
       ref={registerGroupRef}
@@ -106,7 +109,7 @@ export const Npc = memo(function Npc({
         </mesh>
       )}
 
-      {/* 3인 합주('play') 중일 때만 발밑에 빛나는 멤버 컬러 리듬 링 */}
+      {/* 3인 이상 합주('play') 중일 때만 발밑에 빛나는 단체 컬러 리듬 링 */}
       <mesh
         ref={registerPlayRingRef}
         visible={false}
@@ -114,11 +117,11 @@ export const Npc = memo(function Npc({
         position={[0, 0.02, 0]}
       >
         <ringGeometry args={[0.45, 0.56, 24]} />
-        <meshBasicMaterial color={member.parts.color} transparent opacity={0.68} />
+        <meshBasicMaterial color={group.happiColor} transparent opacity={0.68} />
       </mesh>
 
-      {/* 공통 모듈식 캐릭터 (members.json 파츠 적용) */}
-      <Character parts={member.parts} actionRef={actionRef} />
+      {/* 공통 5-레이어 모듈식 동물 캐릭터 (단체 종족·하피 + 2D 얼굴 + 헤어 + 장비 악기) */}
+      <Character appearance={member.appearance} actionRef={actionRef} />
 
       {/* 플레이어가 가까워지면 머리 위에 뜨는 [!] 말풍선 (PC에서는 E 단축키 안내 배지 동시 표시) */}
       {isPlayerNear && isInteractionActive && (

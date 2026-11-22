@@ -9,6 +9,7 @@ import type {
   TrackInstrumentId,
 } from '../../types/content';
 import { audioManager } from '../../systems/audioManager';
+import { getTaikoGroupById } from '../../utils/characterAppearance';
 import {
   computeStepDynamicGain,
   getSongStepNotes,
@@ -722,19 +723,22 @@ export function SongBookModal({
                 <div className="song-players-row">
                   <span className="song-players-label">연주 가능 멤버</span>
                   <div className="song-players-chips">
-                    {capableMembers.map((member) => (
-                      <span
-                        key={member.id}
-                        className="song-player-chip"
-                        style={{ borderColor: member.parts.color }}
-                      >
+                    {capableMembers.map((member) => {
+                      const group = getTaikoGroupById(member.appearance.groupId);
+                      return (
                         <span
-                          className="song-player-dot"
-                          style={{ backgroundColor: member.parts.color }}
-                        />
-                        {member.nickname}
-                      </span>
-                    ))}
+                          key={member.id}
+                          className="song-player-chip"
+                          style={{ borderColor: group.happiColor }}
+                        >
+                          <span
+                            className="song-player-dot"
+                            style={{ backgroundColor: group.happiColor }}
+                          />
+                          {member.nickname}
+                        </span>
+                      );
+                    })}
                   </div>
                 </div>
               )}

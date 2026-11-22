@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import type { MemberConfig } from '../../types/content';
+import { getTaikoGroupById } from '../../utils/characterAppearance';
 import { MemberAvatar } from './MemberProfileModal';
 
 interface MemberDirectoryModalProps {
@@ -79,34 +80,37 @@ export function MemberDirectoryModal({
         </p>
 
         <div className="directory-list">
-          {members.map((member) => (
-            <button
-              key={member.id}
-              type="button"
-              className="directory-item-btn"
-              onClick={() => onSelectMember(member)}
-            >
-              <MemberAvatar member={member} size="small" />
-              <div className="directory-item-info">
-                <div className="directory-item-top">
-                  <span className="directory-item-name">{member.nickname}</span>
-                  <span
-                    className="directory-item-role"
-                    style={{ backgroundColor: member.parts.color }}
-                  >
-                    {member.role}
-                  </span>
+          {members.map((member) => {
+            const group = getTaikoGroupById(member.appearance.groupId);
+            return (
+              <button
+                key={member.id}
+                type="button"
+                className="directory-item-btn"
+                onClick={() => onSelectMember(member)}
+              >
+                <MemberAvatar member={member} size="small" />
+                <div className="directory-item-info">
+                  <div className="directory-item-top">
+                    <span className="directory-item-name">{member.nickname}</span>
+                    <span
+                      className="directory-item-role"
+                      style={{ backgroundColor: group.happiColor }}
+                    >
+                      {group.name} · {member.role}
+                    </span>
+                  </div>
+                  <div className="directory-item-meta">
+                    {member.profile.experience}
+                    {member.profile.status ? ` / ${member.profile.status}` : ''}
+                  </div>
                 </div>
-                <div className="directory-item-meta">
-                  {member.profile.experience}
-                  {member.profile.status ? ` / ${member.profile.status}` : ''}
-                </div>
-              </div>
-              <span className="directory-item-arrow" aria-hidden="true">
-                ▸
-              </span>
-            </button>
-          ))}
+                <span className="directory-item-arrow" aria-hidden="true">
+                  ▸
+                </span>
+              </button>
+            );
+          })}
         </div>
       </div>
     </div>

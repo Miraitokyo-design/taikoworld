@@ -4,16 +4,29 @@
     "nickname": "돈타로",
     "role": "沖 (큰 어깨북)",
     "illustration": "/images/characters/m01.webp",
-    "parts": {
-      "head": "head_a",
-      "outfit": "happi_red",
-      "color": "#c94632"
+    "appearance": {
+      "groupId": "group_tentaikomai",
+      "hair": "hair_hachimaki",
+      "equippedInstrument": "oki",
+      "face": {
+        "eyes": "sparkle",
+        "eyeScale": 1.08,
+        "eyeY": -2,
+        "eyeSpacing": 2,
+        "nose": "rabbit",
+        "noseScale": 1.0,
+        "noseY": 0,
+        "mouth": "grin",
+        "mouthScale": 1.08,
+        "mouthY": 1,
+        "blush": true
+      }
     },
     "route": "park_grass_a",
     "playableSongs": ["song_matsuri", "song_daichi"],
     "profile": {
       "experience": "타이코력 3년",
-      "status": "OO대학 3학년",
+      "status": "조형대학 3학년",
       "personality": "에너지 넘치는 분위기 메이커",
       "traits": "큰 북만 보면 눈이 반짝거림",
       "favoriteTaiko": "沖 (오키 · 큰 어깨북)",
@@ -25,16 +38,29 @@
     "nickname": "카나",
     "role": "締め (리드 북)",
     "illustration": "/images/characters/m02.webp",
-    "parts": {
-      "head": "head_b",
-      "outfit": "happi_teal",
-      "color": "#2f8f83"
+    "appearance": {
+      "groupId": "group_tsurukamedaiko",
+      "hair": "hair_bun",
+      "equippedInstrument": "shime",
+      "face": {
+        "eyes": "round",
+        "eyeScale": 1.0,
+        "eyeY": 0,
+        "eyeSpacing": 0,
+        "nose": "dot",
+        "noseScale": 0.95,
+        "noseY": 0,
+        "mouth": "smile",
+        "mouthScale": 1.0,
+        "mouthY": 0,
+        "blush": true
+      }
     },
     "route": "park_grass_b",
     "playableSongs": ["song_matsuri", "song_kaze", "song_daichi"],
     "profile": {
       "experience": "타이코력 2년",
-      "status": "OO대학 2학년",
+      "status": "기술대학 2학년",
       "personality": "차분하지만 박자 앞에서는 칼각",
       "traits": "걸을 때도 무의식중에 박자를 맞춤",
       "favoriteTaiko": "締め (시메다이코)",
@@ -46,16 +72,29 @@
     "nickname": "도코",
     "role": "尺(4) 어깨북",
     "illustration": "/images/characters/m03.webp",
-    "parts": {
-      "head": "head_c",
-      "outfit": "happi_ochre",
-      "color": "#d68c2b"
+    "appearance": {
+      "groupId": "group_tentaikomai",
+      "hair": "hair_bob",
+      "equippedInstrument": "shaku_4",
+      "face": {
+        "eyes": "happy",
+        "eyeScale": 1.04,
+        "eyeY": 2,
+        "eyeSpacing": -1,
+        "nose": "rabbit",
+        "noseScale": 0.96,
+        "noseY": 0,
+        "mouth": "cat",
+        "mouthScale": 1.02,
+        "mouthY": -1,
+        "blush": true
+      }
     },
     "route": "park_grass_c",
     "playableSongs": ["song_matsuri", "song_kaze", "song_daichi"],
     "profile": {
       "experience": "타이코력 1년 6개월",
-      "status": "OO대학 1학년",
+      "status": "조형대학 1학년",
       "personality": "다정하고 신입 챙기기 좋아하는 편",
       "traits": "연습 끝나고 간식 추천 담당",
       "favoriteTaiko": "尺 (샤쿠 · 어깨북)",
@@ -67,16 +106,29 @@
     "nickname": "바치",
     "role": "笛 (피리)",
     "illustration": "/images/characters/m04.webp",
-    "parts": {
-      "head": "head_d",
-      "outfit": "happi_navy",
-      "color": "#3d5a99"
+    "appearance": {
+      "groupId": "group_tsurukamedaiko",
+      "hair": "hair_spiky",
+      "equippedInstrument": "fue",
+      "face": {
+        "eyes": "sleepy",
+        "eyeScale": 1.0,
+        "eyeY": 1,
+        "eyeSpacing": 3,
+        "nose": "triangle",
+        "noseScale": 1.0,
+        "noseY": 1,
+        "mouth": "calm",
+        "mouthScale": 1.0,
+        "mouthY": 2,
+        "blush": false
+      }
     },
     "route": "park_grass_d",
     "playableSongs": ["song_matsuri", "song_kaze"],
     "profile": {
       "experience": "타이코력 4년",
-      "status": "OO대학 25년 졸",
+      "status": "기술대학 25년 졸",
       "personality": "유쾌하고 장난기 많은 아이디어 뱅크",
       "traits": "새 피리 선율과 리듬 패턴 만드는 걸 즐김",
       "favoriteTaiko": "笛 (시노부에 · 피리)",
@@ -88,16 +140,29 @@
     "nickname": "챠피",
     "role": "チャッパ (미니 심벌즈)",
     "illustration": "/images/characters/m05.webp",
-    "parts": {
-      "head": "head_b",
-      "outfit": "happi_purple",
-      "color": "#8c4fb8"
+    "appearance": {
+      "groupId": "group_tentaikomai",
+      "hair": "hair_cap",
+      "equippedInstrument": "chappa",
+      "face": {
+        "eyes": "sparkle",
+        "eyeScale": 1.12,
+        "eyeY": -3,
+        "eyeSpacing": -2,
+        "nose": "dot",
+        "noseScale": 0.9,
+        "noseY": -1,
+        "mouth": "cat",
+        "mouthScale": 1.05,
+        "mouthY": 0,
+        "blush": true
+      }
     },
     "route": "park_grass_a",
     "playableSongs": ["song_matsuri", "song_kaze"],
     "profile": {
       "experience": "타이코력 2년",
-      "status": "OO대학 2학년",
+      "status": "조형대학 2학년",
       "personality": "밝고 리액션이 큰 응원 단장 타입",
       "traits": "추임새 타이밍을 기가 막히게 잡음",
       "favoriteTaiko": "チャッパ (차파)",
@@ -109,16 +174,29 @@
     "nickname": "로쿠",
     "role": "尺(6) 어깨북",
     "illustration": "/images/characters/m06.webp",
-    "parts": {
-      "head": "head_c",
-      "outfit": "happi_green",
-      "color": "#4c8f46"
+    "appearance": {
+      "groupId": "group_tsurukamedaiko",
+      "hair": "hair_none",
+      "equippedInstrument": "shaku_6",
+      "face": {
+        "eyes": "round",
+        "eyeScale": 0.95,
+        "eyeY": 2,
+        "eyeSpacing": 4,
+        "nose": "dot",
+        "noseScale": 1.05,
+        "noseY": 1,
+        "mouth": "smile",
+        "mouthScale": 1.1,
+        "mouthY": 1,
+        "blush": true
+      }
     },
     "route": "park_grass_d",
     "playableSongs": ["song_matsuri", "song_daichi", "song_kaze"],
     "profile": {
       "experience": "타이코력 5년",
-      "status": "OO대학 24년 졸",
+      "status": "기술대학 24년 졸",
       "personality": "든든하고 후배들에게 친절한 베테랑",
       "traits": "어깨북 자세 교정을 알기 쉽게 알려줌",
       "favoriteTaiko": "尺(6) (샤쿠 6)",

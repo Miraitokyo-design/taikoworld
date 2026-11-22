@@ -1,6 +1,12 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import type { MutableRefObject } from 'react';
-import type { MemberConfig, SongConfig, TaikoTrackDefinition } from '../types/content';
+import type {
+  CharacterAppearance,
+  MemberConfig,
+  SeasonThemeConfig,
+  SongConfig,
+  TaikoTrackDefinition,
+} from '../types/content';
 import type {
   GroupHideoutConfig,
   InstrumentConfig,
@@ -16,10 +22,14 @@ import { Player } from './Player';
 import { NpcGroup } from './NpcGroup';
 import { GroupHideout } from './GroupHideout';
 import { DestinationMarker } from './DestinationMarker';
+import { ThemeProps } from './ThemeProps';
+import { ThemeWeather } from './ThemeWeather';
 
 interface SceneProps {
-  /** 현재 표시할 공간 설정 */
+  /** 현재 표시할 공간 설정 (시즌 소품 장애물 포함) */
   space: SpaceConfig;
+  /** 현재 활성 시즌 · 이벤트 테마 (하늘·조명·날씨·시즌 소품 제어) */
+  activeTheme: SeasonThemeConfig;
   /** 공간에 배치할 악기 목록 */
   instruments: InstrumentConfig[];
   /** 공간에서 활동할 서클 NPC 멤버 목록 */
@@ -30,12 +40,20 @@ interface SceneProps {
   tracksById: Record<string, TaikoTrackDefinition>;
   /** 플레이어의 위치·방향·행동을 담은 단일 상태 ref */
   playerStateRef: MutableRefObject<PlayerState>;
+  /** 게스트 플레이어의 5-레이어 모듈식 외형 설정 */
+  playerAppearance: CharacterAppearance;
   /** 모바일 플로팅 조이스틱 방향 벡터 ref */
   joystickVectorRef: MutableRefObject<MoveVector>;
   /** 입장 완료 여부 (입장 전에는 이동 및 배경 소리 차단) */
   hasEntered: boolean;
   /** 캘린더·서클 소개·프로필 등 모달이 열려 있는지 여부 (열려 있으면 이동/클릭 일시 정지) */
   isModalOpen: boolean;
+  /** 캐릭터 꾸미기 모드 활성화 여부 */
+  isCustomizing: boolean;
+  /** 꾸미기 프리뷰 중 캐릭터 좌/우 회전 각도(라디안) */
+  customizeRotationOffset: number;
+  /** 꾸미기 프리뷰 중 연주('play') 포즈 테스트 여부 */
+  isCustomizePlaying: boolean;
   /** 현재 연주 중인 악기 (없으면 null) */
   activeInstrument: InstrumentConfig | null;
   /** 플레이어가 가까이 다가가 있는 악기 (링 강조 표시용) */
@@ -63,14 +81,19 @@ interface SceneProps {
  */
 export function Scene({
   space,
+  activeTheme,
   instruments,
   members,
   songs,
   tracksById,
   playerStateRef,
+  playerAppearance,
   joystickVectorRef,
   hasEntered,
   isModalOpen,
+  isCustomizing,
+  customizeRotationOffset,
+  isCustomizePlaying,
   activeInstrument,
   nearbyInstrument,
   nearbyHideout,
@@ -89,6 +112,12 @@ export function Scene({
   const [targetPoint, setTargetPoint] = useState<[number, number] | null>(null);
 
   const canMove = hasEntered && !isModalOpen && activeInstrument === null;
+
+  // 구글 시트에서 멤버가 추가/삭제되어 목록 ID가 바뀌면 NpcGroup의 런타임 배열을 안전하게 새로 초기화
+  const membersKey = useMemo(
+    () => members.map((member) => member.id).join('|'),
+    [members]
+  );
 
   // useCallback: 불필요한 함수 재생성을 막기 위해 콜백을 기억하는 Hook
   const handleGroundClick = useCallback(
@@ -134,21 +163,33 @@ export function Scene({
 
   return (
     <>
-      {/* 맑고 따뜻한 낮 하늘색 배경과 부드러운 원거리 안개 (넓어진 원형 광장에 맞춰 시야 거리 확장) */}
-      <color attach="background" args={['#cde9f6']} />
-      <fog attach="fog" args={['#cde9f6', 22, 46]} />
+      {/* 활성 시즌 테마(기본/크리스마스/졸업/입학/여름/오봉)에 따라 자동 전환되는 하늘색과 안개 */}
+      <color attach="background" args={[activeTheme.skyColor]} />
+      <fog attach="fog" args={[activeTheme.skyColor, 22, 46]} />
 
       {/* 하늘(위)과 잔디(아래)에서 은은하게 퍼지는 반구 조명 */}
-      <hemisphereLight args={['#fffdf5', '#76b569', 1.1]} />
+      <hemisphereLight
+        args={[activeTheme.ambientSkyColor, activeTheme.ambientGroundColor, 1.1]}
+      />
 
-      {/* 따뜻한 햇살 느낌의 주 조명 */}
-      <directionalLight position={[6, 12, 8]} intensity={1.35} color="#fff6e0" />
+      {/* 시즌별 햇살/축제 밤빛 주 조명 */}
+      <directionalLight
+        position={[6, 12, 8]}
+        intensity={activeTheme.sunIntensity}
+        color={activeTheme.sunColor}
+      />
 
       {/* 반대편 그림자가 너무 어둡게 죽지 않도록 도와주는 은은한 보조 조명 (Blender PBR GLB 대비) */}
       <directionalLight position={[-7, 6, -6]} intensity={0.45} color="#d9ecff" />
 
       {/* 잔디 공원 공간 (PC 바닥 클릭 이벤트 연결) */}
       <Space space={space} onGroundClick={handleGroundClick} />
+
+      {/* 활성 시즌 · 이벤트 3D 소품 (크리스마스 트리, 졸업·입학 아치, 오봉 야구라 등) */}
+      <ThemeProps theme={activeTheme} />
+
+      {/* 활성 시즌 경량 날씨 파티클 (눈, 벚꽃잎, 반딧불이, 여름 햇살) */}
+      <ThemeWeather weather={activeTheme.weather} />
 
       {/* 바닥 클릭 시 목적지를 알려주는 반짝이는 링 (연주 모드에서는 숨김) */}
       <DestinationMarker target={canMove ? targetPoint : null} />
@@ -175,8 +216,9 @@ export function Scene({
         />
       ))}
 
-      {/* members.json 기반 서클 NPC 그룹 (랜덤 산책 + 바로 옆 3인 공통곡 합주 + [!] 말풍선 + 추임새) */}
+      {/* members.json 또는 구글 시트 기반 서클 NPC 그룹 (랜덤 산책 + 바로 옆 3인 이상 공통곡 합주 + [!] 말풍선 + 추임새) */}
       <NpcGroup
+        key={membersKey}
         members={members}
         songs={songs}
         tracksById={tracksById}
@@ -191,10 +233,14 @@ export function Scene({
       {/* 게스트 플레이어 캐릭터 (이동 + 2D 충돌 + 악기 근접 감지 + 카메라 제어) */}
       <Player
         playerStateRef={playerStateRef}
+        appearance={playerAppearance}
         space={space}
         instruments={instruments}
         activeInstrument={activeInstrument}
         canMove={canMove}
+        isCustomizing={isCustomizing}
+        customizeRotationOffset={customizeRotationOffset}
+        isCustomizePlaying={isCustomizePlaying}
         targetPoint={targetPoint}
         onClearTarget={handleClearTarget}
         onNearbyInstrumentChange={onNearbyInstrumentChange}
