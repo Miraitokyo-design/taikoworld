@@ -12,15 +12,88 @@ interface GlbModelProps {
 }
 
 /**
- * 이미 존재 여부를 확인한 GLB URL 캐시 맵
- * - 같은 경로를 여러 번 HEAD 요청하지 않도록 메모리에 기억합니다.
+ * 이미 존재 여부를 확인한 에셋(.glb / .webp / .png) URL 캐시 맵
+ * - 같은 경로를 여러 캐릭터/컴포넌트가 동시에 확인해도 네트워크 HEAD 요청은 딱 1번만 보냅니다.
  */
-const glbAvailabilityCache = new Map<string, boolean>();
+const assetAvailabilityCache = new Map<string, boolean>();
+const assetAvailabilityInFlight = new Map<string, Promise<boolean>>();
+
+/**
+ * 지정된 정적 에셋 URL이 실제 파일로 존재하는지(HTML 폴백이 아닌지) 확인하는 비동기 함수
+ * @param targetUrl - public/ 기준 파일 경로
+ * @returns 실제 바이너리/이미지 파일이 존재하면 true
+ */
+export function checkAssetAvailable(targetUrl: string): Promise<boolean> {
+  if (assetAvailabilityCache.has(targetUrl)) {
+    return Promise.resolve(assetAvailabilityCache.get(targetUrl)!);
+  }
+
+  const existing = assetAvailabilityInFlight.get(targetUrl);
+  if (existing) {
+    return existing;
+  }
+
+  const request = (async () => {
+    try {
+      const res = await fetch(targetUrl, { method: 'HEAD' });
+      const contentType = res.headers.get('content-type') ?? '';
+      // Vite/Vercel 정적 호스팅에서 없는 경로는 200 + text/html(index.html)을 반환할 수 있어 content-type을 함께 검사
+      const valid = res.ok && !contentType.includes('text/html');
+      assetAvailabilityCache.set(targetUrl, valid);
+      return valid;
+    } catch {
+      assetAvailabilityCache.set(targetUrl, false);
+      return false;
+    } finally {
+      assetAvailabilityInFlight.delete(targetUrl);
+    }
+  })();
+
+  assetAvailabilityInFlight.set(targetUrl, request);
+  return request;
+}
+
+/**
+ * 에셋 파일 존재 여부를 구독하는 경량 React Hook
+ * - 파일이 아직 없으면 false를 유지하고, Blender 에셋이 추가되면 true로 전환됩니다.
+ * @param url - 확인할 public/ 기준 파일 경로
+ * @returns 파일 존재 여부
+ */
+export function useAssetAvailability(url?: string): boolean {
+  const [isAvailable, setIsAvailable] = useState<boolean>(() =>
+    url ? assetAvailabilityCache.get(url) ?? false : false
+  );
+
+  useEffect(() => {
+    if (!url) {
+      setIsAvailable(false);
+      return;
+    }
+
+    if (assetAvailabilityCache.has(url)) {
+      setIsAvailable(assetAvailabilityCache.get(url)!);
+      return;
+    }
+
+    let cancelled = false;
+    void checkAssetAvailable(url).then((valid) => {
+      if (!cancelled) {
+        setIsAvailable(valid);
+      }
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [url]);
+
+  return isAvailable;
+}
 
 /**
  * GLB 로드 실패 시 앱 전체가 멈추지 않고 임시 모델(fallback)로 안전하게 복구하는 에러 경계
  */
-class ModelErrorBoundary extends Component<
+export class ModelErrorBoundary extends Component<
   { fallback: ReactNode; children: ReactNode },
   { hasError: boolean }
 > {
@@ -40,7 +113,8 @@ class ModelErrorBoundary extends Component<
 
 /**
  * 실제 GLB 파일을 drei의 useGLTF로 불러와 복제(clone)해 렌더링하는 내부 컴포넌트
- * - clone(true)를 사용해 같은 GLB를 여러 위치에 배치해도 서로 충돌하지 않습니다.
+ * - 정적 모델(공간·아지트·소품·무기)용으로 clone(true)을 사용합니다.
+ * - 뼈대가 있는 스킨드 캐릭터는 SkinnedCharacterGlb(SkeletonUtils.clone)를 사용합니다.
  */
 function LoadedGlbMesh({ url, scale = 1 }: { url: string; scale?: number }) {
   const { scene } = useGLTF(url);
@@ -49,53 +123,11 @@ function LoadedGlbMesh({ url, scale = 1 }: { url: string; scale?: number }) {
 }
 
 /**
- * Blender에서 내보낸 GLB 3D 에셋을 안전하게 불러오고, 파일이 아직 없으면 임시 모델(fallback)을 보여주는 래퍼 컴포넌트
- * - Vite/Vercel 정적 호스팅에서는 없는 파일 요청 시 index.html(text/html)을 반환할 수 있으므로
- *   먼저 가벼운 HEAD 요청으로 실제 GLB 파일 존재 여부를 확인한 뒤 useGLTF를 호출합니다.
- * - 덕분에 제작자님이 Blender 에셋을 하나씩 public/models/에 넣을 때마다 코드 수정 없이 바로 교체됩니다!
+ * Blender에서 내보낸 정적 GLB 3D 에셋을 안전하게 불러오고, 파일이 아직 없으면 임시 모델(fallback)을 보여주는 래퍼 컴포넌트
+ * - 제작자님이 Blender 에셋을 public/models/에 넣기만 하면 코드 수정 없이 바로 교체됩니다.
  */
 export function GlbModel({ url, fallback, scale = 1 }: GlbModelProps) {
-  const [isAvailable, setIsAvailable] = useState<boolean>(() =>
-    url ? glbAvailabilityCache.get(url) ?? false : false
-  );
-
-  useEffect(() => {
-    if (!url) {
-      setIsAvailable(false);
-      return;
-    }
-
-    if (glbAvailabilityCache.has(url)) {
-      setIsAvailable(glbAvailabilityCache.get(url)!);
-      return;
-    }
-
-    let cancelled = false;
-
-    async function checkGlbExists(targetUrl: string) {
-      try {
-        const res = await fetch(targetUrl, { method: 'HEAD' });
-        const contentType = res.headers.get('content-type') ?? '';
-        // 200 응답이면서 HTML 폴백 페이지가 아닌 실제 바이너리(.glb)일 때만 로드 허용
-        const valid = res.ok && !contentType.includes('text/html');
-        glbAvailabilityCache.set(targetUrl, valid);
-        if (!cancelled) {
-          setIsAvailable(valid);
-        }
-      } catch {
-        glbAvailabilityCache.set(targetUrl, false);
-        if (!cancelled) {
-          setIsAvailable(false);
-        }
-      }
-    }
-
-    void checkGlbExists(url);
-
-    return () => {
-      cancelled = true;
-    };
-  }, [url]);
+  const isAvailable = useAssetAvailability(url);
 
   if (!url || !isAvailable) {
     return <>{fallback}</>;

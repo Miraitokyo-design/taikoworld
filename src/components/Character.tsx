@@ -1,4 +1,4 @@
-import { memo, useEffect, useMemo, useRef } from 'react';
+import { Suspense, memo, useEffect, useMemo, useRef } from 'react';
 import type { MutableRefObject } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { CanvasTexture, SRGBColorSpace } from 'three';
@@ -17,6 +17,8 @@ import {
   drawFaceToCanvas,
 } from '../systems/faceCanvasRenderer';
 import type { FaceExpression } from '../systems/faceCanvasRenderer';
+import { ModelErrorBoundary, useAssetAvailability } from './GlbModel';
+import { SkinnedCharacterGlb } from './SkinnedCharacterGlb';
 
 interface CharacterProps {
   /** 5-레이어 모듈식 캐릭터 외형 (소속 단체·헤어·장비 악기·2D 캔버스 얼굴) */
@@ -233,6 +235,9 @@ export const Character = memo(function Character({
   const { species } = group;
   const { face, hair, equippedInstrument } = appearance;
 
+  // public/models/characters/char_body_rabbit.glb 또는 char_body_turtle.glb 존재 여부 자동 감지
+  const hasBodyGlb = useAssetAvailability(group.bodyModelPath);
+
   // 애니메이션 제어용 3D 그룹 ref
   const bodyGroupRef = useRef<Group>(null);
   const headGroupRef = useRef<Group>(null);
@@ -268,15 +273,17 @@ export const Character = memo(function Character({
     };
   }, [faceResources]);
 
-  // 얼굴 커스터마이징 설정이 바뀔 때마다 2D 캔버스 즉시 재그리기
+  // 얼굴 커스터마이징 설정이 바뀌거나 GLB <-> 임시 모델 전환 시 2D 캔버스 UV 방향·그림 갱신
   useEffect(() => {
+    // glTF 표준 UV는 flipY = false, 임시 SphereGeometry는 flipY = true
+    faceResources.texture.flipY = !hasBodyGlb;
     if (!faceResources.ctx) return;
     drawFaceToCanvas(faceResources.ctx, face, {
       isBlinking: isBlinkingRef.current,
       expression: lastExpressionRef.current,
     });
     faceResources.texture.needsUpdate = true;
-  }, [face, faceResources]);
+  }, [face, faceResources, hasBodyGlb]);
 
   // 북채(바치)를 쓰는 악기인지 판별 (피리·차파는 자체 손 악기를 사용)
   const usesBachi =
@@ -286,11 +293,7 @@ export const Character = memo(function Character({
     const delta = Math.min(rawDelta, 0.05);
     const action = actionRef.current;
 
-    if (!bodyGroupRef.current || !leftArmRef.current || !rightArmRef.current) {
-      return;
-    }
-
-    // 1) 자동 눈 깜빡임 + 행동 기반 표정 전환 (상태가 바뀔 때만 2D 캔버스 재그리기 → CPU 절약)
+    // 1) 자동 눈 깜빡임 + 행동 기반 표정 전환 (실제 Blender GLB와 임시 캐릭터 모두 공통으로 동작!)
     const targetExpression: FaceExpression =
       action === 'play' ? 'play' : 'idle';
     let faceNeedsRedraw = false;
@@ -318,6 +321,13 @@ export const Character = memo(function Character({
         expression: lastExpressionRef.current,
       });
       faceResources.texture.needsUpdate = true;
+    }
+
+    // 실제 Blender 스킨드 GLB가 활성화되어 있으면 모션은 SkinnedCharacterGlb가 전담
+    if (hasBodyGlb) return;
+
+    if (!bodyGroupRef.current || !leftArmRef.current || !rightArmRef.current) {
+      return;
     }
 
     // 2) 부드러운 로우폴리 동작 (스쿼시&스트레치 + 아장아장 걸음 + 팔/다리/귀 시간차 모션)
@@ -433,7 +443,7 @@ export const Character = memo(function Character({
     if (bachiRightRef.current) bachiRightRef.current.visible = showBachi;
   });
 
-  return (
+  const placeholderCharacter = (
     <group>
       {/* 가벼운 블롭 그림자 (바닥 y = 0.015 고정) */}
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.015, 0]}>
@@ -639,4 +649,24 @@ export const Character = memo(function Character({
       </group>
     </group>
   );
+
+  // Blender 종족 바디 GLB가 public/models/characters/에 준비되어 있으면
+  // 자동으로 스킨드 애니메이션 캐릭터(SkeletonUtils.clone + 0.2초 크로스페이드)로 교체
+  if (hasBodyGlb && group.bodyModelPath) {
+    return (
+      <ModelErrorBoundary fallback={placeholderCharacter}>
+        <Suspense fallback={placeholderCharacter}>
+          <SkinnedCharacterGlb
+            bodyUrl={group.bodyModelPath}
+            group={group}
+            appearance={appearance}
+            faceTexture={faceResources.texture}
+            actionRef={actionRef}
+          />
+        </Suspense>
+      </ModelErrorBoundary>
+    );
+  }
+
+  return placeholderCharacter;
 });
