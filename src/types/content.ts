@@ -46,7 +46,7 @@ export interface CircleInfo {
 
 /**
  * 지역 타이코 단체별 고정 동물 캐릭터 종족 타입
- * - 転太鼓舞 = rabbit(토끼), 鶴亀太鼓 = turtle(거북이) (추후 새 단체 추가 시 확장)
+ * - 転太鼓舞 = rabbit(토끼), 鶴亀会 = turtle(거북이) (추후 새 단체 추가 시 확장)
  */
 export type CharacterSpecies = 'rabbit' | 'turtle';
 
@@ -68,16 +68,28 @@ export type CharacterHairStyle =
   | 'hair_spiky'
   | 'hair_bob';
 
-/** 캐릭터가 몸이나 손에 장비하는 타이코/악기 ID */
+/** 캐릭터가 몸이나 손·앞바닥에 장비하는 타이코/악기·소품 ID (転太鼓舞 우선 + 鶴亀会 전체 포함) */
 export type EquippedInstrumentId =
   | 'none'
   | 'shaku_2'
   | 'shaku_4'
+  | 'shaku_5'
   | 'shaku_6'
   | 'oki'
+  | 'eisa'
+  | 'katsugi'
   | 'shime'
+  | 'hira'
+  | 'chu'
+  | 'odaiko'
+  | 'taru'
+  | 'paranku'
   | 'fue'
-  | 'chappa';
+  | 'chappa'
+  | 'jangara'
+  | 'chiki'
+  | 'suzu'
+  | 'uchiwa';
 
 /**
  * 2D CanvasTexture(256x256)로 얼굴을 합성할 때 사용하는 세부 커스터마이징 설정
@@ -174,16 +186,27 @@ export interface MemberConfig {
 
 /**
  * 악보 레이어에서 사용하는 악기 ID 타입
- * - 尺(2,4,6), 沖, 締め, 笛, チャッパ + 추후 서서 치는 타이코(standing_*) 확장 가능
+ * - 転太鼓舞·鶴亀会 실제 보유 악기 전체 반영 + 추후 자유 확장 가능
  */
 export type TrackInstrumentId =
   | 'shaku_2'
   | 'shaku_4'
+  | 'shaku_5'
   | 'shaku_6'
   | 'oki'
+  | 'eisa'
+  | 'katsugi'
   | 'shime'
+  | 'hira'
+  | 'chu'
+  | 'odaiko'
+  | 'taru'
+  | 'paranku'
   | 'fue'
   | 'chappa'
+  | 'jangara'
+  | 'chiki'
+  | 'suzu'
   | string;
 
 /**
@@ -283,8 +306,9 @@ export interface ThemePropConfig {
 }
 
 /**
- * 시즌 · 이벤트 테마 설정 타입 — src/data/themes.json과 1:1 대응
- * - 달력 날짜(dateRange)에 따라 자동 전환되거나 메뉴에서 수동 미리보기할 수 있습니다.
+ * 시즌 · 이벤트 테마 설정 타입 — src/data/themes.json의 themes 배열 항목과 1:1 대응
+ * - 사용자가 선택하는 것이 아니라, 운영자가 themes.json에서 activeOverride를 지정하거나
+ *   날짜 범위(dateRange)에 맞춰 배포 시 모든 사용자에게 일괄 적용됩니다.
  */
 export interface SeasonThemeConfig {
   id: string;
@@ -304,6 +328,12 @@ export interface SeasonThemeConfig {
   sunIntensity: number;
   /** 날씨 파티클 종류 */
   weather: ThemeWeatherType;
+  /** 시즌 전용 바닥 색상 오버라이드 (예: 겨울 눈밭, 선택) */
+  groundColor?: string;
+  /** 시즌 전용 외곽 들판 색상 오버라이드 (선택) */
+  outerGroundColor?: string;
+  /** 시즌 전용 바닥 테두리 색상 오버라이드 (선택) */
+  borderColor?: string;
   /** 월드 중앙 배너(졸업/입학 문구 등)에 표시할 텍스트 */
   bannerText?: string;
   /** 배너 보조 문구 */
@@ -312,6 +342,38 @@ export interface SeasonThemeConfig {
   props: ThemePropConfig[];
   /** 해당 시즌 추천 곡 ID 목록 */
   featuredSongs: string[];
+}
+
+/**
+ * src/data/themes.json 최상위 구조
+ * - activeOverride에 시즌 ID(예: "christmas")를 넣고 배포하면 날짜와 무관하게 모든 사용자에게 일괄 적용됩니다.
+ * - null이면 오늘 날짜(dateRange)에 따라 자동 적용됩니다.
+ */
+export interface SeasonThemeCatalog {
+  activeOverride: string | null;
+  themes: SeasonThemeConfig[];
+}
+
+/**
+ * 사용자가 메뉴에서 자유롭게 바꿀 수 있는 기본 배경(공간) 테마 타입 — src/data/worldEnvironments.json
+ * - 예: 잔디 공원, 실내 연습실, 눈오는 들판, 노을 공원
+ */
+export interface WorldEnvironmentConfig {
+  id: string;
+  name: string;
+  emoji: string;
+  description: string;
+  skyColor: string;
+  ambientSkyColor: string;
+  ambientGroundColor: string;
+  sunColor: string;
+  sunIntensity: number;
+  groundColor: string;
+  outerGroundColor: string;
+  borderColor: string;
+  weather: ThemeWeatherType;
+  /** 야외 나무·꽃 장식을 표시할지 여부 (실내 연습실은 false) */
+  showOutdoorDecor: boolean;
 }
 
 /**

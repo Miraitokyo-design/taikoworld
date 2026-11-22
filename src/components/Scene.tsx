@@ -3,7 +3,6 @@ import type { MutableRefObject } from 'react';
 import type {
   CharacterAppearance,
   MemberConfig,
-  SeasonThemeConfig,
   SongConfig,
   TaikoTrackDefinition,
 } from '../types/content';
@@ -14,6 +13,7 @@ import type {
   PlayerState,
   SpaceConfig,
 } from '../types/world';
+import type { EffectiveWorldAtmosphere } from '../utils/themeResolver';
 import { useKeyboardInput } from '../hooks/useKeyboardInput';
 import { resolvePlayerPosition } from '../systems/collision';
 import { Space } from './Space';
@@ -28,8 +28,8 @@ import { ThemeWeather } from './ThemeWeather';
 interface SceneProps {
   /** 현재 표시할 공간 설정 (시즌 소품 장애물 포함) */
   space: SpaceConfig;
-  /** 현재 활성 시즌 · 이벤트 테마 (하늘·조명·날씨·시즌 소품 제어) */
-  activeTheme: SeasonThemeConfig;
+  /** 기본 배경 테마와 운영자 시즌 테마가 통합된 최종 3D 분위기 설정 */
+  atmosphere: EffectiveWorldAtmosphere;
   /** 공간에 배치할 악기 목록 */
   instruments: InstrumentConfig[];
   /** 공간에서 활동할 서클 NPC 멤버 목록 */
@@ -81,7 +81,7 @@ interface SceneProps {
  */
 export function Scene({
   space,
-  activeTheme,
+  atmosphere,
   instruments,
   members,
   songs,
@@ -163,33 +163,33 @@ export function Scene({
 
   return (
     <>
-      {/* 활성 시즌 테마(기본/크리스마스/졸업/입학/여름/오봉)에 따라 자동 전환되는 하늘색과 안개 */}
-      <color attach="background" args={[activeTheme.skyColor]} />
-      <fog attach="fog" args={[activeTheme.skyColor, 22, 46]} />
+      {/* 기본 배경 테마(잔디 공원·연습실·눈오는 들판 등) 및 운영자 시즌 테마에 따른 하늘색과 안개 */}
+      <color attach="background" args={[atmosphere.skyColor]} />
+      <fog attach="fog" args={[atmosphere.skyColor, 22, 46]} />
 
-      {/* 하늘(위)과 잔디(아래)에서 은은하게 퍼지는 반구 조명 */}
+      {/* 하늘(위)과 바닥(아래)에서 은은하게 퍼지는 반구 조명 */}
       <hemisphereLight
-        args={[activeTheme.ambientSkyColor, activeTheme.ambientGroundColor, 1.1]}
+        args={[atmosphere.ambientSkyColor, atmosphere.ambientGroundColor, 1.1]}
       />
 
-      {/* 시즌별 햇살/축제 밤빛 주 조명 */}
+      {/* 배경/시즌별 햇살 및 조명 */}
       <directionalLight
         position={[6, 12, 8]}
-        intensity={activeTheme.sunIntensity}
-        color={activeTheme.sunColor}
+        intensity={atmosphere.sunIntensity}
+        color={atmosphere.sunColor}
       />
 
       {/* 반대편 그림자가 너무 어둡게 죽지 않도록 도와주는 은은한 보조 조명 (Blender PBR GLB 대비) */}
       <directionalLight position={[-7, 6, -6]} intensity={0.45} color="#d9ecff" />
 
-      {/* 잔디 공원 공간 (PC 바닥 클릭 이벤트 연결) */}
-      <Space space={space} onGroundClick={handleGroundClick} />
+      {/* 잔디 공원/연습실/설원 등 기본 공간 (PC 바닥 클릭 이벤트 연결) */}
+      <Space space={space} atmosphere={atmosphere} onGroundClick={handleGroundClick} />
 
-      {/* 활성 시즌 · 이벤트 3D 소품 (크리스마스 트리, 졸업·입학 아치, 오봉 야구라 등) */}
-      <ThemeProps theme={activeTheme} />
+      {/* 운영자 일괄 시즌 · 이벤트 3D 소품 (크리스마스 트리, 졸업·입학 아치, 오봉 야구라 등) */}
+      <ThemeProps theme={atmosphere.seasonTheme} />
 
-      {/* 활성 시즌 경량 날씨 파티클 (눈, 벚꽃잎, 반딧불이, 여름 햇살) */}
-      <ThemeWeather weather={activeTheme.weather} />
+      {/* 경량 날씨 파티클 (눈, 벚꽃잎, 반딧불이, 여름 햇살) */}
+      <ThemeWeather weather={atmosphere.weather} />
 
       {/* 바닥 클릭 시 목적지를 알려주는 반짝이는 링 (연주 모드에서는 숨김) */}
       <DestinationMarker target={canMove ? targetPoint : null} />

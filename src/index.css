@@ -2035,7 +2035,7 @@ body,
   text-align: center;
 }
 
-/* 지역 타이코 단체 소개 카드 (転太鼓舞, 鶴亀太鼓 등) */
+/* 지역 타이코 단체 소개 카드 (転太鼓舞, 鶴亀会 등) */
 .guide-groups-list {
   display: flex;
   flex-direction: column;
@@ -2968,4 +2968,125 @@ body,
     padding: 8px 12px;
     font-size: 12px;
   }
+}
+
+/* ================================
+   컴팩트 캐릭터 일러스트 멤버 그리드 (추후 15~20명+ 확장 대응)
+   ================================ */
+.directory-modal-card--grid {
+  max-width: 540px;
+}
+
+.directory-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+@media (min-width: 520px) {
+  .directory-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 11px;
+  }
+}
+
+.directory-card-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  padding: 10px 6px 9px;
+  border: 1.5px solid #efe5d4;
+  border-radius: 16px;
+  background: #ffffff;
+  color: #3d352e;
+  cursor: pointer;
+  transition: transform 0.12s ease, border-color 0.14s ease, box-shadow 0.14s ease;
+}
+
+.directory-card-btn:hover {
+  border-color: #d94b38;
+  box-shadow: 0 6px 14px rgba(61, 53, 46, 0.1);
+  transform: translateY(-2px);
+}
+
+.directory-card-btn:active {
+  transform: scale(0.96);
+}
+
+.directory-card-avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.directory-card-name {
+  font-size: 13px;
+  font-weight: 800;
+  color: #3d352e;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.directory-card-group {
+  display: inline-block;
+  max-width: 100%;
+  padding: 2px 7px;
+  border-radius: 999px;
+  color: #ffffff;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ================================
+   메인 화면 & 메뉴 소리 채널별 볼륨 슬라이더
+   ================================ */
+.sound-channel-box {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 6px;
+  border-radius: 14px;
+  background: #f8f2e6;
+  border: 1px solid #ece2cf;
+}
+
+.sound-channel-box .sound-toggle-row {
+  padding: 6px 8px;
+  border: none;
+  background: transparent;
+}
+
+.sound-volume-row {
+  display: grid;
+  grid-template-columns: 32px 1fr 36px;
+  align-items: center;
+  gap: 8px;
+  padding: 2px 8px 4px;
+}
+
+.sound-volume-label {
+  font-size: 11px;
+  font-weight: 800;
+  color: #7c6b5b;
+}
+
+.sound-volume-slider {
+  width: 100%;
+  accent-color: #d94b38;
+  cursor: pointer;
+}
+
+.sound-volume-pct {
+  font-size: 11px;
+  font-weight: 800;
+  color: #5c4e41;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
 }

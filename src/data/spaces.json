@@ -13,7 +13,7 @@
     "obstacles": [
       { "id": "main_taiko", "type": "circle", "x": 0, "z": -1, "radius": 0.9 },
       { "id": "hideout_tentaikomai", "type": "circle", "x": -5.1, "z": -1.4, "radius": 1.2 },
-      { "id": "hideout_tsurukamedaiko", "type": "circle", "x": 5.1, "z": -1.4, "radius": 1.2 },
+      { "id": "hideout_tsurukamekai", "type": "circle", "x": 5.1, "z": -1.4, "radius": 1.2 },
       { "id": "tree_01", "type": "circle", "x": -5.6, "z": -4.8, "radius": 0.85 },
       { "id": "tree_02", "type": "circle", "x": 5.8, "z": -4.6, "radius": 0.85 },
       { "id": "tree_03", "type": "circle", "x": -6.0, "z": 4.0, "radius": 0.85 },
@@ -31,10 +31,10 @@
         "interactRadius": 2.6
       },
       {
-        "id": "hideout_tsurukamedaiko",
-        "groupId": "group_tsurukamedaiko",
-        "name": "鶴亀太鼓",
-        "modelPath": "/models/props/hideout_tsurukamedaiko.glb",
+        "id": "hideout_tsurukamekai",
+        "groupId": "group_tsurukamekai",
+        "name": "鶴亀会",
+        "modelPath": "/models/props/hideout_tsurukamekai.glb",
         "position": [5.1, 0, -1.4],
         "color": "#1d2d50",
         "borderColor": "#0f172a",

@@ -33,6 +33,10 @@ export interface NpcRuntime {
   postPlayGrace: number;
   /** 산책/대기 중 가끔 외치는 개인 추임새 타이머 (초) */
   kakegoeTimer: number;
+  /** 플레이어가 가까이 다가왔을 때 살짝 고개를 돌리는 Y축 각도 (라디안, 약 ±39° 이내) */
+  headLookYaw: number;
+  /** 플레이어 근접 시 걸음을 늦추는 속도 배율 (0.38 ~ 1.0) */
+  walkSpeedScale: number;
 }
 
 /**
@@ -72,6 +76,12 @@ export interface NpcGroupStepResult {
 
 /** NPC 걷기 속도 (여유로운 산책 속도, m/s) */
 const NPC_WALK_SPEED = 1.65;
+/** NPC가 플레이어 접근을 눈치채고 고개를 돌리며 걸음을 늦추기 시작하는 거리 (m) */
+const PLAYER_NOTICE_RADIUS = 3.2;
+/** 플레이어 바로 근처에서의 최소 걸음 속도 배율 (평소의 38% 속도로 천천히 걸음) */
+const MIN_NEAR_PLAYER_SPEED_SCALE = 0.38;
+/** 고개를 자연스럽게 돌릴 수 있는 최대 좌우 각도 (라디안, 약 39도) */
+const MAX_HEAD_LOOK_YAW = 0.68;
 /** NPC 2D 충돌 반지름 (m) */
 const NPC_RADIUS = 0.36;
 /** 랜덤 목적지 도착 판정 거리 (m) */
@@ -159,6 +169,8 @@ export function createNpcGroupState(
       stateTimer: randomRange(1.0, 2.8),
       postPlayGrace: 0,
       kakegoeTimer: randomRange(4.0, 10.0) + index * 1.1,
+      headLookYaw: 0,
+      walkSpeedScale: 1,
     };
   });
 
@@ -235,17 +247,27 @@ function findMatchingSongEnsemble(
   return null;
 }
 
+/** 각도 차이를 -PI ~ +PI 범위로 정규화하는 보조 함수 */
+function normalizeAngleDiff(angle: number): number {
+  let diff = angle;
+  while (diff > Math.PI) diff -= Math.PI * 2;
+  while (diff < -Math.PI) diff += Math.PI * 2;
+  return diff;
+}
+
 /**
  * 전체 NPC 그룹 상태머신 + 근접 공통곡 합주(Ensemble) 시스템을 1프레임 진행시키는 핵심 함수
  * - 정해진 주기 없이 각 NPC가 자유롭게 랜덤 산책하다가,
  *   공통으로 연주할 수 있는 곡을 가진 3명 이상이 바로 옆에 모이면 같은 방향을 보며 악보대로 합주합니다.
+ * - 플레이어가 가까이 다가오면 살짝 고개를 돌려 쳐다보면서 걸음이 자연스럽게 느려집니다.
  */
 export function stepNpcGroup(
   npcs: NpcRuntime[],
   ensemble: EnsembleRuntime,
   songs: SongConfig[],
   space: SpaceConfig,
-  delta: number
+  delta: number,
+  playerPos?: [number, number]
 ): NpcGroupStepResult {
   let ensembleStep: NpcGroupStepResult['ensembleStep'] = null;
   const kakegoeEvents: Array<{ memberId: string; text: string }> = [];
@@ -352,8 +374,47 @@ export function stepNpcGroup(
     if (npc.state === 'play') {
       // 합주 참여자는 모두 똑같은 방향(ensemble.facingRotationY)을 바라보며 나란히 연주
       npc.rotationY = lerpAngle(npc.rotationY, ensemble.facingRotationY, delta * 7);
+      npc.headLookYaw += (0 - npc.headLookYaw) * Math.min(delta * 6, 1);
+      npc.walkSpeedScale = 1;
       continue;
     }
+
+    // 플레이어가 가까이 다가오면 살짝 고개를 돌려 바라보고 걸음을 천천히 늦춤
+    let targetHeadYaw = 0;
+    let targetSpeedScale = 1;
+
+    if (playerPos) {
+      const [px, pz] = playerPos;
+      const distToPlayer = getDistance2D(npc.position[0], npc.position[2], px, pz);
+
+      if (distToPlayer < PLAYER_NOTICE_RADIUS) {
+        // 가까울수록 걸음을 부드럽게 늦춤 (3.2m -> 1.0배, 1.1m 이하 -> 0.38배)
+        const proximityRatio = Math.max(
+          0,
+          Math.min(1, (distToPlayer - 1.1) / (PLAYER_NOTICE_RADIUS - 1.1))
+        );
+        targetSpeedScale =
+          MIN_NEAR_PLAYER_SPEED_SCALE +
+          (1 - MIN_NEAR_PLAYER_SPEED_SCALE) * proximityRatio;
+
+        // NPC 정면 기준 플레이어 방향 상대 각도를 계산해 고개만 자연스럽게 살짝 돌림
+        const angleToPlayer = Math.atan2(
+          px - npc.position[0],
+          pz - npc.position[2]
+        );
+        const relAngle = normalizeAngleDiff(angleToPlayer - npc.rotationY);
+
+        if (Math.abs(relAngle) <= Math.PI * 0.72) {
+          targetHeadYaw = Math.max(
+            -MAX_HEAD_LOOK_YAW,
+            Math.min(MAX_HEAD_LOOK_YAW, relAngle)
+          );
+        }
+      }
+    }
+
+    npc.headLookYaw += (targetHeadYaw - npc.headLookYaw) * Math.min(delta * 6.5, 1);
+    npc.walkSpeedScale += (targetSpeedScale - npc.walkSpeedScale) * Math.min(delta * 6, 1);
 
     // 산책/대기 중에도 가끔 한 번씩 흥겹게 추임새 표시
     npc.kakegoeTimer -= delta;
@@ -387,7 +448,8 @@ export function stepNpcGroup(
 
     const dirX = (targetX - curX) / dist;
     const dirZ = (targetZ - curZ) / dist;
-    const step = Math.min(NPC_WALK_SPEED * delta, dist);
+    // 플레이어가 가까이 있으면 걸음 속도를 자연스럽게 늦춰 대화를 걸기 편하게 배려
+    const step = Math.min(NPC_WALK_SPEED * npc.walkSpeedScale * delta, dist);
 
     const resolved = resolvePlayerPosition(
       curX + dirX * step,

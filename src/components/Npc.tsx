@@ -21,6 +21,10 @@ interface NpcProps {
   registerPlayRingRef: (mesh: Mesh | null) => void;
   /** Character 애니메이션에 전달되는 현재 행동 상태 ref */
   actionRef: MutableRefObject<PlayerAction>;
+  /** 플레이어가 가까이 올 때 살짝 고개를 돌리는 각도 ref (라디안) */
+  headLookYawRef: MutableRefObject<number>;
+  /** 플레이어 근접 시 걸음 애니메이션 속도를 맞추는 배율 ref */
+  walkSpeedScaleRef: MutableRefObject<number>;
   /** 플레이어가 이 NPC에 가까이 와서 [!] 말풍선이 떠 있는지 여부 */
   isPlayerNear: boolean;
   /** 탐색 화면이 활성화되어 상호작용 UI를 표시할 수 있는지 여부 */
@@ -42,6 +46,8 @@ export const Npc = memo(function Npc({
   registerGroupRef,
   registerPlayRingRef,
   actionRef,
+  headLookYawRef,
+  walkSpeedScaleRef,
   isPlayerNear,
   isInteractionActive,
   floatingKakegoe,
@@ -120,8 +126,13 @@ export const Npc = memo(function Npc({
         <meshBasicMaterial color={group.happiColor} transparent opacity={0.68} />
       </mesh>
 
-      {/* 공통 5-레이어 모듈식 동물 캐릭터 (단체 종족·하피 + 2D 얼굴 + 헤어 + 장비 악기) */}
-      <Character appearance={member.appearance} actionRef={actionRef} />
+      {/* 공통 5-레이어 모듈식 동물 캐릭터 (단체 종족·하피 + 2D 얼굴 + 헤어 + 장비 악기 + 근접 고개 돌림) */}
+      <Character
+        appearance={member.appearance}
+        actionRef={actionRef}
+        headLookYawRef={headLookYawRef}
+        walkSpeedScaleRef={walkSpeedScaleRef}
+      />
 
       {/* 플레이어가 가까워지면 머리 위에 뜨는 [!] 말풍선 (PC에서는 E 단축키 안내 배지 동시 표시) */}
       {isPlayerNear && isInteractionActive && (

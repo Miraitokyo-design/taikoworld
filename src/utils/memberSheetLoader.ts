@@ -59,14 +59,15 @@ function resolveGroupId(rawGroup: string): string {
     }
   }
 
-  // 2) 부분 키워드 매칭 (조형대학/토끼/転太鼓舞 vs 기술대학/거북이/鶴亀太鼓)
+  // 2) 부분 키워드 매칭 (조형대학/토끼/転太鼓舞 vs 기술대학/거북이/鶴亀会)
   if (
     normalized.includes('鶴亀') ||
     normalized.includes('츠루카메') ||
+    normalized.includes('tsurukame') ||
     normalized.includes('기술') ||
     normalized.includes('거북')
   ) {
-    return 'group_tsurukamedaiko';
+    return 'group_tsurukamekai';
   }
 
   return TAIKO_GROUPS[0].id;
@@ -118,23 +119,59 @@ function resolveEquippedInstrument(rawInstrument: string): EquippedInstrumentId 
   if (normalized.includes('shaku_2') || normalized.includes('尺(2)') || normalized.includes('샤쿠2') || normalized === '尺2') {
     return 'shaku_2';
   }
+  if (normalized.includes('shaku_5') || normalized.includes('尺(5)') || normalized.includes('샤쿠5') || normalized === '尺5') {
+    return 'shaku_5';
+  }
   if (normalized.includes('shaku_6') || normalized.includes('尺(6)') || normalized.includes('샤쿠6') || normalized === '尺6') {
     return 'shaku_6';
   }
   if (normalized.includes('shaku_4') || normalized.includes('尺(4)') || normalized.includes('샤쿠4') || normalized.includes('尺') || normalized.includes('샤쿠')) {
     return 'shaku_4';
   }
+  if (normalized.includes('eisa') || normalized.includes('エイサー') || normalized.includes('에이사')) {
+    return 'eisa';
+  }
+  if (normalized.includes('katsugi') || normalized.includes('担ぎ') || normalized.includes('카츠기')) {
+    return 'katsugi';
+  }
   if (normalized.includes('oki') || normalized.includes('沖') || normalized.includes('오키')) {
     return 'oki';
   }
-  if (normalized.includes('shime') || normalized.includes('締め') || normalized.includes('시메')) {
+  if (normalized.includes('shime') || normalized.includes('締め') || normalized === '〆' || normalized.includes('시메')) {
     return 'shime';
+  }
+  if (normalized.includes('hira') || normalized.includes('平') || normalized.includes('평태고')) {
+    return 'hira';
+  }
+  if (normalized.includes('odaiko') || normalized === '大' || normalized.includes('대태고')) {
+    return 'odaiko';
+  }
+  if (normalized.includes('chu') || normalized === '中' || normalized.includes('중태고')) {
+    return 'chu';
+  }
+  if (normalized.includes('taru') || normalized.includes('たる') || normalized.includes('타루')) {
+    return 'taru';
+  }
+  if (normalized.includes('paranku') || normalized.includes('パーランクー') || normalized.includes('파란쿠')) {
+    return 'paranku';
   }
   if (normalized.includes('fue') || normalized.includes('笛') || normalized.includes('피리') || normalized.includes('후에')) {
     return 'fue';
   }
+  if (normalized.includes('jangara') || normalized.includes('ジャンガラ') || normalized.includes('쟝가라')) {
+    return 'jangara';
+  }
+  if (normalized.includes('chiki') || normalized.includes('チキ') || normalized.includes('치키')) {
+    return 'chiki';
+  }
   if (normalized.includes('chappa') || normalized.includes('チャッパ') || normalized.includes('차파')) {
     return 'chappa';
+  }
+  if (normalized.includes('suzu') || normalized.includes('鈴') || normalized.includes('방울')) {
+    return 'suzu';
+  }
+  if (normalized.includes('uchiwa') || normalized.includes('うちわ') || normalized.includes('부채')) {
+    return 'uchiwa';
   }
   return 'shaku_4';
 }

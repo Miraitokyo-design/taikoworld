@@ -30,11 +30,23 @@ export const EQUIPPED_INSTRUMENT_OPTIONS: readonly EquippedInstrumentId[] = [
   'none',
   'shaku_2',
   'shaku_4',
+  'shaku_5',
   'shaku_6',
   'oki',
+  'eisa',
+  'katsugi',
   'shime',
+  'hira',
+  'chu',
+  'odaiko',
+  'taru',
+  'paranku',
   'fue',
   'chappa',
+  'jangara',
+  'chiki',
+  'suzu',
+  'uchiwa',
 ] as const;
 
 export const FACE_EYE_OPTIONS: readonly FaceEyeStyle[] = [
@@ -98,13 +110,14 @@ export function createRandomAppearance(): CharacterAppearance {
       ? ['rabbit', 'rabbit', 'dot']
       : ['dot', 'dot', 'triangle'];
 
-  // 처음 입장할 때 빈손보다 귀여운 타이코나 피리를 하나 들고 나오면 더 즐거움
+  // 처음 입장할 때 빈손보다 이미 제작된 GLB나 귀여운 휴대 악기를 들고 나오면 더 즐거움
   const starterInstruments: readonly EquippedInstrumentId[] = [
     'shaku_2',
     'shaku_4',
     'shaku_6',
     'oki',
     'shime',
+    'paranku',
     'fue',
     'chappa',
   ];
@@ -139,9 +152,15 @@ function sanitizeAppearance(raw: unknown): CharacterAppearance | null {
   if (!raw || typeof raw !== 'object') return null;
   const candidate = raw as Partial<CharacterAppearance>;
 
+  // 기존 저장 데이터 호환: 이전 단체 ID("group_tsurukamedaiko")를 "group_tsurukamekai"로 자동 변환
+  const migratedGroupId =
+    candidate.groupId === 'group_tsurukamedaiko'
+      ? 'group_tsurukamekai'
+      : candidate.groupId;
+
   if (
-    typeof candidate.groupId !== 'string' ||
-    !TAIKO_GROUPS.some((group) => group.id === candidate.groupId)
+    typeof migratedGroupId !== 'string' ||
+    !TAIKO_GROUPS.some((group) => group.id === migratedGroupId)
   ) {
     return null;
   }
@@ -195,7 +214,7 @@ function sanitizeAppearance(raw: unknown): CharacterAppearance | null {
   };
 
   return {
-    groupId: candidate.groupId,
+    groupId: migratedGroupId,
     hair,
     equippedInstrument,
     face,

@@ -75,7 +75,7 @@ flowchart LR
 - **정면 방향**: Blender 작업 화면에서 **-Y 방향(Front View `Numpad 1`)**을 바라보게 제작 → glTF 내보내기(`+Y Up`) 시 웹에서는 자동으로 **`+Z` 정면**이 됨
 - **단체별 고정 종족 규칙 (`groups.json`)**:
   - `group_tentaikomai` (**転太鼓舞**, 조형대학) → **토끼 (`rabbit`)**
-  - `group_tsurukamedaiko` (**鶴亀太鼓**, 기술대학) → **거북이 (`turtle`)**
+  - `group_tsurukamekai` (**鶴亀会**, 기술대학) → **거북이 (`turtle`)**
   - *(추후 새 단체 추가 시: 새 동물 종족 바디 GLB 1개 + 하피 텍스처 1장만 추가)*
 
 ```text
@@ -94,7 +94,7 @@ flowchart LR
 | 파일 경로 (`public/` 기준) | 대상 | 폴리곤 권장 | 비고 |
 | --- | --- | --- | --- |
 | `/models/characters/char_body_rabbit.glb` | 転太鼓舞 토끼 바디 | ≤ 1,500 tris | 귀 뼈대(`Ear_L/R`) 포함, 꼬리(`Tail_01`) 포함 |
-| `/models/characters/char_body_turtle.glb` | 鶴亀太鼓 거북이 바디 | ≤ 1,500 tris | 등껍질은 바디 포함 또는 `Socket_Back` 부착, 꼬리 포함 |
+| `/models/characters/char_body_turtle.glb` | 鶴亀会 거북이 바디 | ≤ 1,500 tris | 등껍질은 바디 포함 또는 `Socket_Back` 부착, 꼬리 포함 |
 
 #### 공통 뼈대(Bone) 이름 & 계층 트리 (토끼·거북이 100% 동일하게 유지!)
 > **중요**: 아래 영문 본(Bone) 이름을 정확히 일치시키면 토끼에서 만든 애니메이션을 거북이에도 그대로 적용할 수 있습니다.
@@ -138,7 +138,7 @@ Blender에서 **Empty 오브젝트(Arrows 또는 Plain Axes)**를 만들고 해�
 | **3D 파일 경로** | `/models/characters/char_happi_base.glb` (폴리곤 ≤ 700 tris) |
 | **머티리얼 이름** | **`Mat_Happi`** (코드가 이 이름의 머티리얼을 찾아 텍스처를 교체) |
 | **텍스처 해상도** | `512 × 512 px` (WebP 권장, PNG 가능), UV는 등/앞/소매가 깔끔하게 펴지도록 배치 |
-| **텍스처 파일 경로** | `/textures/happi/happi_tentaikomai.webp` (転太鼓舞: 오렌지-브라운 바탕 + 검은 테두리)<br/>`/textures/happi/happi_tsurukamedaiko.webp` (鶴亀太鼓: 어두운 네이비 바탕 + 포인트)<br/>`/textures/happi/happi_guest.webp` (무소속 게스트용 기본 하피, 선택) |
+| **텍스처 파일 경로** | `/textures/happi/happi_tentaikomai.webp` (転太鼓舞: 오렌지-브라운 바탕 + 검은 테두리)<br/>`/textures/happi/happi_tsurukamekai.webp` (鶴亀会: 어두운 네이비 바탕 + 포인트)<br/>`/textures/happi/happi_guest.webp` (무소속 게스트용 기본 하피, 선택) |
 
 > **Blender 팁 (거북이 등껍질과 하피 겹침 방지)**:
 > 거북이는 등껍질이 살짝 볼록하므로, ① 하피 등쪽을 살짝 여유 있게 만들거나, ② 거북이 등껍질이 하피 위로 귀엽게 얹혀 보이는 디자인(하피 위에 껍질을 메고 있는 느낌)으로 잡으면 웨이트 관통(Clipping) 없이 훨씬 귀엽습니다!
@@ -193,21 +193,40 @@ Blender에서 **Empty 오브젝트(Arrows 또는 Plain Axes)**를 만들고 해�
 
 ---
 
-### Layer 5: 장비 타이코 / 악기 파츠 (`public/models/instruments/`)
+### Layer 5: 실제 보유 타이코 / 악기 에셋 제작 리스트 (`public/models/instruments/`)
 
-`src/data/taikoTracks.json`의 트랙 ID와 1:1로 연결됩니다.
+`src/data/taikoTracks.json`의 트랙 ID와 1:1로 연결됩니다. **転太鼓舞 보유 악기를 1순위로 먼저 제작**하고, 이후 **鶴亀会 보유 악기(2순위)**로 확장합니다.
 
-| 트랙 ID | 파일 경로 | 부착 소켓 | 크기 참고 (m) |
-| --- | --- | --- | --- |
-| `shaku_2` | `/models/instruments/inst_shaku_2.glb` | `Socket_Instrument_Chest` | 지름 `~0.26m` 어깨북 (소) |
-| `shaku_4` | `/models/instruments/inst_shaku_4.glb` | `Socket_Instrument_Chest` | 지름 `~0.32m` 어깨북 (중) |
-| `shaku_6` | `/models/instruments/inst_shaku_6.glb` | `Socket_Instrument_Chest` | 지름 `~0.38m` 어깨북 (대) |
-| `oki` | `/models/instruments/inst_oki.glb` | `Socket_Instrument_Chest` | 지름 `~0.44m` 큰 어깨북 (묵직함) |
-| `shime` | `/models/instruments/inst_shime.glb` | 캐릭터 앞 바닥(`y = 0`) | 받침대(台) 포함 높이 `~0.48m` |
-| `fue` | `/models/instruments/inst_fue.glb` | `Socket_Hand_R` | 길이 `~0.40m` 가로 대나무 피리 |
-| `chappa` | `/models/instruments/inst_chappa.glb` | `Socket_Hand_L` & `R` | 지름 `~0.14m` 미니 심벌즈 (1짝 모델) |
-| *(공통 북채)* | `/models/instruments/inst_bachi.glb` | `Socket_Hand_L` & `R` | 길이 `~0.34m` 나무 북채 (연주 시 표시) |
-| *(체험용 중앙북)* | `/models/instruments/inst_taiko_nagado.glb` | 월드 `[0, 0, -1]` 고정 | 받침대 포함 높이 `~1.15m`, 폭 `~1.2m` |
+#### 1순위 제작 — 転太鼓舞 중심 악기 · 소품 (우선 제작)
+| 상태 | 트랙/파츠 ID | 악기명 | 파일 경로 (`public/` 기준) | 배치 방식 & 크기 참고 |
+| --- | --- | --- | --- | --- |
+| ✅ 완료 | `shaku_2` | **尺2** (어깨북) | `/models/instruments/inst_shaku_2.glb` | 중심 원점, 지름 `~0.27m` (왼쪽 허리 카츠기) |
+| ✅ 완료 | `shaku_4` | **尺4** (어깨북) | `/models/instruments/inst_shaku_4.glb` | 중심 원점, 지름 `~0.33m` (왼쪽 허리 카츠기) |
+| ⬜ 예정 | `shaku_5` | **尺5** (어깨북) | `/models/instruments/inst_shaku_5.glb` | 중심 원점, 지름 `~0.36m` (尺4와 尺6 사이) |
+| ✅ 완료 | `shaku_6` | **尺6** (어깨북) | `/models/instruments/inst_shaku_6.glb` | 중심 원점, 지름 `~0.39m` (왼쪽 허리 카츠기) |
+| ✅ 완료 | `oki` | **沖** (큰 어깨북) | `/models/instruments/inst_oki.glb` | 중심 원점, 지름 `~0.45m` (왼쪽 허리 카츠기) |
+| ⬜ 예정 | `eisa` | **エイサー** (에이사북) | `/models/instruments/inst_eisa.glb` | 중심 원점, 지름 `~0.34~0.40m` (왼쪽 허리 카츠기) |
+| ✅ 완료 | `shime` | **〆 (締め)** (시메태고) | `/models/instruments/inst_shime.glb` | 바닥 원점(`y=0`), 받침대 포함 높이 `~0.48m` |
+| ⬜ 예정 | `hira` | **平** (평태고) | `/models/instruments/inst_hira.glb` | 바닥 원점(`y=0`), 납작하고 넓은 북 + 받침대 |
+| ⬜ 예정 | `paranku` | **パーランクー** (파란쿠) | `/models/instruments/inst_paranku.glb` | `Socket_Hand_L` (지름 `~0.20m` 한 손 손북) |
+| ⬜ 예정 | `chappa` | **チャッパ** (차파) | `/models/instruments/inst_chappa.glb` | `Socket_Hand_L` & `R` (지름 `~0.14m` 미니 심벌즈) |
+| ⬜ 예정 | `jangara` | **ジャンガラ** (쟝가라) | `/models/instruments/inst_jangara.glb` | `Socket_Hand_L` & `R` (지름 `~0.20m` 대형 놋쇠 징) |
+| ⬜ 예정 | `chiki` | **チキ** (치키) | `/models/instruments/inst_chiki.glb` | `Socket_Hand_L` (지름 `~0.12m` 꽹과리/아타리가네) |
+| ⬜ 예정 | `suzu` | **鈴** (방울) | `/models/instruments/inst_suzu.glb` | `Socket_Hand_R` (길이 `~0.20m` 전통 방울) |
+| ⬜ 예정 | `uchiwa` | **うちわ** (부채) | `/models/instruments/inst_uchiwa.glb` | `Socket_Hand_R` (지름 `~0.24m` 연출용 부채) |
+| ⬜ 예정 | `fue` | **笛** (시노부에 피리) | `/models/instruments/inst_fue.glb` | `Socket_Hand_R` (길이 `~0.40m` 가로 대나무 피리) |
+| ⬜ 예정 | *(공통)* | **북채 (바치)** | `/models/instruments/inst_bachi.glb` | `Socket_Hand_L` & `R` (길이 `~0.34m` 나무 북채) |
+| ⬜ 예정 | *(받침대)* | `2据台`, `6据台`, `〆立足`, `〆座足` | `/models/instruments/stand_*.glb` | 바닥 원점(`y=0`), 거치·입식·좌식 받침대 (선택) |
+
+#### 2순위 제작 — 鶴亀会 추가 보유 악기 · 받침대 (데이터 반영 완료, 추후 제작)
+| 상태 | 트랙/파츠 ID | 악기명 | 파일 경로 (`public/` 기준) | 배치 방식 & 크기 참고 |
+| --- | --- | --- | --- | --- |
+| ⬜ 예정 | `chu` | **中** (중태고) | `/models/instruments/inst_chu.glb` | 바닥 원점(`y=0`), `中足` 받침대 포함 높이 `~0.95m` |
+| ⬜ 예정 | `odaiko` | **大** (대태고) | `/models/instruments/inst_odaiko.glb` | 바닥 원점(`y=0`), `大足`/`大据足`/`三宅台` 포함 높이 `~1.25m` |
+| ⬜ 예정 | `katsugi` | **担ぎ** (카츠기태고) | `/models/instruments/inst_katsugi.glb` | 중심 원점, 지름 `~0.38m` (왼쪽 허리 카츠기) |
+| ⬜ 예정 | `taru` | **たる** (타루 · 통북) | `/models/instruments/inst_taru.glb` | 바닥 원점(`y=0`), 통북(大/小) + 받침대 |
+| ⬜ 예정 | *(체험용 중앙북)* | **나가도 다이코** | `/models/instruments/inst_taiko_nagado.glb` | 월드 `[0, 0, -1]` 고정, 높이 `~1.15m` |
+| ⬜ 예정 | *(받침대)* | `乙足`, `〆立ち足`, `〆座り足`, `中足`, `大足`, `大据足`, `三宅台` | `/models/instruments/stand_*.glb` | 바닥 원점(`y=0`), 추후 공간·무대 배치용 |
 
 ---
 
@@ -244,7 +263,7 @@ Blender에서 `space_park_grass.glb`를 만들 때 아래 좌표를 기준으로
 | **플레이어 스폰 위치** | `[0, 0, 3.6]` | *(비워둘 것)* | — |
 | **중앙 체험 타이코** | `[0, 0, -1.0]` | 장애물 반지름 `0.9m` (상호작용 `1.8m`) | `/models/instruments/inst_taiko_nagado.glb` |
 | **転太鼓舞 아지트 (좌앞)** | `[-5.1, 0, -1.4]` | 장애물 반지름 `1.2m` (큐브 약 `1.65×1.6×1.65m`) | `/models/props/hideout_tentaikomai.glb` |
-| **鶴亀太鼓 아지트 (우앞)** | `[5.1, 0, -1.4]` | 장애물 반지름 `1.2m` (큐브 약 `1.65×1.6×1.65m`) | `/models/props/hideout_tsurukamedaiko.glb` |
+| **鶴亀会 아지트 (우앞)** | `[5.1, 0, -1.4]` | 장애물 반지름 `1.2m` (큐브 약 `1.65×1.6×1.65m`) | `/models/props/hideout_tsurukamekai.glb` |
 | **외곽 나무 4그루** | `[-5.6, 0, -4.8]`, `[5.8, 0, -4.6]`<br/>`[-6.0, 0, 4.0]`, `[5.8, 0, 4.4]` | 장애물 반지름 `0.85m` | *(공원 GLB 안에 포함 가능)* |
 
 > **중요**: `space_park_grass.glb` 바닥 높이는 **`y = 0`**에 맞춰 주세요. (웹 코드가 `y = 0.002`에 투명 클릭 판을 깔아두므로, 바닥이 너무 울퉁불퉁하거나 `y > 0.05`로 올라오면 캐릭터 발이 파묻힙니다.)
@@ -314,7 +333,7 @@ Blender에서 `space_park_grass.glb`를 만들 때 아래 좌표를 기준으로
 한꺼번에 다 만들어서 넣으면 오류 원인을 찾기 어려우므로, 아래 순서대로 **1개씩 넣고 `npm run dev`로 확인**하는 것을 추천합니다.
 
 1. **1단계 (가장 쉬움 — 정적 단일 모델)**: `public/models/instruments/inst_taiko_nagado.glb` 투입 → 중앙 임시 북이 실제 북으로 자동 교체되는지 크기·방향 확인
-2. **2단계 (아지트 건물 2종)**: `public/models/props/hideout_tentaikomai.glb`, `hideout_tsurukamedaiko.glb` 투입 → 좌/우 아지트 큐브가 자동 교체되는지 확인
+2. **2단계 (아지트 건물 2종)**: `public/models/props/hideout_tentaikomai.glb`, `hideout_tsurukamekai.glb` 투입 → 좌/우 아지트 큐브가 자동 교체되는지 확인
 3. **3단계 (잔디 공원 배경)**: `public/models/spaces/space_park_grass.glb` 투입 → 바닥 `y = 0` 높이, 아지트·나무 장애물 위치가 맞는지 확인
 4. **4단계 (모듈식 캐릭터 핵심)**: 토끼 바디(`char_body_rabbit.glb`) + 공통 하피(`char_happi_base.glb`) + 2D 얼굴 PNG 몇 장 투입 → `idle`/`walk`/`play` 전환과 눈 깜빡임 확인 후 거북이(`char_body_turtle.glb`) 추가
 5. **5단계 (파츠 & 악기 & 오디오)**: 헤어 파츠, 어깨북(`尺`·`沖`·`締め`·`笛`·`チャッパ`), 녹음된 MP3 타격음 투입

@@ -39,7 +39,7 @@
     "role": "締め (리드 북)",
     "illustration": "/images/characters/m02.webp",
     "appearance": {
-      "groupId": "group_tsurukamedaiko",
+      "groupId": "group_tsurukamekai",
       "hair": "hair_bun",
       "equippedInstrument": "shime",
       "face": {
@@ -107,7 +107,7 @@
     "role": "笛 (피리)",
     "illustration": "/images/characters/m04.webp",
     "appearance": {
-      "groupId": "group_tsurukamedaiko",
+      "groupId": "group_tsurukamekai",
       "hair": "hair_spiky",
       "equippedInstrument": "fue",
       "face": {
@@ -175,7 +175,7 @@
     "role": "尺(6) 어깨북",
     "illustration": "/images/characters/m06.webp",
     "appearance": {
-      "groupId": "group_tsurukamedaiko",
+      "groupId": "group_tsurukamekai",
       "hair": "hair_none",
       "equippedInstrument": "shaku_6",
       "face": {

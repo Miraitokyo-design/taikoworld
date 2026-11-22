@@ -1,136 +1,159 @@
-[
-  {
-    "id": "default",
-    "name": "기본 잔디 공원",
-    "emoji": "🌿",
-    "dateRange": null,
-    "skyColor": "#cde9f6",
-    "ambientSkyColor": "#fffdf5",
-    "ambientGroundColor": "#76b569",
-    "sunColor": "#fff6e0",
-    "sunIntensity": 1.35,
-    "weather": "none",
-    "props": [],
-    "featuredSongs": []
-  },
-  {
-    "id": "christmas",
-    "name": "크리스마스",
-    "emoji": "🎄",
-    "dateRange": { "start": "12-01", "end": "12-26" },
-    "skyColor": "#24355a",
-    "ambientSkyColor": "#bfd4ff",
-    "ambientGroundColor": "#5b7c87",
-    "sunColor": "#ffe9c7",
-    "sunIntensity": 1.05,
-    "weather": "snow",
-    "bannerText": "Merry Christmas! 🎄",
-    "bannerSubText": "타이코로 캐롤을 함께 연주해 봐요",
-    "props": [
-      {
-        "id": "theme_xmas_tree",
-        "modelPath": "/models/themes/prop_xmas_tree.glb",
-        "variant": "xmas_tree",
-        "position": [0, 0, -4.6],
-        "obstacleRadius": 1.2
-      }
-    ],
-    "featuredSongs": ["song_carol_taiko"]
-  },
-  {
-    "id": "graduation",
-    "name": "졸업식",
-    "emoji": "🌸",
-    "dateRange": { "start": "02-20", "end": "03-19" },
-    "skyColor": "#fde6ee",
-    "ambientSkyColor": "#fff8f5",
-    "ambientGroundColor": "#86bd79",
-    "sunColor": "#fff1dc",
-    "sunIntensity": 1.3,
-    "weather": "sakura",
-    "bannerText": "졸업을 축하합니다! 🌸",
-    "bannerSubText": "함께 북을 두드려줘서 정말 고마웠어요",
-    "props": [
-      {
-        "id": "theme_grad_arch",
-        "modelPath": "/models/themes/prop_event_arch.glb",
-        "variant": "event_arch",
-        "position": [0, 0, -4.8],
-        "obstacleRadius": 0.95
-      }
-    ],
-    "featuredSongs": []
-  },
-  {
-    "id": "entrance",
-    "name": "입학식",
-    "emoji": "🌱",
-    "dateRange": { "start": "03-20", "end": "04-20" },
-    "skyColor": "#daf3ff",
-    "ambientSkyColor": "#fffef4",
-    "ambientGroundColor": "#82c774",
-    "sunColor": "#fff7df",
-    "sunIntensity": 1.4,
-    "weather": "sakura",
-    "bannerText": "입학을 환영합니다! 🌱",
-    "bannerSubText": "타이코 서클 체험 언제든 놀러 오세요",
-    "props": [
-      {
-        "id": "theme_entrance_arch",
-        "modelPath": "/models/themes/prop_event_arch.glb",
-        "variant": "event_arch",
-        "position": [0, 0, -4.8],
-        "obstacleRadius": 0.95
-      }
-    ],
-    "featuredSongs": []
-  },
-  {
-    "id": "summer",
-    "name": "여름방학",
-    "emoji": "🌻",
-    "dateRange": { "start": "07-01", "end": "07-31" },
-    "skyColor": "#8ed4ff",
-    "ambientSkyColor": "#fffee6",
-    "ambientGroundColor": "#75be5e",
-    "sunColor": "#fff3b8",
-    "sunIntensity": 1.5,
-    "weather": "sparkle",
-    "bannerText": "시원한 여름방학 🌻",
-    "bannerSubText": "뜨겁고 신나게 울리는 타이코 한 판!",
-    "props": [
-      {
-        "id": "theme_summer_decor",
-        "modelPath": "/models/themes/prop_summer_decor.glb",
-        "variant": "summer_decor",
-        "position": [0, 0, -4.7],
-        "obstacleRadius": 0.95
-      }
-    ],
-    "featuredSongs": []
-  },
-  {
-    "id": "obon",
-    "name": "오봉 축제",
-    "emoji": "🏮",
-    "dateRange": { "start": "08-01", "end": "08-20" },
-    "skyColor": "#272247",
-    "ambientSkyColor": "#ffdcb8",
-    "ambientGroundColor": "#536954",
-    "sunColor": "#ffcf94",
-    "sunIntensity": 1.0,
-    "weather": "firefly",
-    "bannerText": "오봉 여름 축제 🏮",
-    "bannerSubText": "밤하늘 등불 아래 다 함께 합주해요",
-    "props": [
-      {
-        "id": "theme_obon_yagura",
-        "modelPath": "/models/themes/prop_obon_yagura.glb",
-        "variant": "obon_yagura",
-        "position": [0, 0, -4.7],
-        "obstacleRadius": 1.15
-      }
-    ],
-    "featuredSongs": []
-  }
-]
+{
+  "activeOverride": null,
+  "themes": [
+    {
+      "id": "default",
+      "name": "기본",
+      "emoji": "🌿",
+      "dateRange": null,
+      "skyColor": "#cde9f6",
+      "ambientSkyColor": "#fffdf5",
+      "ambientGroundColor": "#76b569",
+      "sunColor": "#fff6e0",
+      "sunIntensity": 1.35,
+      "weather": "none",
+      "props": [],
+      "featuredSongs": []
+    },
+    {
+      "id": "christmas",
+      "name": "크리스마스",
+      "emoji": "🎄",
+      "dateRange": { "start": "12-01", "end": "12-26" },
+      "skyColor": "#24355a",
+      "ambientSkyColor": "#bfd4ff",
+      "ambientGroundColor": "#5b7c87",
+      "sunColor": "#ffe9c7",
+      "sunIntensity": 1.05,
+      "weather": "snow",
+      "groundColor": "#dceaf2",
+      "outerGroundColor": "#c9dce8",
+      "borderColor": "#9ab6ca",
+      "bannerText": "Merry Christmas! 🎄",
+      "bannerSubText": "타이코로 캐롤을 함께 연주해 봐요",
+      "props": [
+        {
+          "id": "theme_xmas_tree",
+          "modelPath": "/models/themes/prop_xmas_tree.glb",
+          "variant": "xmas_tree",
+          "position": [0, 0, -4.6],
+          "obstacleRadius": 1.2
+        }
+      ],
+      "featuredSongs": ["song_carol_taiko"]
+    },
+    {
+      "id": "winter",
+      "name": "겨울 시즌",
+      "emoji": "⛄",
+      "dateRange": { "start": "12-27", "end": "02-19" },
+      "skyColor": "#bed7ec",
+      "ambientSkyColor": "#eff7ff",
+      "ambientGroundColor": "#b0c6d8",
+      "sunColor": "#f8fbff",
+      "sunIntensity": 1.25,
+      "weather": "snow",
+      "groundColor": "#edf4fa",
+      "outerGroundColor": "#dae7f2",
+      "borderColor": "#b4c9db",
+      "props": [],
+      "featuredSongs": []
+    },
+    {
+      "id": "graduation",
+      "name": "졸업식",
+      "emoji": "🌸",
+      "dateRange": { "start": "02-20", "end": "03-19" },
+      "skyColor": "#fde6ee",
+      "ambientSkyColor": "#fff8f5",
+      "ambientGroundColor": "#86bd79",
+      "sunColor": "#fff1dc",
+      "sunIntensity": 1.3,
+      "weather": "sakura",
+      "bannerText": "졸업을 축하합니다! 🌸",
+      "bannerSubText": "함께 북을 두드려줘서 정말 고마웠어요",
+      "props": [
+        {
+          "id": "theme_grad_arch",
+          "modelPath": "/models/themes/prop_event_arch.glb",
+          "variant": "event_arch",
+          "position": [0, 0, -4.8],
+          "obstacleRadius": 0.95
+        }
+      ],
+      "featuredSongs": []
+    },
+    {
+      "id": "entrance",
+      "name": "입학식",
+      "emoji": "🌱",
+      "dateRange": { "start": "03-20", "end": "04-20" },
+      "skyColor": "#daf3ff",
+      "ambientSkyColor": "#fffef4",
+      "ambientGroundColor": "#82c774",
+      "sunColor": "#fff7df",
+      "sunIntensity": 1.4,
+      "weather": "sakura",
+      "bannerText": "입학을 환영합니다! 🌱",
+      "bannerSubText": "타이코 서클 체험 언제든 놀러 오세요",
+      "props": [
+        {
+          "id": "theme_entrance_arch",
+          "modelPath": "/models/themes/prop_event_arch.glb",
+          "variant": "event_arch",
+          "position": [0, 0, -4.8],
+          "obstacleRadius": 0.95
+        }
+      ],
+      "featuredSongs": []
+    },
+    {
+      "id": "summer",
+      "name": "여름방학",
+      "emoji": "🌻",
+      "dateRange": { "start": "07-01", "end": "07-31" },
+      "skyColor": "#8ed4ff",
+      "ambientSkyColor": "#fffee6",
+      "ambientGroundColor": "#75be5e",
+      "sunColor": "#fff3b8",
+      "sunIntensity": 1.5,
+      "weather": "sparkle",
+      "bannerText": "시원한 여름방학 🌻",
+      "bannerSubText": "뜨겁고 신나게 울리는 타이코 한 판!",
+      "props": [
+        {
+          "id": "theme_summer_decor",
+          "modelPath": "/models/themes/prop_summer_decor.glb",
+          "variant": "summer_decor",
+          "position": [0, 0, -4.7],
+          "obstacleRadius": 0.95
+        }
+      ],
+      "featuredSongs": []
+    },
+    {
+      "id": "obon",
+      "name": "오봉 축제",
+      "emoji": "🏮",
+      "dateRange": { "start": "08-01", "end": "08-20" },
+      "skyColor": "#272247",
+      "ambientSkyColor": "#ffdcb8",
+      "ambientGroundColor": "#536954",
+      "sunColor": "#ffcf94",
+      "sunIntensity": 1.0,
+      "weather": "firefly",
+      "bannerText": "오봉 여름 축제 🏮",
+      "bannerSubText": "밤하늘 등불 아래 다 함께 합주해요",
+      "props": [
+        {
+          "id": "theme_obon_yagura",
+          "modelPath": "/models/themes/prop_obon_yagura.glb",
+          "variant": "obon_yagura",
+          "position": [0, 0, -4.7],
+          "obstacleRadius": 1.15
+        }
+      ],
+      "featuredSongs": []
+    }
+  ]
+}

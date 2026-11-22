@@ -21,7 +21,7 @@ interface TaikoGuideModalProps {
 
 /**
  * [타이코 종류 · 지역 단체 소개] 안내 모달 컴포넌트
- * - 메뉴에서 열거나, 3D 월드의 지역 단체 아지트(転太鼓舞·鶴亀太鼓 큐브)에 다가가 E/클릭으로 열 수 있습니다.
+ * - 메뉴에서 열거나, 3D 월드의 지역 단체 아지트(転太鼓舞·鶴亀会 큐브)에 다가가 E/클릭으로 열 수 있습니다.
  * - 아지트에서 열었을 때는 바로 '지역 타이코 단체' 탭이 선택되며 E 키로 열고 닫을 수 있습니다.
  */
 export function TaikoGuideModal({
@@ -163,7 +163,7 @@ export function TaikoGuideModal({
             })}
           </div>
         ) : (
-          /* 탭 2: 지역 타이코 단체 소개 (転太鼓舞, 鶴亀太鼓 등) */
+          /* 탭 2: 지역 타이코 단체 소개 (転太鼓舞, 鶴亀会 등) */
           <div className="guide-groups-list">
             {guide.localGroups.map((group) => {
               const isHighlighted = highlightedGroupId === group.id;

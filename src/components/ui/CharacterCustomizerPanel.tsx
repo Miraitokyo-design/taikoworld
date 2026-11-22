@@ -42,19 +42,31 @@ const HAIR_CHOICES: Array<{ id: CharacterHairStyle; label: string; emoji: string
   { id: 'hair_none', label: '없음', emoji: '✨' },
 ];
 
-/** 장비 타이코 선택 버튼용 한국어 라벨 목록 */
+/** 장비 타이코·소품 선택 버튼 목록 (転太鼓舞 우선 제작 악기 중심 + 鶴亀会 포함) */
 const INSTRUMENT_CHOICES: Array<{
   id: EquippedInstrumentId;
   label: string;
   desc: string;
 }> = [
-  { id: 'shaku_2', label: '尺(2)', desc: '소형 어깨북' },
-  { id: 'shaku_4', label: '尺(4)', desc: '중형 어깨북' },
-  { id: 'shaku_6', label: '尺(6)', desc: '대형 어깨북' },
-  { id: 'oki', label: '沖', desc: '웅장한 큰 어깨북' },
-  { id: 'shime', label: '締め', desc: '리드 시메다이코' },
+  { id: 'shaku_2', label: '尺2', desc: '소형 어깨북 · 3D 적용' },
+  { id: 'shaku_4', label: '尺4', desc: '중형 어깨북 · 3D 적용' },
+  { id: 'shaku_5', label: '尺5', desc: '1척 5촌 어깨북' },
+  { id: 'shaku_6', label: '尺6', desc: '대형 어깨북 · 3D 적용' },
+  { id: 'oki', label: '沖', desc: '큰 어깨북 · 3D 적용' },
+  { id: 'eisa', label: 'エイサー', desc: '에이사 어깨북' },
+  { id: 'katsugi', label: '担ぎ', desc: '카츠기태고 (鶴亀会)' },
+  { id: 'shime', label: '〆 (締め)', desc: '시메태고 · 3D 적용' },
+  { id: 'hira', label: '平', desc: '평태고 (받침대)' },
+  { id: 'chu', label: '中', desc: '중태고 (鶴亀会)' },
+  { id: 'odaiko', label: '大', desc: '대태고 (鶴亀会)' },
+  { id: 'taru', label: 'たる', desc: '통북 (鶴亀会)' },
+  { id: 'paranku', label: 'パーランクー', desc: '파란쿠 손북' },
   { id: 'fue', label: '笛', desc: '대나무 피리' },
   { id: 'chappa', label: 'チャッパ', desc: '미니 심벌즈' },
+  { id: 'jangara', label: 'ジャンガラ', desc: '대형 놋쇠 징' },
+  { id: 'chiki', label: 'チキ', desc: '아타리가네' },
+  { id: 'suzu', label: '鈴', desc: '전통 방울' },
+  { id: 'uchiwa', label: 'うちわ', desc: '연출용 부채' },
   { id: 'none', label: '없음', desc: '맨손 산책' },
 ];
 

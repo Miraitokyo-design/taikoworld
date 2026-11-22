@@ -1,11 +1,14 @@
 import { memo, useMemo } from 'react';
 import type { ThreeEvent } from '@react-three/fiber';
 import type { Obstacle, SpaceConfig } from '../types/world';
+import type { EffectiveWorldAtmosphere } from '../utils/themeResolver';
 import { GlbModel } from './GlbModel';
 
 interface SpaceProps {
   /** spaces.json에서 불러온 현재 공간 설정 데이터 */
   space: SpaceConfig;
+  /** 기본 배경 테마(잔디 공원·연습실·눈오는 들판 등) 및 시즌 테마가 합산된 분위기 설정 */
+  atmosphere: EffectiveWorldAtmosphere;
   /** 사용자가 잔디 바닥을 클릭했을 때 호출되는 콜백 함수 */
   onGroundClick: (point: [number, number]) => void;
 }
@@ -70,7 +73,11 @@ function PlaceholderFlower({ x, z, color }: { x: number; z: number; color: strin
  * - GLB 모델로 교체되더라도 바닥 y = 0에 투명 클릭 평면을 유지해 PC 바닥 클릭 이동이 그대로 동작합니다.
  * - React.memo로 감싸 UI 상태 변경 시 불필요한 재렌더링을 막습니다.
  */
-export const Space = memo(function Space({ space, onGroundClick }: SpaceProps) {
+export const Space = memo(function Space({
+  space,
+  atmosphere,
+  onGroundClick,
+}: SpaceProps) {
   const { walkableBounds, obstacles } = space;
 
   // useMemo: space.obstacles가 바뀌지 않는 한 나무 목록 필터링을 매번 다시 수행하지 않음
@@ -89,13 +96,13 @@ export const Space = memo(function Space({ space, onGroundClick }: SpaceProps) {
     onGroundClick([event.point.x, event.point.z]);
   };
 
-  // GLB가 아직 없을 때 표시할 임시 원형/사각형 잔디 광장
+  // GLB가 아직 없을 때 표시할 임시 원형/사각형 광장 (배경 테마별 바닥색·실내/야외 장식 반영)
   const placeholderPark = (
     <group>
-      {/* 공원 바깥을 감싸는 넓은 들판 바닥 */}
+      {/* 공원 바깥을 감싸는 넓은 들판/실내 바닥 */}
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.04, 0]}>
         <planeGeometry args={[80, 80]} />
-        <meshStandardMaterial color="#87c976" roughness={0.95} />
+        <meshStandardMaterial color={atmosphere.outerGroundColor} roughness={0.95} />
       </mesh>
 
       {walkableBounds.shape === 'circle' ? (
@@ -105,14 +112,14 @@ export const Space = memo(function Space({ space, onGroundClick }: SpaceProps) {
             position={[walkableBounds.centerX, 0, walkableBounds.centerZ]}
           >
             <circleGeometry args={[walkableBounds.radius, 64]} />
-            <meshStandardMaterial color="#9ad983" roughness={0.95} />
+            <meshStandardMaterial color={atmosphere.groundColor} roughness={0.92} />
           </mesh>
           <mesh
             rotation={[-Math.PI / 2, 0, 0]}
             position={[walkableBounds.centerX, -0.02, walkableBounds.centerZ]}
           >
             <circleGeometry args={[walkableBounds.radius + 0.55, 64]} />
-            <meshStandardMaterial color="#d9c69e" roughness={0.95} />
+            <meshStandardMaterial color={atmosphere.borderColor} roughness={0.92} />
           </mesh>
         </>
       ) : (
@@ -131,7 +138,7 @@ export const Space = memo(function Space({ space, onGroundClick }: SpaceProps) {
                 walkableBounds.maxZ - walkableBounds.minZ,
               ]}
             />
-            <meshStandardMaterial color="#9ad983" roughness={0.95} />
+            <meshStandardMaterial color={atmosphere.groundColor} roughness={0.92} />
           </mesh>
           <mesh
             rotation={[-Math.PI / 2, 0, 0]}
@@ -147,23 +154,26 @@ export const Space = memo(function Space({ space, onGroundClick }: SpaceProps) {
                 walkableBounds.maxZ - walkableBounds.minZ + 0.6,
               ]}
             />
-            <meshStandardMaterial color="#d9c69e" roughness={0.95} />
+            <meshStandardMaterial color={atmosphere.borderColor} roughness={0.92} />
           </mesh>
         </>
       )}
 
-      {treeObstacles.map((tree) => (
-        <PlaceholderTree key={tree.id} obstacle={tree} />
-      ))}
+      {/* 야외 배경(잔디 공원·눈오는 들판·노을)에서는 나무와 꽃을 표시하고, 실내 연습실에서는 깔끔하게 숨김 */}
+      {atmosphere.showOutdoorDecor &&
+        treeObstacles.map((tree) => (
+          <PlaceholderTree key={tree.id} obstacle={tree} />
+        ))}
 
-      {DECORATIVE_FLOWERS.map((flower, index) => (
-        <PlaceholderFlower
-          key={index}
-          x={flower.x}
-          z={flower.z}
-          color={flower.color}
-        />
-      ))}
+      {atmosphere.showOutdoorDecor &&
+        DECORATIVE_FLOWERS.map((flower, index) => (
+          <PlaceholderFlower
+            key={index}
+            x={flower.x}
+            z={flower.z}
+            color={flower.color}
+          />
+        ))}
     </group>
   );
 

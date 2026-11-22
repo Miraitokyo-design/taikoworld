@@ -42,7 +42,7 @@ export interface GroupHideoutConfig {
   id: string;
   /** taikoGuide.json의 localGroups[].id와 연결되는 단체 ID */
   groupId: string;
-  /** 화면 표시 이름 (예: "転太鼓舞", "鶴亀太鼓") */
+  /** 화면 표시 이름 (예: "転太鼓舞", "鶴亀会") */
   name: string;
   /** 추후 Blender 아지트 GLB로 바로 교체할 모델 경로 (예: "/models/props/hideout_tentaikomai.glb") */
   modelPath?: string;

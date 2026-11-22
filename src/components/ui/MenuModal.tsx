@@ -1,26 +1,32 @@
 import { useEffect } from 'react';
-import type { ScheduleEvent, SeasonThemeConfig } from '../../types/content';
+import type {
+  ScheduleEvent,
+  SeasonThemeConfig,
+  WorldEnvironmentConfig,
+} from '../../types/content';
 import { formatShortDate } from '../../utils/scheduleUtils';
 
 interface MenuModalProps {
   /** 가장 가까운 예정 연주 1건 (메뉴 항목 보조 안내용) */
   nextEvent: ScheduleEvent | null;
-  /** 전체 멤버 수 */
-  memberCount: number;
   /** 등록된 타이코 곡 수 */
   songCount: number;
-  /** themes.json에서 불러온 전체 시즌 테마 목록 */
-  themes: SeasonThemeConfig[];
-  /** 오늘 날짜 기준으로 자동 결정된 시즌 테마 */
-  autoTheme: SeasonThemeConfig;
-  /** 사용자가 미리보기로 수동 선택한 테마 ID (null이면 날짜 자동 모드) */
-  manualThemeId: string | null;
-  /** 시즌 테마 미리보기 선택 콜백 (null 전달 시 자동 모드 복귀) */
-  onSelectThemePreview: (themeId: string | null) => void;
+  /** 사용자가 선택할 수 있는 기본 배경 테마 목록 (잔디 공원, 연습실, 눈오는 들판 등) */
+  environments: WorldEnvironmentConfig[];
+  /** 현재 선택된 기본 배경 테마 ID */
+  selectedEnvironmentId: string;
+  /** 운영자가 일괄 배포 중인 시즌 테마 (평상시에는 id === 'default') */
+  deployedSeasonTheme: SeasonThemeConfig;
+  /** 기본 배경 테마 변경 콜백 */
+  onSelectEnvironment: (environmentId: string) => void;
   /** 직접 연주 소리 ON/OFF 여부 */
   isPlayerSoundOn: boolean;
   /** NPC 합주 소리 ON/OFF 여부 */
   isNpcSoundOn: boolean;
+  /** 직접 연주 볼륨 (0.0 ~ 1.0) */
+  playerVolume: number;
+  /** NPC 합주 볼륨 (0.0 ~ 1.0) */
+  npcVolume: number;
   /** 각 메뉴 항목 실행 콜백 */
   onOpenSchedule: () => void;
   onOpenMembers: () => void;
@@ -29,24 +35,28 @@ interface MenuModalProps {
   onOpenCircle: () => void;
   onTogglePlayerSound: () => void;
   onToggleNpcSound: () => void;
+  onChangePlayerVolume: (volume: number) => void;
+  onChangeNpcVolume: (volume: number) => void;
   onClose: () => void;
 }
 
 /**
  * 화면 좌측 상단 [☰ 메뉴] 버튼을 눌렀을 때 열리는 통합 메뉴바 모달 컴포넌트
  * - 연주 일정, 멤버 정보, 곡 정보/직접 작곡, 타이코 종류·지역 단체, 서클/문의,
- *   시즌 테마 미리보기, 세부 소리 설정을 제공합니다.
+ *   기본 배경 테마 변경(잔디 공원·연습실·눈오는 들판 등), 세부 소리/볼륨 설정을 제공합니다.
+ * - 시즌 테마(크리스마스·졸업·입학·오봉 등)는 운영자 일괄 배포로 적용되므로 메뉴에서 제외합니다.
  */
 export function MenuModal({
   nextEvent,
-  memberCount,
   songCount,
-  themes,
-  autoTheme,
-  manualThemeId,
-  onSelectThemePreview,
+  environments,
+  selectedEnvironmentId,
+  deployedSeasonTheme,
+  onSelectEnvironment,
   isPlayerSoundOn,
   isNpcSoundOn,
+  playerVolume,
+  npcVolume,
   onOpenSchedule,
   onOpenMembers,
   onOpenSongs,
@@ -54,6 +64,8 @@ export function MenuModal({
   onOpenCircle,
   onTogglePlayerSound,
   onToggleNpcSound,
+  onChangePlayerVolume,
+  onChangeNpcVolume,
   onClose,
 }: MenuModalProps) {
   useEffect(() => {
@@ -66,6 +78,9 @@ export function MenuModal({
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [onClose]);
+
+  const effectivePlayerOn = isPlayerSoundOn && playerVolume > 0;
+  const effectiveNpcOn = isNpcSoundOn && npcVolume > 0;
 
   return (
     <div
@@ -119,9 +134,9 @@ export function MenuModal({
               👥
             </span>
             <span className="menu-item-body">
-              <span className="menu-item-title">멤버 정보 ({memberCount}명)</span>
+              <span className="menu-item-title">멤버 정보</span>
               <span className="menu-item-desc">
-                서클 멤버 프로필·담당 악기·연주 가능 곡 구경하기
+                캐릭터 일러스트로 서클 멤버 프로필 구경하기
               </span>
             </span>
             <span className="menu-item-arrow" aria-hidden="true">
@@ -153,7 +168,7 @@ export function MenuModal({
             <span className="menu-item-body">
               <span className="menu-item-title">타이코 종류 · 지역 단체 소개</span>
               <span className="menu-item-desc">
-                어깨북·시메·피리·차파 특징과 지역 서클(転太鼓舞·鶴亀太鼓)
+                어깨북·시메·피리·차파 특징과 지역 서클(転太鼓舞·鶴亀会)
               </span>
             </span>
             <span className="menu-item-arrow" aria-hidden="true">
@@ -176,74 +191,103 @@ export function MenuModal({
             </span>
           </button>
 
-          {/* 시즌 · 이벤트 테마 미리보기 선택기 (기본: 오늘 날짜 자동 적용) */}
+          {/* 기본 배경 테마 선택 (잔디 공원 · 연습실 · 눈오는 들판 등) */}
           <div className="menu-sound-card">
             <div className="menu-theme-head">
               <span className="menu-sound-heading" style={{ marginBottom: 0 }}>
-                🎭 시즌 · 이벤트 테마
+                🗺️ 배경 테마
               </span>
-              <span className="menu-theme-status">
-                {manualThemeId === null
-                  ? `자동 (${autoTheme.emoji} ${autoTheme.name})`
-                  : '미리보기 중'}
-              </span>
+              {deployedSeasonTheme.id !== 'default' && (
+                <span className="menu-theme-status">
+                  {deployedSeasonTheme.emoji} {deployedSeasonTheme.name} 진행 중
+                </span>
+              )}
             </div>
             <div className="menu-theme-grid">
-              <button
-                type="button"
-                className={`menu-theme-pill ${manualThemeId === null ? 'is-active' : ''}`}
-                onClick={() => onSelectThemePreview(null)}
-              >
-                📅 자동
-              </button>
-              {themes.map((theme) => (
+              {environments.map((env) => (
                 <button
-                  key={theme.id}
+                  key={env.id}
                   type="button"
-                  className={`menu-theme-pill ${manualThemeId === theme.id ? 'is-active' : ''}`}
-                  onClick={() => onSelectThemePreview(theme.id)}
+                  className={`menu-theme-pill ${
+                    selectedEnvironmentId === env.id ? 'is-active' : ''
+                  }`}
+                  onClick={() => onSelectEnvironment(env.id)}
                 >
-                  {theme.emoji} {theme.name}
+                  {env.emoji} {env.name}
                 </button>
               ))}
             </div>
           </div>
 
-          {/* 세분화된 소리 설정 (직접 연주 vs NPC 합주) */}
+          {/* 세분화된 소리 & 볼륨 설정 (직접 연주 vs NPC 합주) */}
           <div className="menu-sound-card">
-            <div className="menu-sound-heading">🔊 소리 세부 설정</div>
+            <div className="menu-sound-heading">🔊 소리 · 볼륨 설정</div>
             <div className="menu-sound-rows">
-              <button
-                type="button"
-                className="sound-toggle-row"
-                onClick={onTogglePlayerSound}
-              >
-                <span className="sound-toggle-info">
-                  <span className="sound-toggle-name">🥁 직접 연주 소리</span>
-                  <span className="sound-toggle-desc">북 체험 · 악보 미리듣기 · 작곡</span>
-                </span>
-                <span
-                  className={`sound-switch-pill ${isPlayerSoundOn ? 'is-on' : 'is-off'}`}
+              <div className="sound-channel-box">
+                <button
+                  type="button"
+                  className="sound-toggle-row"
+                  onClick={onTogglePlayerSound}
                 >
-                  {isPlayerSoundOn ? 'ON' : 'OFF'}
-                </span>
-              </button>
+                  <span className="sound-toggle-info">
+                    <span className="sound-toggle-name">🥁 직접 연주 소리</span>
+                    <span className="sound-toggle-desc">북 체험 · 악보 미리듣기 · 작곡</span>
+                  </span>
+                  <span
+                    className={`sound-switch-pill ${effectivePlayerOn ? 'is-on' : 'is-off'}`}
+                  >
+                    {effectivePlayerOn ? 'ON' : 'OFF'}
+                  </span>
+                </button>
+                <label className="sound-volume-row">
+                  <span className="sound-volume-label">볼륨</span>
+                  <input
+                    type="range"
+                    className="sound-volume-slider"
+                    min={0}
+                    max={100}
+                    step={5}
+                    value={isPlayerSoundOn ? Math.round(playerVolume * 100) : 0}
+                    onChange={(e) => onChangePlayerVolume(Number(e.target.value) / 100)}
+                  />
+                  <span className="sound-volume-pct">
+                    {isPlayerSoundOn ? Math.round(playerVolume * 100) : 0}%
+                  </span>
+                </label>
+              </div>
 
-              <button
-                type="button"
-                className="sound-toggle-row"
-                onClick={onToggleNpcSound}
-              >
-                <span className="sound-toggle-info">
-                  <span className="sound-toggle-name">👥 NPC 합주 소리</span>
-                  <span className="sound-toggle-desc">공원에서 멤버들이 모였을 때 합주</span>
-                </span>
-                <span
-                  className={`sound-switch-pill ${isNpcSoundOn ? 'is-on' : 'is-off'}`}
+              <div className="sound-channel-box">
+                <button
+                  type="button"
+                  className="sound-toggle-row"
+                  onClick={onToggleNpcSound}
                 >
-                  {isNpcSoundOn ? 'ON' : 'OFF'}
-                </span>
-              </button>
+                  <span className="sound-toggle-info">
+                    <span className="sound-toggle-name">👥 NPC 합주 소리</span>
+                    <span className="sound-toggle-desc">공원에서 멤버들이 모였을 때 합주</span>
+                  </span>
+                  <span
+                    className={`sound-switch-pill ${effectiveNpcOn ? 'is-on' : 'is-off'}`}
+                  >
+                    {effectiveNpcOn ? 'ON' : 'OFF'}
+                  </span>
+                </button>
+                <label className="sound-volume-row">
+                  <span className="sound-volume-label">볼륨</span>
+                  <input
+                    type="range"
+                    className="sound-volume-slider"
+                    min={0}
+                    max={100}
+                    step={5}
+                    value={isNpcSoundOn ? Math.round(npcVolume * 100) : 0}
+                    onChange={(e) => onChangeNpcVolume(Number(e.target.value) / 100)}
+                  />
+                  <span className="sound-volume-pct">
+                    {isNpcSoundOn ? Math.round(npcVolume * 100) : 0}%
+                  </span>
+                </label>
+              </div>
             </div>
           </div>
         </div>

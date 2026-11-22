@@ -53,13 +53,19 @@ export function NpcGroup({
   // 전체 NPC 그룹 런타임 상태 + 합주 상태 (단일 useRef로 60fps 관리)
   const groupStateRef = useRef(createNpcGroupState(members, space));
 
-  // 각 NPC의 3D 그룹·리듬 링·애니메이션 action ref 배열
+  // 각 NPC의 3D 그룹·리듬 링·애니메이션 action·고개 돌림·걸음 속도 ref 배열
   const groupRefs = useRef<Array<Group | null>>([]);
   const playRingRefs = useRef<Array<Mesh | null>>([]);
   const actionRefs = useRef<Array<MutableRefObject<PlayerAction>>>(
     members.map((_, idx) => ({
       current: groupStateRef.current.npcs[idx]?.state ?? 'idle',
     }))
+  );
+  const headLookYawRefs = useRef<Array<MutableRefObject<number>>>(
+    members.map(() => ({ current: 0 }))
+  );
+  const walkSpeedScaleRefs = useRef<Array<MutableRefObject<number>>>(
+    members.map(() => ({ current: 1 }))
   );
 
   // 현재 [!] 말풍선이 떠 있는 가장 가까운 NPC ID
@@ -97,20 +103,22 @@ export function NpcGroup({
     const delta = Math.min(rawDelta, 0.05);
     const { npcs, ensemble } = groupStateRef.current;
 
+    const [px, , pz] = playerStateRef.current.position;
+
     const { ensembleStep, kakegoeEvents } = stepNpcGroup(
       npcs,
       ensemble,
       songs,
       space,
-      delta
+      delta,
+      [px, pz]
     );
 
-    const [px, , pz] = playerStateRef.current.position;
     let closestMember: MemberConfig | null = null;
     let closestDistance = Infinity;
     const ringPulse = 1 + Math.sin(clock.getElapsedTime() * 8) * 0.14;
 
-    // 1) 각 NPC의 3D 변환·행동·리듬 링 반영 및 플레이어와의 최단 거리 계산
+    // 1) 각 NPC의 3D 변환·행동·고개 돌림·걸음 속도·리듬 링 반영 및 플레이어와의 최단 거리 계산
     for (let i = 0; i < npcs.length; i++) {
       const npc = npcs[i];
       const groupObj = groupRefs.current[i];
@@ -121,6 +129,12 @@ export function NpcGroup({
 
       if (actionRefs.current[i]) {
         actionRefs.current[i].current = npc.state;
+      }
+      if (headLookYawRefs.current[i]) {
+        headLookYawRefs.current[i].current = npc.headLookYaw;
+      }
+      if (walkSpeedScaleRefs.current[i]) {
+        walkSpeedScaleRefs.current[i].current = npc.walkSpeedScale;
       }
 
       const ringObj = playRingRefs.current[i];
@@ -201,6 +215,8 @@ export function NpcGroup({
               playRingRefs.current[index] = mesh;
             }}
             actionRef={actionRefs.current[index]}
+            headLookYawRef={headLookYawRefs.current[index]}
+            walkSpeedScaleRef={walkSpeedScaleRefs.current[index]}
             isPlayerNear={nearbyMemberId === member.id}
             isInteractionActive={isInteractionActive}
             floatingKakegoe={kakegoeMap[member.id] ?? null}

@@ -9,6 +9,7 @@ import songsData from './data/songs.json';
 import taikoTracksData from './data/taikoTracks.json';
 import taikoGuideData from './data/taikoGuide.json';
 import themesData from './data/themes.json';
+import worldEnvironmentsData from './data/worldEnvironments.json';
 import type {
   GroupHideoutConfig,
   InstrumentConfig,
@@ -21,10 +22,11 @@ import type {
   CircleInfo,
   MemberConfig,
   ScheduleEvent,
-  SeasonThemeConfig,
+  SeasonThemeCatalog,
   SongConfig,
   TaikoGuideData,
   TaikoTrackDefinition,
+  WorldEnvironmentConfig,
 } from './types/content';
 import { audioManager } from './systems/audioManager';
 import type { TaikoHitType } from './systems/audioManager';
@@ -36,8 +38,8 @@ import {
 } from './utils/characterAppearance';
 import {
   buildSpaceWithThemeObstacles,
-  getThemeById,
-  resolveThemeByDate,
+  composeWorldAtmosphere,
+  resolveDeployedSeasonTheme,
 } from './utils/themeResolver';
 import { useScheduleEvents } from './hooks/useScheduleEvents';
 import { useMembers } from './hooks/useMembers';
@@ -100,7 +102,24 @@ const fallbackMembers = membersData as MemberConfig[];
 const songs = songsData as SongConfig[];
 const taikoTracks = taikoTracksData as unknown as TaikoTrackDefinition[];
 const taikoGuide = taikoGuideData as TaikoGuideData;
-const seasonThemes = themesData as unknown as SeasonThemeConfig[];
+const seasonCatalog = themesData as unknown as SeasonThemeCatalog;
+const worldEnvironments = worldEnvironmentsData as WorldEnvironmentConfig[];
+
+/** 사용자가 선택한 기본 배경 테마를 브라우저에 기억하는 키 */
+const ENV_STORAGE_KEY = 'taikoworld_world_env_v1';
+
+/** 저장된 기본 배경 테마 ID를 안전하게 복원하는 보조 함수 */
+function loadSavedEnvironmentId(): string {
+  try {
+    const saved = window.localStorage.getItem(ENV_STORAGE_KEY);
+    if (saved && worldEnvironments.some((env) => env.id === saved)) {
+      return saved;
+    }
+  } catch {
+    // 저장소 접근 불가 환경은 기본값 사용
+  }
+  return worldEnvironments[0].id;
+}
 
 // 악기 ID로 트랙 정보(이름·색상·음원 경로)를 즉시 조회하는 맵 생성
 const tracksById: Record<string, TaikoTrackDefinition> = Object.fromEntries(
@@ -117,20 +136,33 @@ export function App() {
   // MVP 1차 공간: 첫 번째 공간(잔디 공원)을 기본으로 불러옴
   const baseSpace = spaces[0];
 
-  // 시즌·이벤트 테마: 오늘 날짜 기준 자동 선택 + 메뉴에서 수동 미리보기 전환 지원
-  const autoTheme = useMemo(() => resolveThemeByDate(seasonThemes), []);
-  const [manualThemeId, setManualThemeId] = useState<string | null>(null);
-  const activeTheme = useMemo(
-    () =>
-      (manualThemeId ? getThemeById(seasonThemes, manualThemeId) : undefined) ??
-      autoTheme,
-    [manualThemeId, autoTheme]
+  // 운영자 일괄 배포 시즌 테마 (themes.json의 activeOverride 또는 날짜 범위로 모든 사용자에게 일괄 적용)
+  const deployedSeasonTheme = useMemo(
+    () => resolveDeployedSeasonTheme(seasonCatalog),
+    []
   );
 
-  // 활성 시즌 소품(트리, 아치, 야구라 등)의 2D 원형 장애물을 공원 공간에 자동 합산
+  // 사용자가 메뉴에서 변경할 수 있는 기본 배경 테마 (잔디 공원, 연습실, 눈오는 들판, 노을 광장)
+  const [selectedEnvId, setSelectedEnvId] = useState<string>(() =>
+    loadSavedEnvironmentId()
+  );
+  const selectedEnvironment = useMemo(
+    () =>
+      worldEnvironments.find((env) => env.id === selectedEnvId) ??
+      worldEnvironments[0],
+    [selectedEnvId]
+  );
+
+  // 기본 배경 테마와 운영자 일괄 시즌 테마를 합친 최종 3D 분위기 설정
+  const worldAtmosphere = useMemo(
+    () => composeWorldAtmosphere(selectedEnvironment, deployedSeasonTheme),
+    [selectedEnvironment, deployedSeasonTheme]
+  );
+
+  // 활성 시즌 소품(트리, 아치, 야구라 등)의 2D 원형 장애물을 공간에 자동 합산
   const currentSpace = useMemo(
-    () => buildSpaceWithThemeObstacles(baseSpace, activeTheme),
-    [baseSpace, activeTheme]
+    () => buildSpaceWithThemeObstacles(baseSpace, deployedSeasonTheme),
+    [baseSpace, deployedSeasonTheme]
   );
 
   // 구글 스프레드시트(VITE_SCHEDULE_CSV_URL)가 설정되어 있으면 실시간 일정을, 없으면 기본 JSON 일정을 사용
@@ -158,10 +190,12 @@ export function App() {
   const [customizeRotationOffset, setCustomizeRotationOffset] = useState(0);
   const [isCustomizePlaying, setIsCustomizePlaying] = useState(false);
 
-  // 화면 진입 및 세분화 소리 설정 상태 (직접 연주 소리 / NPC 합주 소리 개별 제어)
+  // 화면 진입 및 세분화 소리·볼륨 설정 상태 (직접 연주 소리 / NPC 합주 소리 개별 제어)
   const [hasEntered, setHasEntered] = useState(false);
   const [isPlayerSoundOn, setIsPlayerSoundOn] = useState(true);
   const [isNpcSoundOn, setIsNpcSoundOn] = useState(true);
+  const [playerVolume, setPlayerVolume] = useState(0.9);
+  const [npcVolume, setNpcVolume] = useState(0.85);
   const [isSoundPopoverOpen, setIsSoundPopoverOpen] = useState(false);
 
   // 3D 근접 상호작용 대상 상태 (북 / NPC / 지역 단체 아지트)
@@ -288,22 +322,66 @@ export function App() {
     setHasEntered(true);
   }, []);
 
+  /** 기본 배경 테마 변경 핸들러 (잔디 공원·연습실·눈오는 들판 등, localStorage 저장) */
+  const handleSelectEnvironment = useCallback((envId: string) => {
+    setSelectedEnvId(envId);
+    try {
+      window.localStorage.setItem(ENV_STORAGE_KEY, envId);
+    } catch {
+      // 무시
+    }
+  }, []);
+
   /** 직접 연주 소리 ON/OFF 토글 핸들러 */
   const handleTogglePlayerSound = useCallback(() => {
     setIsPlayerSoundOn((prev) => {
       const next = !prev;
+      if (next && playerVolume === 0) {
+        setPlayerVolume(0.9);
+        audioManager.setPlayerVolume(0.9);
+      }
       audioManager.setPlayerSoundEnabled(next);
       return next;
     });
+  }, [playerVolume]);
+
+  /** 직접 연주 볼륨 슬라이더 변경 핸들러 (0.0 ~ 1.0) */
+  const handleChangePlayerVolume = useCallback((volume: number) => {
+    setPlayerVolume(volume);
+    audioManager.setPlayerVolume(volume);
+    if (volume > 0) {
+      setIsPlayerSoundOn(true);
+      audioManager.setPlayerSoundEnabled(true);
+    } else {
+      setIsPlayerSoundOn(false);
+      audioManager.setPlayerSoundEnabled(false);
+    }
   }, []);
 
   /** NPC 합주 배경 소리 ON/OFF 토글 핸들러 */
   const handleToggleNpcSound = useCallback(() => {
     setIsNpcSoundOn((prev) => {
       const next = !prev;
+      if (next && npcVolume === 0) {
+        setNpcVolume(0.85);
+        audioManager.setNpcVolume(0.85);
+      }
       audioManager.setNpcSoundEnabled(next);
       return next;
     });
+  }, [npcVolume]);
+
+  /** NPC 합주 배경 볼륨 슬라이더 변경 핸들러 (0.0 ~ 1.0) */
+  const handleChangeNpcVolume = useCallback((volume: number) => {
+    setNpcVolume(volume);
+    audioManager.setNpcVolume(volume);
+    if (volume > 0) {
+      setIsNpcSoundOn(true);
+      audioManager.setNpcSoundEnabled(true);
+    } else {
+      setIsNpcSoundOn(false);
+      audioManager.setNpcSoundEnabled(false);
+    }
   }, []);
 
   /** 타이코 연주 모드 진입 핸들러 */
@@ -404,7 +482,7 @@ export function App() {
       >
         <Scene
           space={currentSpace}
-          activeTheme={activeTheme}
+          atmosphere={worldAtmosphere}
           instruments={instruments}
           members={members}
           songs={songs}
@@ -468,16 +546,20 @@ export function App() {
         </div>
       )}
 
-      {/* 입장 후 상시 HUD: 우측 상단 세분화 소리 설정(직접 연주 vs NPC 합주) */}
+      {/* 입장 후 상시 HUD: 우측 상단 세분화 소리·볼륨 설정(직접 연주 vs NPC 합주) */}
       {hasEntered && (
         <SoundControl
           isPlayerSoundOn={isPlayerSoundOn}
           isNpcSoundOn={isNpcSoundOn}
+          playerVolume={playerVolume}
+          npcVolume={npcVolume}
           isOpen={isSoundPopoverOpen}
           onToggleOpen={() => setIsSoundPopoverOpen((prev) => !prev)}
           onClose={() => setIsSoundPopoverOpen(false)}
           onTogglePlayerSound={handleTogglePlayerSound}
           onToggleNpcSound={handleToggleNpcSound}
+          onChangePlayerVolume={handleChangePlayerVolume}
+          onChangeNpcVolume={handleChangeNpcVolume}
         />
       )}
 
@@ -508,14 +590,15 @@ export function App() {
         {hasEntered && isMenuOpen && (
           <MenuModal
             nextEvent={nextUpcomingEvent}
-            memberCount={members.length}
             songCount={songs.length + customSongs.length}
-            themes={seasonThemes}
-            autoTheme={autoTheme}
-            manualThemeId={manualThemeId}
-            onSelectThemePreview={setManualThemeId}
+            environments={worldEnvironments}
+            selectedEnvironmentId={selectedEnvId}
+            deployedSeasonTheme={deployedSeasonTheme}
+            onSelectEnvironment={handleSelectEnvironment}
             isPlayerSoundOn={isPlayerSoundOn}
             isNpcSoundOn={isNpcSoundOn}
+            playerVolume={playerVolume}
+            npcVolume={npcVolume}
             onOpenSchedule={() => {
               closeAllModals();
               setOpenedFromMenu(true);
@@ -544,6 +627,8 @@ export function App() {
             }}
             onTogglePlayerSound={handleTogglePlayerSound}
             onToggleNpcSound={handleToggleNpcSound}
+            onChangePlayerVolume={handleChangePlayerVolume}
+            onChangeNpcVolume={handleChangeNpcVolume}
             onClose={() => setIsMenuOpen(false)}
           />
         )}
@@ -638,9 +723,9 @@ export function App() {
         <>
           <div className="space-badge">
             <span>
-              🌿 {currentSpace.name}
-              {activeTheme.id !== 'default'
-                ? ` · ${activeTheme.emoji} ${activeTheme.name}`
+              {selectedEnvironment.emoji} {selectedEnvironment.name}
+              {deployedSeasonTheme.id !== 'default'
+                ? ` · ${deployedSeasonTheme.emoji} ${deployedSeasonTheme.name}`
                 : ''}
             </span>
             <span className="space-badge-hint">

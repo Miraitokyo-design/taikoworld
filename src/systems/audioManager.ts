@@ -5,19 +5,26 @@ import type { InstrumentSounds } from '../types/world';
 export type TaikoHitType = 'don' | 'ka';
 
 /**
- * 笛(피리) 음계 -> 주파수(Hz) 매핑 표
- * - 현재 4개 기본 음계(レ, ミ, ソ, ラ)를 지원하며, 추후 음계를 늘릴 때 항목만 추가하면 됩니다.
+ * 笛(시노부에 · 피리) 전체 11음계 -> 주파수(Hz) 매핑 표
+ * - C5(ド) ~ G6(ソ↑)까지 기본 7음계와 시노부에 특유의 맑은 고음역(↑)을 모두 지원합니다.
  */
 const FUE_PITCH_MAP: Record<string, number> = {
+  ド: 523.25,
   レ: 587.33,
   ミ: 659.25,
+  ファ: 698.46,
   ソ: 783.99,
   ラ: 880.0,
+  シ: 987.77,
+  'ド↑': 1046.5,
+  'レ↑': 1174.66,
+  'ミ↑': 1318.51,
+  'ソ↑': 1567.98,
 };
 
 /**
  * Web Audio API 기반 경량 오디오 매니저 클래스
- * - 직접 연주·악보 소리(playerGain)와 NPC 배경 합주 소리(npcEnabledGain)를 분리해 개별 ON/OFF를 지원합니다.
+ * - 직접 연주·악보 소리(playerGain)와 NPC 배경 합주 소리(npcEnabledGain)를 분리해 개별 ON/OFF 및 볼륨(0~100%) 조절을 지원합니다.
  * - 메뉴나 팝업 창, 연주 모드가 열리면 NPC 합주 배경 볼륨만 자동으로 낮춥니다(덕킹).
  * - 각 레이어 볼륨과 강약 표현(점점 크게/작게/강하게/약하게)을 volume 배율로 정확히 반영합니다.
  */
@@ -29,6 +36,8 @@ class AudioManager {
 
   private isPlayerSoundOn = true;
   private isNpcSoundOn = true;
+  private playerVolume = 0.9;
+  private npcVolume = 0.85;
   private isNpcDucking = false;
 
   /** 실제 오디오 파일(.mp3)을 미리 디코딩해 보관하는 캐시 맵 */
@@ -67,16 +76,16 @@ class AudioManager {
 
       // 1) 직접 연주 및 악보 미리듣기 전용 채널
       this.playerGain = this.context.createGain();
-      this.playerGain.gain.value = this.isPlayerSoundOn ? 1 : 0;
+      this.playerGain.gain.value = this.isPlayerSoundOn ? this.playerVolume : 0;
       this.playerGain.connect(this.context.destination);
 
-      // 2) NPC 공원 합주 전용 채널: [ON/OFF 게인] -> [팝업·연주 모드 덕킹 게인] -> 출력
+      // 2) NPC 공원 합주 전용 채널: [ON/OFF + 볼륨 게인] -> [팝업·연주 모드 덕킹 게인] -> 출력
       this.npcDuckingGain = this.context.createGain();
       this.npcDuckingGain.gain.value = this.isNpcDucking ? 0.2 : 1;
       this.npcDuckingGain.connect(this.context.destination);
 
       this.npcEnabledGain = this.context.createGain();
-      this.npcEnabledGain.gain.value = this.isNpcSoundOn ? 1 : 0;
+      this.npcEnabledGain.gain.value = this.isNpcSoundOn ? this.npcVolume : 0;
       this.npcEnabledGain.connect(this.npcDuckingGain);
     }
 
@@ -125,7 +134,25 @@ class AudioManager {
   public setPlayerSoundEnabled(enabled: boolean): void {
     this.isPlayerSoundOn = enabled;
     if (this.playerGain && this.context) {
-      this.playerGain.gain.setTargetAtTime(enabled ? 1 : 0, this.context.currentTime, 0.015);
+      this.playerGain.gain.setTargetAtTime(
+        enabled ? this.playerVolume : 0,
+        this.context.currentTime,
+        0.015
+      );
+    }
+  }
+
+  /**
+   * 직접 연주(북 체험·악보 미리듣기·작곡) 마스터 볼륨 설정 (0.0 ~ 1.0)
+   */
+  public setPlayerVolume(volume: number): void {
+    this.playerVolume = Math.max(0, Math.min(1, volume));
+    if (this.playerGain && this.context) {
+      this.playerGain.gain.setTargetAtTime(
+        this.isPlayerSoundOn ? this.playerVolume : 0,
+        this.context.currentTime,
+        0.015
+      );
     }
   }
 
@@ -136,7 +163,21 @@ class AudioManager {
     this.isNpcSoundOn = enabled;
     if (this.npcEnabledGain && this.context) {
       this.npcEnabledGain.gain.setTargetAtTime(
-        enabled ? 1 : 0,
+        enabled ? this.npcVolume : 0,
+        this.context.currentTime,
+        0.02
+      );
+    }
+  }
+
+  /**
+   * NPC 공원 합주 배경 마스터 볼륨 설정 (0.0 ~ 1.0)
+   */
+  public setNpcVolume(volume: number): void {
+    this.npcVolume = Math.max(0, Math.min(1, volume));
+    if (this.npcEnabledGain && this.context) {
+      this.npcEnabledGain.gain.setTargetAtTime(
+        this.isNpcSoundOn ? this.npcVolume : 0,
         this.context.currentTime,
         0.02
       );
@@ -208,14 +249,31 @@ class AudioManager {
       return;
     }
 
-    // 2) 악기별 임시 Web Audio 합성음 분기
-    if (instrumentId === 'shaku_2' || instrumentId === 'shaku_4' || instrumentId === 'shaku_6') {
+    // 2) 악기별 임시 Web Audio 합성음 분기 (転太鼓舞 · 鶴亀会 전체 보유 악기 대응)
+    if (
+      instrumentId === 'shaku_2' ||
+      instrumentId === 'shaku_4' ||
+      instrumentId === 'shaku_5' ||
+      instrumentId === 'shaku_6' ||
+      instrumentId === 'katsugi'
+    ) {
       this.synthesizeShaku(this.context, noteGain, note);
       return;
     }
 
-    if (instrumentId === 'oki') {
+    if (
+      instrumentId === 'oki' ||
+      instrumentId === 'eisa' ||
+      instrumentId === 'odaiko' ||
+      instrumentId === 'chu' ||
+      instrumentId === 'hira'
+    ) {
       this.synthesizeOki(this.context, noteGain, note);
+      return;
+    }
+
+    if (instrumentId === 'paranku' || instrumentId === 'taru') {
+      this.synthesizeParanku(this.context, noteGain, note);
       return;
     }
 
@@ -229,8 +287,13 @@ class AudioManager {
       return;
     }
 
-    if (instrumentId === 'chappa') {
+    if (instrumentId === 'chappa' || instrumentId === 'jangara') {
       this.synthesizeChappa(this.context, noteGain, note);
+      return;
+    }
+
+    if (instrumentId === 'chiki' || instrumentId === 'suzu') {
+      this.synthesizeChikiOrSuzu(this.context, noteGain, instrumentId, note);
       return;
     }
 
@@ -324,34 +387,50 @@ class AudioManager {
     osc.stop(now + 0.12);
   }
 
-  /** 笛(피리) — 4개 음계(レ / ミ / ソ / ラ)에 맞춰 연주하는 대나무 피리 선율 */
+  /** 笛(피리) — 전체 11음계(ド ~ ソ↑)에 맞춰 연주하는 대나무 피리 선율 (부드러운 배음 포함) */
   private synthesizeFue(ctx: AudioContext, destination: AudioNode, note: string): void {
     const now = ctx.currentTime;
     const freq = FUE_PITCH_MAP[note] ?? 783.99;
 
+    // 기본음(Sine) + 시노부에 특유의 맑은 2배음(약한 Triangle)을 살짝 섞어 자연스러운 음색 구현
     const osc = ctx.createOscillator();
+    const overtone = ctx.createOscillator();
+    const overtoneGain = ctx.createGain();
     const gain = ctx.createGain();
+
     osc.type = 'sine';
     osc.frequency.setValueAtTime(freq, now);
+
+    overtone.type = 'triangle';
+    overtone.frequency.setValueAtTime(freq * 2, now);
+    overtoneGain.gain.setValueAtTime(0.14, now);
+
+    // 고음역(ド↑ 이상)은 살짝 부드럽게 볼륨 보정해 귀가 따갑지 않게 조절
+    const peakGain = freq >= 1000 ? 0.19 : 0.24;
 
     const vibrato = ctx.createOscillator();
     const vibratoGain = ctx.createGain();
     vibrato.frequency.setValueAtTime(5.6, now);
-    vibratoGain.gain.setValueAtTime(7.5, now);
+    vibratoGain.gain.setValueAtTime(freq * 0.009, now);
     vibrato.connect(vibratoGain);
     vibratoGain.connect(osc.frequency);
+    vibratoGain.connect(overtone.frequency);
 
     gain.gain.setValueAtTime(0.001, now);
-    gain.gain.linearRampToValueAtTime(0.24, now + 0.04);
-    gain.gain.setValueAtTime(0.21, now + 0.24);
+    gain.gain.linearRampToValueAtTime(peakGain, now + 0.035);
+    gain.gain.setValueAtTime(peakGain * 0.88, now + 0.24);
     gain.gain.exponentialRampToValueAtTime(0.001, now + 0.42);
 
     osc.connect(gain);
+    overtone.connect(overtoneGain);
+    overtoneGain.connect(gain);
     gain.connect(destination);
 
     osc.start(now);
+    overtone.start(now);
     vibrato.start(now);
     osc.stop(now + 0.44);
+    overtone.stop(now + 0.44);
     vibrato.stop(now + 0.44);
   }
 
@@ -401,6 +480,65 @@ class AudioManager {
     noiseGain.connect(destination);
     noise.start(now);
     noise.stop(now + duration + 0.02);
+  }
+
+  /** パーランクー(파란쿠 손북) · たる(통북) — 경쾌하게 통통 울리는 타격음 (とん / どん / かっ) */
+  private synthesizeParanku(ctx: AudioContext, destination: AudioNode, note: string): void {
+    const now = ctx.currentTime;
+
+    if (note === 'かっ' || note === '카') {
+      this.synthesizeRim(ctx, destination, 1180, 740, 0.4);
+      return;
+    }
+
+    const isLow = note === 'どん';
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(isLow ? 210 : 320, now);
+    osc.frequency.exponentialRampToValueAtTime(isLow ? 102 : 165, now + 0.11);
+
+    gain.gain.setValueAtTime(0.001, now);
+    gain.gain.linearRampToValueAtTime(0.48, now + 0.003);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.17);
+
+    osc.connect(gain);
+    gain.connect(destination);
+    osc.start(now);
+    osc.stop(now + 0.18);
+  }
+
+  /** チキ(아타리가네/치키) · 鈴(방울) — 맑고 또렷한 금속 울림 (チキ / コン / シャン) */
+  private synthesizeChikiOrSuzu(
+    ctx: AudioContext,
+    destination: AudioNode,
+    instrumentId: TrackInstrumentId,
+    note: string
+  ): void {
+    const now = ctx.currentTime;
+    const isSuzu = instrumentId === 'suzu' || note === 'シャン';
+    const baseFreqs = isSuzu
+      ? [2960, 4186, 5274]
+      : note === 'コン'
+        ? [1120, 2240]
+        : [1640, 3120];
+    const duration = isSuzu ? 0.3 : 0.16;
+
+    for (const freq of baseFreqs) {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(freq, now);
+
+      gain.gain.setValueAtTime(0.001, now);
+      gain.gain.linearRampToValueAtTime(isSuzu ? 0.1 : 0.15, now + 0.003);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + duration);
+
+      osc.connect(gain);
+      gain.connect(destination);
+      osc.start(now);
+      osc.stop(now + duration + 0.02);
+    }
   }
 
   /** 공통 나무 테두리(かっ) 타격음 보조 합성 함수 */

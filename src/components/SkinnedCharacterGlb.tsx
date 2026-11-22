@@ -31,6 +31,10 @@ interface SkinnedCharacterGlbProps {
   faceTexture: CanvasTexture;
   /** 현재 행동 상태('idle' | 'walk' | 'play')를 60fps로 읽어오는 ref */
   actionRef: MutableRefObject<PlayerAction>;
+  /** 플레이어 근접 시 살짝 고개를 돌리는 Y축 각도 ref (선택) */
+  headLookYawRef?: MutableRefObject<number>;
+  /** 플레이어 근접 시 걸음 애니메이션 속도 배율 ref (선택) */
+  walkSpeedScaleRef?: MutableRefObject<number>;
 }
 
 /** 애니메이션 상태 전환 시 뚝 끊기지 않게 부드럽게 섞어주는 크로스페이드 시간(초) */
@@ -65,6 +69,8 @@ export function SkinnedCharacterGlb({
   appearance,
   faceTexture,
   actionRef,
+  headLookYawRef,
+  walkSpeedScaleRef,
 }: SkinnedCharacterGlbProps) {
   const wrapperRef = useRef<Group>(null);
   const bachiLeftRef = useRef<Group>(null);
@@ -92,6 +98,7 @@ export function SkinnedCharacterGlb({
       chest: findSocket('Socket_Instrument_Chest'),
       handL: findSocket('Socket_Hand_L'),
       handR: findSocket('Socket_Hand_R'),
+      headBone: findSocket('Head'),
     };
   }, [clonedScene]);
 
@@ -214,6 +221,23 @@ export function SkinnedCharacterGlb({
       }
     }
 
+    // 걷기 중 플레이어가 가까이 있으면 Blender 걷기 클립 재생 속도(timeScale)도 자연스럽게 늦춤
+    const activeClipAction = currentClipRef.current
+      ? actions[currentClipRef.current]
+      : null;
+    if (activeClipAction) {
+      const speedScale = walkSpeedScaleRef?.current ?? 1;
+      activeClipAction.timeScale =
+        action === 'walk' ? 0.45 + 0.55 * speedScale : 1;
+    }
+
+    // Head 본이 있으면 플레이어 근접 시 살짝 고개를 돌리는 시선 처리 적용
+    if (sockets.headBone && headLookYawRef) {
+      sockets.headBone.rotation.y +=
+        (headLookYawRef.current - sockets.headBone.rotation.y) *
+        Math.min(delta * 10, 1);
+    }
+
     // Blender 애니메이션 위에 살짝 더해지는 귀여운 스쿼시&스트레치 보조 탄력감
     if (wrapperRef.current) {
       const smoothLerp = Math.min(delta * 12, 1);
@@ -253,9 +277,27 @@ export function SkinnedCharacterGlb({
   const isChestInstrument =
     appearance.equippedInstrument === 'shaku_2' ||
     appearance.equippedInstrument === 'shaku_4' ||
+    appearance.equippedInstrument === 'shaku_5' ||
     appearance.equippedInstrument === 'shaku_6' ||
     appearance.equippedInstrument === 'oki' ||
-    appearance.equippedInstrument === 'shime';
+    appearance.equippedInstrument === 'eisa' ||
+    appearance.equippedInstrument === 'katsugi';
+  const isFloorInstrument =
+    appearance.equippedInstrument === 'shime' ||
+    appearance.equippedInstrument === 'hira' ||
+    appearance.equippedInstrument === 'chu' ||
+    appearance.equippedInstrument === 'odaiko' ||
+    appearance.equippedInstrument === 'taru';
+  const isDualHandInstrument =
+    appearance.equippedInstrument === 'chappa' ||
+    appearance.equippedInstrument === 'jangara';
+  const isLeftHandInstrument =
+    appearance.equippedInstrument === 'paranku' ||
+    appearance.equippedInstrument === 'chiki';
+  const isRightHandInstrument =
+    appearance.equippedInstrument === 'fue' ||
+    appearance.equippedInstrument === 'suzu' ||
+    appearance.equippedInstrument === 'uchiwa';
 
   return (
     <group>
@@ -270,6 +312,13 @@ export function SkinnedCharacterGlb({
         <primitive object={clonedScene} />
       </group>
 
+      {/* Layer 5: 바닥 받침대(台) 위 시메다이코(締め) -> 캐릭터 앞 바닥 y = 0에 배치 */}
+      {isFloorInstrument && instrumentUrl && (
+        <group position={[0, 0, 0.48]}>
+          <GlbModel url={instrumentUrl} fallback={null} />
+        </group>
+      )}
+
       {/* Layer 4: 헤어 파츠 GLB -> Socket_Head 소켓에 포털 부착 */}
       {sockets.head &&
         hairUrl &&
@@ -281,19 +330,25 @@ export function SkinnedCharacterGlb({
         instrumentUrl &&
         createPortal(<GlbModel url={instrumentUrl} fallback={null} />, sockets.chest)}
 
-      {/* Layer 5: 피리(笛) GLB -> Socket_Hand_R 소켓에 포털 부착 */}
+      {/* Layer 5: 오른손 휴대 악기/소품(笛·鈴·うちわ) -> Socket_Hand_R */}
       {sockets.handR &&
-        appearance.equippedInstrument === 'fue' &&
+        isRightHandInstrument &&
         instrumentUrl &&
         createPortal(<GlbModel url={instrumentUrl} fallback={null} />, sockets.handR)}
 
-      {/* Layer 5: 차파(チャッパ) GLB -> 양손 소켓에 포털 부착 */}
+      {/* Layer 5: 왼손 휴대 악기(パーランクー·チキ) -> Socket_Hand_L */}
       {sockets.handL &&
-        appearance.equippedInstrument === 'chappa' &&
+        isLeftHandInstrument &&
+        instrumentUrl &&
+        createPortal(<GlbModel url={instrumentUrl} fallback={null} />, sockets.handL)}
+
+      {/* Layer 5: 양손 금속 타악기(チャッパ·ジャンガラ) -> 양손 소켓 */}
+      {sockets.handL &&
+        isDualHandInstrument &&
         instrumentUrl &&
         createPortal(<GlbModel url={instrumentUrl} fallback={null} />, sockets.handL)}
       {sockets.handR &&
-        appearance.equippedInstrument === 'chappa' &&
+        isDualHandInstrument &&
         instrumentUrl &&
         createPortal(<GlbModel url={instrumentUrl} fallback={null} />, sockets.handR)}
 

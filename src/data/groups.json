@@ -15,9 +15,9 @@
     "bodyModelPath": "/models/characters/char_body_rabbit.glb"
   },
   {
-    "id": "group_tsurukamedaiko",
-    "name": "鶴亀太鼓",
-    "reading": "츠루카메타이코",
+    "id": "group_tsurukamekai",
+    "name": "鶴亀会",
+    "reading": "츠루카메카이",
     "affiliation": "기술대학 타이코 서클",
     "species": "turtle",
     "speciesLabel": "거북이",
@@ -26,7 +26,7 @@
     "obiColor": "#e8b948",
     "bodyColor": "#93c572",
     "accentColor": "#4b7b43",
-    "happiTexture": "/textures/happi/happi_tsurukamedaiko.webp",
+    "happiTexture": "/textures/happi/happi_tsurukamekai.webp",
     "bodyModelPath": "/models/characters/char_body_turtle.glb"
   }
 ]
