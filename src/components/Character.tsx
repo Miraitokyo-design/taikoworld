@@ -306,9 +306,21 @@ export function CharacterFloorInstrument({
     </group>
   );
 
+  // 大(odaiko)와 中(chu)는 전용 GLB가 아직 없을 때 광장용 나가도 다이코(inst_taiko_nagado.glb)를 크기별로 자동 공유
+  const effectiveFallback =
+    instrument === 'odaiko' || instrument === 'chu' ? (
+      <GlbModel
+        url="/models/instruments/inst_taiko_nagado.glb"
+        scale={instrument === 'odaiko' ? 0.85 : 0.72}
+        fallback={placeholderFloorDrum}
+      />
+    ) : (
+      placeholderFloorDrum
+    );
+
   return (
     <group position={[0, 0, spec.z]}>
-      <GlbModel url={glbUrl} fallback={placeholderFloorDrum} />
+      <GlbModel url={glbUrl} fallback={effectiveFallback} />
     </group>
   );
 }

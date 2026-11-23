@@ -11,7 +11,7 @@
     "obiColor": "#f4d35e",
     "bodyColor": "#f6f5f1",
     "accentColor": "#f7b5c4",
-    "happiTexture": "/textures/happi/happi_tentaikomai.webp",
+    "happiTexture": "/textures/happi/happi_tentaikomai.png",
     "bodyModelPath": "/models/characters/char_body_rabbit.glb"
   },
   {

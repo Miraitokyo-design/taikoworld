@@ -93,7 +93,7 @@ export const Taiko = memo(function Taiko({
     <group name={instrument.id} position={[x, y, z]} onClick={handleDrumClick}>
       {/* 가벼운 블롭 그림자 */}
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.015, 0]}>
-        <circleGeometry args={[0.85, 24]} />
+        <circleGeometry args={[1.05, 24]} />
         <meshBasicMaterial color="#3c6e47" transparent opacity={0.35} />
       </mesh>
 
@@ -109,7 +109,11 @@ export const Taiko = memo(function Taiko({
 
       {/* 타격 시 통통 울리는 3D 모델 (GLB 있으면 자동 로드, 없으면 임시 모델) */}
       <group ref={drumBodyRef}>
-        <GlbModel url={instrument.modelPath} fallback={<PlaceholderTaikoMesh />} />
+        <GlbModel
+          url={instrument.modelPath}
+          scale={instrument.scale ?? 1}
+          fallback={<PlaceholderTaikoMesh />}
+        />
       </group>
     </group>
   );

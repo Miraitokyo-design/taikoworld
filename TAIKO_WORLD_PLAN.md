@@ -4,68 +4,71 @@
 지역 타이코 동아리/서클 **P.Taiko** 활성화를 위한 웹 프로젝트 **Taiko World**.
 방문자가 동물의 숲·포코피아 같은 **저폴리(폴리곤 수가 적어 가볍고 아기자기한)·따뜻한 스타일**의 3D 가상공간을 귀여운 동물 캐릭터로 돌아다니며 다음을 경험할 수 있다.
 
-- **연주 일정 확인**: 화면 상단의 가장 빠른 일정 배너와 구글 시트 연동 월간 캘린더로 공연/행사 일정 확인
-- **타이코 체험 & 악보 감상·작곡**: 잔디 공원의 북을 직접 쳐보고, 다층 레이어 악보로 합주곡 감상 및 직접 작곡 체험
-- **멤버·지역 단체 구경**: 공간에서 자유롭게 산책하다 모여 합주하는 NPC 멤버 프로필과 좌/우 지역 단체 아지트(転太鼓舞·鶴亀会 등) 소개 구경 → 서클 소개 및 체험/가입 문의로 연결
-- **계절·이벤트 분위기 변화**: 크리스마스, 졸업식, 입학식, 오봉, 여름 등 시즌에 따라 공간 장식·조명·날씨·추천 곡이 변화하는 살아 있는 세계
+- **연주 일정 & 멤버 확인**: 화면 상단의 가장 빠른 일정 배너와 구글 시트 CSV 실시간 연동 캘린더·멤버 도감 제공
+- **타이코 체험 · 합주 참가 · 다층 레이어 악보/작곡**: 잔디 공원의 북을 직접 두드리고, 산책하다 모여 합주하는 NPC 옆에서 **`E` 키/버튼으로 함께 합주 참가**, 18개 악기 트랙 악보 감상 및 직접 작곡 체험
+- **멤버·지역 단체 구경**: NPC 근접 상호작용(고개 돌림·걷기 감속·프로필 카드)과 좌/우 지역 단체 아지트(転太鼓舞·鶴亀会 등) 소개 → 서클 소개·체험/가입 문의·인스타/사이트 공유 QR로 연결
+- **운영자 일괄 시즌 테마 & 기본 배경 선택**: 크리스마스(산타·트리·캐롤 합주), 졸업식, 입학식, 오봉, 여름 등 시즌 분위기와 사용자가 고를 수 있는 기본 배경 테마 지원
 
 ### 핵심 타겟 & 방문자 동선 (CTA, 최종 유도 행동)
 - **주요 방문자**: 지역 주민, 공연 관객, 타이코 체험/입부에 관심 있는 학생·일반인
-- **목표 동선**: 입장(랜덤 캐릭터 즉시 진입) → 잔디 공원 구경 & 타이코 체험 → NPC 합주·프로필 & 단체 아지트 구경 → 캐릭터 꾸미기·악보 체험 → 상단 배너·캘린더로 연주 일정 확인 → **대학교 홈페이지·인스타그램(QR) 등 서클 안내/문의로 이동**
+- **목표 동선**: 입장(랜덤 캐릭터 즉시 진입) → 잔디 공원 구경 & 타이코 체험 → NPC 합주 난입 참가·프로필·아지트 구경 → 캐릭터 꾸미기·악보 체험 → 상단 배너·캘린더로 연주 일정 확인 → **대학교 홈페이지·인스타그램(QR)·사이트 공유 QR로 연결**
 
 ---
 
-## 2. 목표 기능 구성 (1차 MVP + 에셋 투입 전 모듈화 확장)
+## 2. 목표 기능 구성 (현재 구현 기준 + 확장 구조)
 
 ### 공간 & 이동
 - **원형 잔디 공원 광장** (반지름 9m, 스폰 `[0, 0, 3.6]`): 나무·꽃이 소박하게 배치된 밝고 가벼운 야외 공간
-- **지역 타이코 단체 아지트**: 입장 시 바라보는 방향의 앞쪽 좌/우에 배치 (`転太鼓舞`, `鶴亀会` 등 — 추후 단체 추가 가능), 가까이 다가가면 `[! E]` 말풍선으로 해당 단체 소개 바로 열기
+- **지역 타이코 단체 아지트**: 입장 시 바라보는 방향의 앞쪽 좌/우에 배치 (`転太鼓舞`, `鶴亀会` — `spaces.json`으로 확장 가능), 가까이 다가가면 `[! E]` 말풍선으로 해당 단체 소개 바로 열기
 - **카메라 & 이동**: 쿼터뷰(부드러운 추적 카메라) + 모바일 플로팅 가상 조이스틱(터치·드래그) + PC `WASD`/방향키(한글 입력 상태 대응) 및 바닥 클릭 이동
 
 ### 모듈식 동물 캐릭터 & 게스트 커스터마이징
 - **단체 ↔ 동물 종족 고정 구조**: 각 지역 타이코 단체마다 고유 동물 캐릭터 종족과 공통 `法被(하피)` 의상을 가짐
-  - `転太鼓舞` (조형대학) → **토끼(`rabbit`)** + 오렌지·블랙 계열 공통 `法被`
-  - `鶴亀会` (기술대학) → **거북이(`turtle`)** + 네이비 계열 공통 `法被`
-  - *(추후 새 단체 추가 시 `groups.json`에 종족·하피 텍스처만 추가해 무한 확장)*
+  - `転太鼓舞` (조형대학) → **토끼(`rabbit`)** + 오렌지·블랙 계열 공통 `法被` *(3D 바디·하피·하치마키 GLB 투입 완료)*
+  - `鶴亀会` (기술대학) → **거북이(`turtle`)** + 네이비 계열 공통 `法被` *(현재 임시 로우폴리 모델 적용, 추후 거북이 GLB 교체 예정)*
+  - *(추후 새 단체 추가 시 `groups.json`에 종족·하피 설정만 추가해 확장 가능)*
 - **게스트 입장 & 자동 저장**:
   - **첫 입장**: 복잡한 생성 화면 없이 **랜덤 커스터마이징된 캐릭터로 즉시 월드 진입**
   - **재방문**: 커스터마이징 결과가 브라우저 `localStorage`에 자동 저장되어 다음 접속 시 기존 캐릭터 그대로 유지
-  - **언제든 꾸미기**: 화면 하단 `[🎨 꾸미기]` 버튼으로 원하는 단체(종족 + `法被`), 2D 얼굴(눈·코·입 모양/크기/위치), 헤어 스타일, 좋아하는 타이코 장비 선택 가능
+  - **언제든 꾸미기**: 화면 하단 `[🎨 꾸미기]` 버튼(3D 클로즈업 + 360° 회전·연주 포즈 미리보기)으로 원하는 단체(종족 + `法被`), 2D 얼굴(눈·코·입 모양/크기/간격/위치 + 볼터치), 헤어 스타일, 좋아하는 타이코 장비 선택 및 **`[📋 시트용 얼굴코드 복사]`** 지원
 - **2D 캔버스(`CanvasTexture`) 얼굴 시스템**:
-  - 3D 얼굴 메쉬(별도 폴리곤)를 늘리지 않고 `256×256px` 2D 캔버스에 눈·코·입·볼터치 이미지를 합성해 얼굴 머티리얼에 투영
-  - 자동 눈 깜빡임 + 상태별 표정 변화(`idle`, `play`, `happy`)를 폴리곤 증가 0으로 구현
-- **귀엽고 부드러운 로우폴리 애니메이션**:
-  - 공통 뼈대(`Armature`) 기반 클립(`idle`, `walk`, `play_strong`, `play_weak`) 간 부드러운 크로스페이드(0.2초)
-  - 토끼 귀·하피 등의 보조 모션(오버랩)과 스쿼시&스트레치 탄력감 적용
+  - 3D 얼굴 메쉬 폴리곤을 늘리지 않고 `256×256px` 2D 캔버스에 눈·코·입·볼터치를 합성해 `Mat_Face` 머티리얼(피부색 `#f6f5f1` 배경 일체화)에 투영
+  - 자동 눈 깜빡임 + 상태별 표정 변화(`idle`, `play`, `happy`) 구현
+- **스킨드 GLB 애니메이션 로더 (`SkinnedCharacterGlb.tsx`)**:
+  - Blender Rigify 공통 40본(`DEF-*`) 기반 `SkeletonUtils.clone` 복제 + `char_happi_base.glb` 자동 스켈레톤 결합 + `0.2초` 크로스페이드
+  - `walk` 클립만 있을 때도 멈췄을 때 자연스러운 차렷 숨쉬기(`idle`)·양팔 타격(`play`) 포즈를 자동 보완(실제 `play_strong`/`play_weak` 클립 추가 시 자동 전환)
 
-### NPC 멤버 & 공통 곡 합주 시스템 (15~20명 확장 대응)
-- 각 멤버는 소속 단체(종족 + 공통 `法被`), 개성 있는 2D 얼굴, 헤어, 좋아하는 타이코 장비, 연주 가능한 곡 목록(`playableSongs`)을 보유
-- 고정 경로 대신 잔디 광장을 자유 랜덤 산책 → **공통 연주 가능 곡을 가진 NPC들이 곡의 최소 합주 인원(3명 이상)만큼 바로 옆에 모이면 같은 방향을 바라보고 자동 합주 시작** + 머리 위 추임새 텍스트(`それ！`, `はっ`, `ちょいさ〜！`) 연출
-- 플레이어가 가까이 접근하면 가장 가까운 NPC 머리 위에 `[! E]` 말풍선 표시 → 클릭/터치 또는 `E` 키로 미니 프로필 카드 열기/닫기 (1.3× 캐릭터 일러스트, `타이코력 / 학년·졸업 정보`, 연주 가능 곡 칩)
+### NPC 멤버 · 근접 반응 · 합주 난입 참가 시스템
+- 각 멤버는 구글 시트 `멤버` 탭(실패 시 `members.json` 폴백)에서 불러온 소속 단체, 2D 얼굴, 헤어, 장비 악기, 연주 가능 곡(`playableSongs`)을 보유
+- 자유 랜덤 산책 중 **플레이어가 3.2m 안으로 가까이 오면** NPC가 살짝 고개(`DEF-spine.006`)를 돌리고 걸음 속도와 걷기 모션 배율을 자연스럽게 늦춤(최저 38%)
+- 공통 연주 가능 곡을 가진 NPC들이 최소 합주 인원(3명 이상)만큼 모이면 같은 방향을 바라보고 자동 합주 + 추임새 텍스트(`それ！`, `はっ`, `ちょいさ〜！`) 연출
+- **합주 난입 참가**: 합주 중인 NPC 그룹 근처로 가면 **`E` 키 또는 하단 버튼으로 함께 나란히 서서 합주에 참가** 가능 (`F/J` 돈, `D/K` 카, `Space` 추임새)
+- NPC 가까이 접근 시 `[! E]` 말풍선 → 미니 프로필 카드 열기/닫기 (캐릭터 일러스트, `타이코력 / 학년·졸업 정보`, 연주 가능 곡 칩)
 
-### 타이코 체험 · 보유 악기 종류 · 다층 레이어 악보/작곡기
-- **직접 타이코 체험**: 중앙 나가도 다이코 근처에서 `[연주하기]` 또는 `Space`로 진입 → 북 중앙(`돈`, `F/J`)·테두리(`카`, `D/K`) 멀티터치/키보드 연주
-- **실제 보유 악기 종류 정리 (개수 제외, 転太鼓舞 우선 제작 + 전체 데이터 반영)**:
-  - **1순위 제작 — 転太鼓舞 중심 악기·소품**:
-    - 북/어깨북: `尺2` · `尺4` · `尺5` · `尺6`, `エイサー` (에이사북), `沖` (큰 어깨북), `〆` (시메태고), `平` (평태고), `パーランクー` (파란쿠 손북)
-    - 금속·소품·선율: `チャッパ` (차파), `ジャンガラ` (쟝가라), `チキ` (치키), `鈴` (방울), `うちわ` (부채), `笛` (시노부에 피리 11음계)
-    - 받침대: `2据台`, `6据台`, `〆立足`(입식), `〆座足`(좌식)
-  - **2순위 제작 (데이터 우선 반영) — 鶴亀会 추가 보유 악기·받침대**:
-    - 북/악기: `中` (중태고), `大` (대태고), `担ぎ` (카츠기태고), `たる` (타루 통북 大/小) *(공통: `〆`, `チャッパ`, `ジャンガラ`, `チキ`)*
-    - 받침대: `乙足`, `〆立ち足`, `〆座り足`, `中足`, `大足`, `大据足`, `三宅台`
+### 타이코 체험 · 보유 악기 분류(중복 통합) · 다층 레이어 악보/작곡기
+- **직접 타이코 체험**: 중앙 나가도 다이코 근처에서 `[🥁 연주하기]` 또는 `Space`로 진입 → 북 중앙(`돈`, `F/J`)·테두리(`카`, `D/K`) 멀티터치/키보드 연주
+- **보유 악기 종류 (중복 호칭 통합 정리, 세부 제작 규격은 [`docs/ASSET_MODULAR_GUIDE.md`](./docs/ASSET_MODULAR_GUIDE.md) 참고)**:
+  - **① 桶胴太鼓 (오케도 다이코 · 밧줄 조임 통북)**: 転太鼓舞의 크기별 **`尺2·尺4·尺5·尺6`**(1尺2寸~6寸, 약 36~48cm)과 鶴亀会의 연주 방식 명칭 **`担ぎ(카츠기)`**는 같은 오케도 다이코 계열. 어깨에 비스듬히 메고 양면을 치거나(카츠기), `2据台·6据台(桶立台)`에 세로로 세워 연주
+  - **② 沖縄エイサー大太鼓 (`沖 · エイサー`)**: 転太鼓舞 보유. 현장에서 부르는 `沖`과 `エイサー`는 같은 붉은 징박기 오키나와 에이사 대북. 왼손으로 북 상단 테두리를 잡아 고정하고 오른손 굵은 채 1개로 도약·춤과 함께 타격
+  - **③ 長胴太鼓 (`中 · 大` 및 광장 중앙 체험북)**: 鶴亀会 보유. 통나무/두꺼운 통에 징으로 가죽을 고정한 정통 일본 북. 중형 `中`(`中足` 거치)과 대형 `大`(`大足`·`大据足(X형 거치대)`·`斜め置台`·`三宅台` 거치)로 세분화
+  - **④ 締め太鼓 (`〆 · 締め`)**: 양 단체 공통. 끈으로 강하게 조인 고음 리드 북. 입식(`〆立足`/`〆立ち足`) 또는 좌식(`〆座足`/`〆座り足`) 받침대 사용
+  - **⑤ 平太鼓 (`平`)**: 転太鼓舞 보유. 몸통이 납작하고 북면이 넓어 따뜻하고 긴 중저음 여운
+  - **⑥ 樽太鼓 (`たる` 大·小)**: 鶴亀会 보유. 술통 형태의 건조하고 경쾌한 통 울림
+  - **⑦ パーランクー (파란쿠)**: 転太鼓舞 보유. 약 21cm 붉은 한 면 손북, 왼손으로 쥐고 오른손 바치 1개로 군무 타격
+  - **⑧ 笛 (篠笛 · 시노부에)**: 가로 대나무 피리, 앱 내 11음계(`ド~ソ↑`) 멜로디 연주
+  - **⑨ 금속 타악기 3종 & 연출 소품 2종**: 양 단체 공통 **`チャッパ`**(미니 심벌즈)·**`ジャンガラ`**(대형 놋쇠 심벌즈/징)·**`チキ`**(아타리가네 꽹과리), 転太鼓舞 **`鈴`**(방울)·**`うちわ`**(무대 안무용 부채)
 - **다층 레이어 구전보 악보 (`taikoTracks.json`, `songs.json`)**:
-  - 지원 악기 레이어: `笛`(전체 11음계 `ド~ソ↑`), `〆(締め)`, `尺(2·4·5·6)`, `沖`, `エイサー`, `担ぎ`, `平`, `中`, `大`, `たる`, `パーランクー`, `チャッパ`, `ジャンガラ`, `チキ`, `鈴`
-  - 레이어별 볼륨 조절·음소거, 강약 기호(`f` 강하게, `p` 약하게, `<` 점점 크게, `>` 점점 작게), 재생 바 이동 + 가로 자동 스크롤
-  - **직접 작곡하기**: 노트 클릭 입력·강약 브러시·로컬 저장(`localStorage`)·내 곡 내보내기(추후 확장)
+  - 지원 트랙 18종(하위 호환 유지): `fue`, `shime`, `shaku_2`, `shaku_4`, `shaku_5`, `shaku_6`, `oki`, `eisa`, `katsugi`, `hira`, `chu`, `odaiko`, `taru`, `paranku`, `chappa`, `jangara`, `chiki`, `suzu`
+  - 레이어별 볼륨 조절·음소거, 강약 기호(`f` 강하게, `p` 약하게, `<` 점점 크게, `>` 점점 작게), 재생 바 이동 + 가로 자동 스크롤, `localStorage` 직접 작곡 저장 + 6레이어 크리스마스 캐롤(`song_carol_taiko`) 등 4곡 수록
 
 ### 시즌 · 이벤트 테마 (운영자 일괄 배포) & 기본 배경 테마 (사용자 선택)
 - **운영자 일괄 시즌 테마 (`themes.json`)**: 사용자가 임의로 바꾸지 않고, 제작자가 `themes.json`의 `activeOverride` 지정 또는 달력 날짜(`dateRange`)에 맞춰 배포하면 모든 사용자에게 일괄 적용 (`christmas`, `winter`, `graduation`, `entrance`, `summer`, `obon`)
-- **사용자 기본 배경 테마 (`worldEnvironments.json`)**: 메뉴에서 `🌿 잔디 공원`, `🏯 연습실`, `❄️ 눈오는 들판`, `🌇 노을 광장` 중 자유롭게 변경 가능
+- **사용자 기본 배경 테마 (`worldEnvironments.json`)**: 메뉴에서 `🌿 잔디 공원`, `🏯 연습실`, `❄️ 눈오는 들판`, `🌇 노을 광장` 중 방문자가 자유롭게 변경 가능
 
-### 정보 UI · 메뉴 · 오디오
-- **통합 메뉴바**: 연주 일정(구글 시트 CSV 실시간 연동 캘린더), 멤버 도감, 곡 정보/악보·작곡기, 타이코 종류 & 지역 단체 소개, 서클 소개(대학교 링크 + 인스타그램 QR 박스), 시즌 테마 미리보기 — 모든 하위 창에서 `[← 메뉴]` 복귀 지원
-- **소리 설정 세분화**: `[🥁 직접 연주음]`과 `[🎵 NPC 합주음]` 개별 ON/OFF + 메뉴/팝업/연주 모드 진입 시 NPC 합주 볼륨 자동 축소(덕킹 20%)
-- **모바일 우선**, 서버 없는 정적 사이트 (Vercel 자동 배포)
+### 정보 UI · 메뉴 · 오디오 · 손쉬운 문구 수정
+- **통합 메뉴바**: 연주 일정(구글 시트 캘린더), 멤버 도감(카드 그리드), 곡 정보/악보·작곡기, 타이코 종류 & 지역 단체 소개, 서클 소개(대학/인스타 링크 + **인스타 QR · 사이트 공유 QR 나란히 2칸**), 기본 배경 테마, 소리 볼륨 슬라이더 — 모든 하위 창에서 `[← 메뉴]` 복귀 지원
+- **소리 설정 세분화**: `[🥁 직접 연주 소리]`와 `[👥 NPC 합주 소리]` 각각 **0% ~ 100% 볼륨 슬라이더 + 음소거 토글** + 모달/연주 모드 진입 시 NPC 합주 볼륨 자동 축소(덕킹 20%)
+- **문구/데이터 손쉬운 수정**: UI 문구(`siteTexts.json`), 서클(`circle.json`), 단체(`groups.json`), 멤버·일정(구글 시트)을 코드 수정 없이 편집 가능 ([`docs/CONTENT_EDIT_GUIDE.md`](./docs/CONTENT_EDIT_GUIDE.md) 참고)
 
 ---
 
@@ -87,65 +90,75 @@
    - 모바일: 화면 터치·드래그 **플로팅 가상 조이스틱** / PC: `WASD`·방향키 + 바닥 클릭 이동
    - **상시 HUD (최소 UI)**:
      - **좌상단**: `[☰ 메뉴]` 버튼
-     - **상단 중앙**: 가장 빠른 다가오는 연주 일정 1건 배너 (예: `📅 4/12 봄맞이 지역 축제 오프닝 연주 ▸`)
-     - **우상단**: `[🔊 소리]` 팝오버 (직접 연주음 ON/OFF, NPC 합주음 ON/OFF)
-     - **하단**: `[🎨 꾸미기]` 버튼 (북 근처에서는 하단 중앙 `[🥁 연주하기]` 버튼 노출)
+     - **상단 중앙**: 가장 빠른 다가오는 연주 일정 1건 배너
+     - **우상단**: `[🔊 소리]` 팝오버 (직접 연주·NPC 합주 개별 0~100% 슬라이더)
+     - **하단**: `[🎨 꾸미기]`, `[💬 서클/문의]` 버튼 (중앙 북 근처 `[🥁 연주하기]`, NPC 합주 근처 `[🤝 합주 참가 (E)]`)
 3. **캐릭터 꾸미기 모드 (`[🎨 꾸미기]`)**
-   - 클릭 시 카메라가 내 캐릭터를 클로즈업하고 하단/측면에 꾸미기 패널 오픈
-   - **단체 선택**(토끼/거북이 종족 + 공통 `法被` 연동), **얼굴**(눈·코·입 모양 + 크기/위치 슬라이더), **헤어**, **장비 타이코**, **[🎲 랜덤]** 버튼 제공 → 변경 즉시 3D 반영 및 `localStorage` 자동 저장
-4. **타이코 연주 모드**
-   - 북 근처 접근 시 `[연주하기]` 또는 `Space`로 진입, NPC 합주 소리 자동 덕킹(20%)
-   - 북 중앙(`돈`) / 테두리(`카`) 탭·키보드 연주 → `[← 월드로 돌아가기]` 또는 `Space`로 복귀
+   - 카메라 클로즈업 + 360° 회전·연주 포즈 토글
+   - 단체(종족 + `法被`), 얼굴(눈·코·입 + 크기/간격/위치 + 볼터치), 헤어, 장비 악기 선택 + **[🎲 랜덤]** + **[📋 시트용 얼굴코드 복사]** → 즉시 3D 반영 및 `localStorage` 자동 저장
+4. **타이코 연주 & 합주 참가 모드**
+   - 중앙 북 근처 접근(`Space`) 또는 NPC 합주 근처 접근(`E`)으로 연주 모드 진입 (NPC 합주 소리 자동 덕킹 20%)
+   - 북 중앙(`F/J` 돈) / 테두리(`D/K` 카) + 추임새(`Space`) → `[← 월드로 돌아가기]` 복귀
 5. **NPC 및 지역 단체 아지트 상호작용**
-   - NPC 또는 좌/우 지역 단체 아지트 근처 접근 → 머리/지붕 위 `[! E]` 말풍선 표시 → 클릭/터치 또는 `E` 키로 프로필 카드 / 단체 소개 모달 열기·닫기
-6. **통합 메뉴바 & 시즌 테마**
-   - `[☰ 메뉴]`에서 연주 일정 캘린더, 멤버 도감, 곡 정보/다층 악보·직접 작곡기, 타이코 종류 & 지역 단체, 서클/문의, 시즌 테마 미리보기 진입 가능
+   - NPC 또는 좌/우 지역 단체 아지트 근처 접근 → `[! E]` 말풍선 클릭/터치 또는 `E` 키로 프로필 카드 / 단체 소개 모달 열기·닫기
+6. **통합 메뉴바 (`[☰ 메뉴]`)**
+   - 연주 일정 캘린더, 멤버 도감, 곡 정보/다층 악보·직접 작곡기, 타이코 종류 & 지역 단체, 서클/문의(QR 2종), 기본 배경 테마(4종), 소리 설정 진입
 
 ---
 
 ## 5. 기술 스택
 - **프론트엔드**: Vite + TypeScript + React
 - **3D 엔진**: Three.js + React Three Fiber (`@react-three/fiber`) + drei (`@react-three/drei`)
-- **오디오**: Web Audio API (사전 디코딩 + 합성 폴백 + 멀티채널 게인 분리)
-- **3D 에셋**: Blender → **GLB(glTF 2.0)**, Draco 압축 (`docs/ASSET_MODULAR_GUIDE.md` 규격 준수)
-- **일정 연동**: Google Sheets 웹 게시 CSV (`VITE_SCHEDULE_CSV_URL`, 실패 시 `schedule.json` 자동 폴백)
-- **배포**: **Vercel** (GitHub 연동 자동 배포, OG 태그 포함)
-- **상태관리**: React 기본 State + `localStorage` (정말 필요해질 때만 Zustand 도입)
+- **오디오**: Web Audio API (사전 디코딩 + 악기별 합성 폴백 + 멀티채널 게인 분리)
+- **3D 에셋**: Blender → **GLB(glTF 2.0)**, Draco 압축 ([`docs/ASSET_MODULAR_GUIDE.md`](./docs/ASSET_MODULAR_GUIDE.md) 규격 준수)
+- **구글 시트 실시간 연동**: Google Sheets 웹 게시 CSV (`VITE_SCHEDULE_CSV_URL` 일정, `VITE_MEMBERS_CSV_URL` 멤버 — 실패 시 로컬 JSON 자동 폴백)
+- **배포**: **Vercel** (GitHub `main` 푸시 시 자동 배포, OG 태그 포함)
+- **상태관리**: React 기본 State + `localStorage`
 
 ---
 
 ## 6. 폴더 구조
 ```text
 taikoworld/
-├─ TAIKO_WORLD_PLAN.md          # 프로젝트 기획서 (본 문서)
-├─ AGENTS.md                    # AI 협업·코딩·설계 규칙
+├─ TAIKO_WORLD_PLAN.md              # 프로젝트 기획서 (본 문서)
+├─ AGENTS.md                        # AI 협업·코딩·설계 규칙
 ├─ README.md
 ├─ package.json
 ├─ vite.config.ts
-├─ .env.example                 # 구글 시트 CSV URL 환경변수 예시
+├─ .env.example                     # 구글 시트 CSV URL(일정·멤버) 환경변수 예시
 ├─ docs/
-│  └─ ASSET_MODULAR_GUIDE.md    # Blender 3D 에셋·모듈화 제작 레퍼런스 가이드
+│  ├─ ASSET_MODULAR_GUIDE.md        # Blender 3D 에셋·Rigify 뼈대·모듈화 규격서
+│  └─ CONTENT_EDIT_GUIDE.md         # 코드 수정 없는 문구·시트·테마 편집 가이드
 ├─ public/
-│  ├─ models/                   # 배포용 GLB (spaces/, characters/, instruments/, props/, themes/)
-│  ├─ textures/                 # happi/ (단체별 하피 텍스처), banners/
-│  ├─ images/                   # characters/ (멤버 일러스트), faces/ (2D 얼굴 파츠 PNG), og/, instagram-qr.png
-│  └─ audio/                    # taiko/ (악기·음별 mp3), sfx/, bgm/
+│  ├─ models/                       # 배포용 GLB (characters/, instruments/, spaces/, props/, themes/)
+│  ├─ textures/                     # happi/ (단체별 512px 하피 텍스처)
+│  ├─ images/                       # characters/ (멤버 일러스트), faces/, og/, instagram-qr.png, site-qr.png
+│  └─ audio/taiko/                  # 악기·음별 mp3
 ├─ src/
 │  ├─ main.tsx
 │  ├─ App.tsx
-│  ├─ components/               # Scene, Space, Player, Npc, NpcGroup, Character, Taiko, GroupHideout, GlbModel, ui/
-│  ├─ systems/                  # npcStateMachine, audioManager, inputController, collision, faceCanvasRenderer
-│  ├─ hooks/                    # useScheduleEvents, usePlayerCustomization, useActiveTheme
-│  ├─ data/                     # groups.json, members.json, spaces.json, instruments.json,
-│  │                            # taikoTracks.json, songs.json, taikoGuide.json, schedule.json, circle.json, themes.json
-│  ├─ types/                    # 데이터 스키마용 TypeScript 타입
-│  └─ utils/                    # scheduleSheetLoader, songScoreUtils, customSongsStorage, appearanceStorage
-└─ assets-src/                  # 원본 .blend, 일러스트 원본, 녹음 원본 (배포 제외)
+│  ├─ components/
+│  │  ├─ Scene.tsx, Space.tsx, Player.tsx, Npc.tsx, NpcGroup.tsx
+│  │  ├─ Character.tsx, SkinnedCharacterGlb.tsx, Taiko.tsx, GroupHideout.tsx
+│  │  ├─ ThemeProps.tsx, ThemeWeather.tsx, DestinationMarker.tsx, GlbModel.tsx
+│  │  └─ ui/                        # LandingOverlay, ScheduleBanner, SoundControl, VirtualJoystick,
+│  │                                # MenuModal, ScheduleCalendarModal, MemberDirectoryModal,
+│  │                                # MemberProfileModal, SongBookModal, TaikoGuideModal,
+│  │                                # CircleInfoModal, CharacterCustomizerPanel, TaikoPlayOverlay
+│  ├─ systems/                      # npcStateMachine, audioManager, inputController, collision, faceCanvasRenderer
+│  ├─ hooks/                        # useScheduleEvents, useMembers, useKeyboardInput
+│  ├─ data/                         # groups.json, members.json, spaces.json, instruments.json,
+│  │                                # taikoTracks.json, songs.json, taikoGuide.json, schedule.json,
+│  │                                # circle.json, themes.json, worldEnvironments.json, siteTexts.json
+│  ├─ types/                        # content.ts, world.ts (데이터 스키마용 TypeScript 타입)
+│  └─ utils/                        # scheduleSheetLoader, memberSheetLoader, scheduleUtils,
+│                                   # characterAppearance, songScoreUtils, customSongsStorage, themeResolver
+└─ assets-src/                      # 원본 .blend, 일러스트 원본, 녹음 원본 (배포 제외)
 ```
 
 ---
 
-## 7. 데이터 스키마
+## 7. 핵심 데이터 스키마 (실제 코드 1:1 기준)
 > 스키마를 변경할 때는 `src/types/`의 TypeScript 타입과 `src/data/*.json`을 **항상 함께** 수정한다.
 
 ### `groups.json` — 지역 타이코 단체 (종족 + 공통 `法被` 고정 매핑)
@@ -157,50 +170,49 @@ taikoworld/
     "reading": "텐타이코마이",
     "affiliation": "조형대학 타이코 서클",
     "species": "rabbit",
-    "happiTexture": "/textures/happi/happi_tentaikomai.webp",
-    "primaryColor": "#c96a2b",
-    "accentColor": "#1c1917"
-  },
-  {
-    "id": "group_tsurukamekai",
-    "name": "鶴亀会",
-    "reading": "츠루카메카이",
-    "affiliation": "기술대학 타이코 서클",
-    "species": "turtle",
-    "happiTexture": "/textures/happi/happi_tsurukamekai.webp",
-    "primaryColor": "#1d2d50",
-    "accentColor": "#f4d35e"
+    "speciesLabel": "토끼",
+    "happiColor": "#c96a2b",
+    "happiBorderColor": "#1c1917",
+    "obiColor": "#f4d35e",
+    "bodyColor": "#f6f5f1",
+    "accentColor": "#f7b5c4",
+    "happiTexture": "/textures/happi/happi_tentaikomai.png",
+    "bodyModelPath": "/models/characters/char_body_rabbit.glb"
   }
 ]
 ```
 
-### `members.json` — 서클 멤버 (개인정보 보호: 닉네임 + 캐릭터 일러스트만 사용, 실명/실제 얼굴 금지)
+### `members.json` — 서클 멤버 (구글 시트 `멤버` 탭 실패 시 폴백, 실명·실제 사진 금지)
 ```jsonc
 [
   {
     "id": "m01",
-    "nickname": "돈타로",
-    "groupId": "group_tentaikomai",
+    "nickname": "どん",
     "role": "沖 (큰 어깨북)",
     "illustration": "/images/characters/m01.webp",
     "appearance": {
+      "groupId": "group_tentaikomai",
       "hair": "hair_hachimaki",
       "equippedInstrument": "oki",
       "face": {
-        "eyes": "eyes_round",
-        "eyeScale": 1.0,
-        "eyeY": 0,
-        "nose": "nose_rabbit",
-        "mouth": "mouth_smile",
-        "mouthScale": 1.0,
-        "mouthY": 0,
+        "eyes": "sparkle",
+        "eyeScale": 1.08,
+        "eyeY": -2,
+        "eyeSpacing": 2,
+        "nose": "rabbit",
+        "noseScale": 1.0,
+        "noseY": 0,
+        "mouth": "grin",
+        "mouthScale": 1.08,
+        "mouthY": 1,
         "blush": true
       }
     },
-    "playableSongs": ["song_matsuri", "song_daichi"],
+    "route": "park_grass_a",
+    "playableSongs": ["song_matsuri", "song_daichi", "song_carol_taiko"],
     "profile": {
       "experience": "타이코력 3년",
-      "status": "OO대학 3학년",
+      "status": "조형대학 3학년",
       "personality": "에너지 넘치는 분위기 메이커",
       "traits": "큰 북만 보면 눈이 반짝거림",
       "favoriteTaiko": "沖 (오키 · 큰 어깨북)",
@@ -210,104 +222,69 @@ taikoworld/
 ]
 ```
 
-### `themes.json` — 시즌 · 이벤트 테마 (날짜 자동 적용 + 메뉴 미리보기)
+### `themes.json` — 운영자 일괄 시즌 테마 (`activeOverride` 또는 날짜 `dateRange` 자동 적용)
 ```jsonc
-[
-  {
-    "id": "christmas",
-    "name": "크리스마스",
-    "dateRange": { "start": "12-01", "end": "12-26" },
-    "skyColor": "#1e2a4a",
-    "ambientColor": "#b8d0ff",
-    "weather": "snow",
-    "bannerText": "Merry Christmas! 🎄",
-    "props": [
-      { "id": "xmas_tree", "modelPath": "/models/themes/prop_xmas_tree.glb", "position": [0, 0, -4.4], "obstacleRadius": 1.1 }
-    ],
-    "featuredSongs": ["song_carol_taiko"]
-  },
-  {
-    "id": "graduation",
-    "name": "졸업식",
-    "dateRange": { "start": "02-20", "end": "03-19" },
-    "skyColor": "#ffe6ea",
-    "ambientColor": "#fff3e6",
-    "weather": "sakura",
-    "bannerText": "졸업을 축하합니다! 함께 두드려줘서 고마웠어요 🌸",
-    "props": [
-      { "id": "grad_arch", "modelPath": "/models/themes/prop_event_arch.glb", "position": [0, 0, -4.8], "obstacleRadius": 0.9 }
-    ],
-    "featuredSongs": []
-  }
-]
+{
+  "activeOverride": null,
+  "themes": [
+    {
+      "id": "christmas",
+      "name": "크리스마스",
+      "emoji": "🎄",
+      "dateRange": { "start": "12-01", "end": "12-26" },
+      "skyColor": "#24355a",
+      "ambientSkyColor": "#bfd4ff",
+      "ambientGroundColor": "#5b7c87",
+      "sunColor": "#ffe9c7",
+      "sunIntensity": 1.05,
+      "weather": "snow",
+      "bannerText": "Merry Christmas! 🎄",
+      "props": [
+        { "id": "theme_xmas_tree", "modelPath": "/models/themes/prop_xmas_tree.glb", "variant": "xmas_tree", "position": [0, 0, -4.6], "obstacleRadius": 1.2 }
+      ],
+      "featuredSongs": ["song_carol_taiko"]
+    }
+  ]
+}
 ```
 
-### `spaces.json` — 공간 설정 (원형 경계 + 장애물 + 지역 단체 아지트)
-```jsonc
-[
-  {
-    "id": "park_grass",
-    "name": "잔디 공원",
-    "modelPath": "/models/spaces/space_park_grass.glb",
-    "spawnPoint": [0, 0, 3.6],
-    "walkableBounds": { "shape": "circle", "centerX": 0, "centerZ": 0, "radius": 9 },
-    "obstacles": [
-      { "id": "main_taiko", "type": "circle", "x": 0, "z": -1, "radius": 0.9 },
-      { "id": "hideout_tentaikomai", "type": "circle", "x": -5.1, "z": -1.4, "radius": 1.2 },
-      { "id": "hideout_tsurukamekai", "type": "circle", "x": 5.1, "z": -1.4, "radius": 1.2 }
-    ],
-    "hideouts": [
-      { "id": "hideout_tentaikomai", "groupId": "group_tentaikomai", "name": "転太鼓舞", "modelPath": "/models/props/hideout_tentaikomai.glb", "position": [-5.1, 0, -1.4], "interactRadius": 2.6 }
-    ]
-  }
-]
-```
-
-### 기타 데이터 파일
-- `taikoTracks.json`: 악기별 트랙 정의(`fue`, `shime`, `shaku_2/4/6`, `oki`, `chappa`), 음 목록, 오디오 경로
-- `songs.json`: 다층 레이어 악보(`minPlayers`, `bpm`, 레이어별 `volume`·`steps`·`dynamics`)
-- `taikoGuide.json`: 타이코 종류 소개 + 지역 타이코 단체 소개(`localGroups`)
-- `schedule.json`: 연주 일정 기본 데이터 (구글 시트 CSV 연결 시 실시간 데이터 우선)
-- `circle.json`: 서클 소개, 활동 시간, 대학교·인스타그램 링크 및 QR 경로
+### 기타 데이터 파일 요약
+- `spaces.json`: 원형 잔디 광장(반지름 9m), 장애물 7개, 좌/우 아지트 좌표, NPC 산책 경로 4종
+- `taikoTracks.json`: 18종 악기 트랙 정의(피리 11음계 포함), 음 목록, 오디오 경로
+- `taikoGuide.json`: 중복 통합·세분화된 타이코 10종 소개 + 지역 단체(`転太鼓舞`·`鶴亀会`) 소개
+- `songs.json`: 다층 레이어 악보 4곡 (`song_carol_taiko` 16마디 6레이어 등)
+- `worldEnvironments.json`: 사용자가 고를 수 있는 4종 기본 배경 테마 (잔디 공원, 연습실, 눈오는 들판, 노을 광장)
+- `siteTexts.json`: 입장 화면·HUD·메뉴·모달 한글 문구 일괄 관리
+- `schedule.json`: 연주 일정 기본 데이터 (`VITE_SCHEDULE_CSV_URL` 우선)
+- `circle.json`: 서클 소개, 연습 시간, 링크, `instagramQr` & `siteQr` 설정
 - `instruments.json`: 중앙 체험용 나가도 다이코 위치·상호작용 반경·사운드 경로
 
 ---
 
-## 8. 성능 예산 & 기술 규칙 (모바일 기준)
+## 8. 성능 예산 & 에셋 요약
+> 상세 수치, Rigify 40본 계층 트리, 5개 소켓 좌표, Blender Export 체크리스트, 1:1 악기 제작 상태표는 **[`docs/ASSET_MODULAR_GUIDE.md`](./docs/ASSET_MODULAR_GUIDE.md)** 를 따른다.
 
-### 렌더링 & 용량 예산
-- **첫 로딩 총 용량**: **10MB 이하** 목표 (GLB Draco 압축, 모달 UI `React.lazy` 코드 분할, 시즌 에셋은 활성 테마만 지연 로딩)
-- **폴리곤 수**: 캐릭터(바디+하피+헤어+악기 합계) ≤ 3,000 tris / 중앙 타이코 ≤ 5,000 tris / 공간 전체 ≤ 50,000 tris
-- **텍스처 해상도**: 얼굴 2D 캔버스 `256×256px` / 하피·캐릭터 `512×512px` / 공간·소품 최대 `1024×1024px`
-- **최적화**: 스킨드 캐릭터는 `SkeletonUtils.clone`, 정적 모델은 `GlbModel` 클론, `devicePixelRatio` 최대 2 제한, 블롭 그림자 사용, 2D 경계/원형 충돌 체크
-
-### 오디오 규칙
-- 입장 화면 첫 터치 이후 오디오 컨텍스트 활성화
-- 타격음 사전 디코딩 + 연타 시 겹침 재생
-- **직접 연주음**과 **NPC 합주음** 개별 ON/OFF 제공 + 메뉴/모달/연주 모드 진입 시 NPC 합주 볼륨 자동 축소(덕킹 20%)
+- **첫 로딩 총 용량**: **10MB 이하** (Draco 압축 GLB, 모달 `React.lazy` 코드 분할, 시즌 소품 조건부 로딩)
+- **렌더링·충돌**: `devicePixelRatio` 최대 2 제한, 블롭 그림자, 2D 원형 경계·장애물 체크
+- **오디오**: 첫 입장 터치 후 활성화, 타격음 사전 디코딩 + 연타 겹침 재생, 직접 연주음·NPC 합주음 볼륨 개별 슬라이더 + 팝업/연주 시 덕킹(20%)
 
 ---
 
-## 9. 에셋 제작 규칙 (Blender → 웹)
-> **상세 제작 규격(뼈대 이름, 소켓 위치, 2D 얼굴 UV, 애니메이션 클립, 파일명 매핑표, 내보내기 옵션)**은 전용 문서 **[`docs/ASSET_MODULAR_GUIDE.md`](./docs/ASSET_MODULAR_GUIDE.md)** 를 참고한다.
-
-- **파일명**: `category_name_variant.glb` (예: `char_body_rabbit.glb`, `char_happi_base.glb`, `space_park_grass.glb`)
-- **좌표/크기**: 스케일 `1 = 1m`, 원점(Origin)은 바닥 중심, 내보내기 시 **+Y Up**, 변환 적용(Apply All Transforms) 완료
-- **애니메이션 클립 이름 통일**: `idle`, `walk`, `play_strong`, `play_weak`
-- **캐릭터 일러스트 (2D)**: WebP 또는 압축 PNG (`public/images/characters/`), 얼굴 파츠 PNG (`public/images/faces/`)
-
----
-
-## 10. 로드맵 체크리스트
-- [x] **0. 기획 & 모듈화 설계 확정**: 기획서(`TAIKO_WORLD_PLAN.md`) 및 Blender 3D 에셋 제작 가이드(`docs/ASSET_MODULAR_GUIDE.md`) 작성 완료 *(멤버 실제 프로필 공개 동의 및 실대·인스타 주소는 공개 전 최종 반영)*
-- [x] **1. 기술 검증 (프로토타입)**: 임시 모델로 원형 잔디 광장 쿼터뷰 이동(모바일 플로팅 조이스틱 + PC WASD/클릭) + 북 연주 모드(돈/카, `Space`) + Vercel 배포 + 스마트폰 실기 테스트
-- [x] **2. 핵심 시스템 & 사전 최적화**: 모듈식 NPC(6명 샘플, 15~20명 확장 대응) 자유 산책 + 공통 곡 최소 인원(3명 이상) 근접 합주·추임새, 근접 `[! E]` 프로필/아지트 상호작용, 지역 단체 아지트(転太鼓舞·鶴亀会), 다층 레이어 악보·강약 기호·볼륨 조절·직접 작곡기, 통합 메뉴바, 구글 시트 CSV 실시간 일정 캘린더, 소리 설정 세분화(직접/NPC 분리 + 팝업 덕킹), `GlbModel` 자동 로더 + `React.lazy` 코드 분할
-- [x] **2.5 에셋 투입 전 캐릭터·커스터마이징·시즌 구조 구현**:
-  - [x] **Step A (캐릭터 통합 구조)**: `groups.json`(단체-종족 고정) + 토끼/거북이 임시 파츠 + 단체 공통 `法被` + 2D `CanvasTexture` 얼굴(자동 깜빡임·표정) + 장비 타이코 + 첫 입장 랜덤 생성 & `localStorage` 자동 저장
-  - [x] **Step B (게스트 커스터마이징 UI)**: 하단 `[🎨 꾸미기]` 버튼 + 3D 클로즈업 프리뷰(단체·얼굴 크기/위치·헤어·악기 선택 + 랜덤 버튼 + 구글 시트용 얼굴코드 복사)
-  - [x] **Step C (시즌·이벤트 테마 엔진)**: `themes.json` 날짜 자동 적용 + 메뉴 미리보기 + 크리스마스 트리/졸업·입학 배너/오봉 등불/날씨 파티클 + 시즌 전용 곡 연동
-  - [x] **Step D (스킨드 GLB 애니메이션 로더)**: `SkeletonUtils.clone` + `useAnimations` 크로스페이드(0.2초) + `Mat_Face`/`Mat_Happi`/소켓 자동 연결 + 스쿼시&스트레치·보조 모션
-- [ ] **3. 에셋 제작 (`docs/ASSET_MODULAR_GUIDE.md` 기준)**: 중앙 나가도 타이코, 단체 아지트 2종, 원형 잔디 공원, 토끼·거북이 공통 리그 바디 & `法被` 텍스처, 2D 얼굴 파츠, 헤어·어깨북 파츠, 시즌 소품, 멤버 일러스트, 타이코 타격음 녹음
-- [ ] **4. 통합/최적화**: 임시 에셋을 Blender GLB/오디오로 1개씩 교체 검증, 실제 대학교/인스타그램 URL·QR 이미지 적용, 10MB 이하 로딩·모바일 프레임 최적화, OG 썸네일 적용
-- [ ] **5. 테스트 및 공개**: 서클 멤버 모바일 테스트 → 피드백 반영 → 정식 공개
-- [ ] **(확장 아이디어)**: 실내 연습실·축제 무대 등 공간 추가, 서서 치는 타이코 추가, NPC 대화(`talk`) 연출, 실시간 멀티플레이
+## 9. 로드맵 체크리스트
+- [x] **0. 기획 & 모듈화 설계 확정**: 기획서(`TAIKO_WORLD_PLAN.md`), 에셋 제작 가이드(`docs/ASSET_MODULAR_GUIDE.md`), 콘텐츠 수정 가이드(`docs/CONTENT_EDIT_GUIDE.md`) 작성 완료
+- [x] **1. 기술 검증 (프로토타입)**: 원형 잔디 광장 이동(가상 조이스틱 + PC WASD/클릭) + 북 연주 모드(돈/카, `Space`) + Vercel 자동 배포
+- [x] **2. 핵심 시스템 & 확장 UI**: NPC 자유 산책·근접 고개 돌림/감속·합주·**합주 난입 참가(`E`)**, 아지트 2종, 18트랙 다층 악보·작곡기·피리 11음계, 구글 시트 CSV 실시간 일정 & 멤버 연동, 볼륨 슬라이더 분리, 인스타/사이트 공유 QR 2종
+- [x] **2.5 모듈식 캐릭터·커스터마이징·테마 엔진**:
+  - [x] **Step A**: `groups.json`(단체-종족 고정) + 2D `CanvasTexture` 얼굴(깜빡임·표정) + 첫 입장 랜덤 생성 & `localStorage` 저장
+  - [x] **Step B**: `[🎨 꾸미기]` 3D 프리뷰(단체·얼굴 미세조정·헤어·악기 + 랜덤 + 시트용 얼굴코드 복사)
+  - [x] **Step C**: 운영자 일괄 시즌 테마(`themes.json`) + 사용자 기본 배경(`worldEnvironments.json` 4종) + 날씨 파티클·소품·16마디 캐롤 합주곡
+  - [x] **Step D**: 스킨드 GLB 로더(`SkinnedCharacterGlb.tsx`) + 바디·하피 자동 스켈레톤 결합 + `idle`/`play` 자동 보완
+- [ ] **3. 에셋 제작 및 교체 ([`docs/ASSET_MODULAR_GUIDE.md`](./docs/ASSET_MODULAR_GUIDE.md) 기준)**:
+  - [x] 토끼 바디+뼈대+walk 모션 (`char_body_rabbit.glb`), 공통 하피 (`char_happi_base.glb`, `happi_tentaikomai.png`), 하치마키 (`hair_hachimaki.glb`)
+  - [x] 타이코 · 받침대 7종 GLB (`inst_taiko_nagado.glb`, `stand_oosueashi.glb`, `inst_shaku_2.glb`, `inst_shaku_4.glb`, `inst_shaku_6.glb`, `inst_oki.glb`, `inst_shime.glb`)
+  - [ ] 토끼 연주 모션(`play_strong`, `play_weak`) 및 거북이 바디(`char_body_turtle.glb`) + 추가 헤어 파츠
+  - [ ] 잔여 악기/소품(`shaku_5`, `hira`, `paranku`, `fue`, `chappa`, `jangara`, `chiki`, `suzu`, `uchiwa`, `bachi`, `chu`, `odaiko`, `taru`) + 추가 받침대 선택 제작
+  - [ ] 원형 잔디 공원, 단체 아지트 2종, 시즌 소품, 멤버 일러스트, QR 이미지 2종, 실제 타이코 타격음 MP3 녹음
+- [ ] **4. 최종 통합/최적화**: 실제 대학/인스타 URL·QR 이미지·OG 썸네일 반영, 10MB 로딩 & 모바일 실기 프레임 최종 점검
+- [ ] **5. 서클 멤버 테스트 & 정식 공개**: 서클 멤버 모바일 테스트 → 피드백 반영 → 정식 공개
+- [ ] **(확장 아이디어)**: 실내 연습실·축제 무대 공간 GLB, NPC 대화(`talk`) 연출, 실시간 멀티플레이

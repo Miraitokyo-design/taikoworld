@@ -86,6 +86,8 @@ export interface InstrumentConfig {
   id: string;
   name: string;
   modelPath: string;
+  /** 3D GLB 모델 표시 배율 (기본값 1, 필요 시 중앙 북 크기 보정) */
+  scale?: number;
   position: Vec3;
   interactRadius: number;
   sounds: InstrumentSounds;
