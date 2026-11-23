@@ -9,7 +9,7 @@
     "happiColor": "#c96a2b",
     "happiBorderColor": "#1c1917",
     "obiColor": "#f4d35e",
-    "bodyColor": "#fff4eb",
+    "bodyColor": "#f6f5f1",
     "accentColor": "#f7b5c4",
     "happiTexture": "/textures/happi/happi_tentaikomai.webp",
     "bodyModelPath": "/models/characters/char_body_rabbit.glb"

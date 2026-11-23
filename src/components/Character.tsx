@@ -36,7 +36,7 @@ interface CharacterProps {
  * - 토끼 귀(정수리 좌우)와 겹치지 않도록 앞·뒤·테두리 위주로 배치해
  *   토끼와 거북이 두 종족 모두 자연스럽게 호환됩니다.
  */
-function CharacterHairPart({
+export function CharacterHairPart({
   hair,
   group,
   species,
@@ -151,7 +151,7 @@ function CharacterHairPart({
  * - 북 GLB 모델 자체는 정중앙 원점(0, 0, 0)을 유지하고, 여기서 위치·각도와 사선 어깨 끈만 적용합니다.
  * - public/models/instruments/inst_shaku_2.glb 등이 존재하면 실제 Blender GLB를 자동 표시합니다.
  */
-function CharacterChestInstrument({
+export function CharacterChestInstrument({
   instrument,
 }: {
   instrument: EquippedInstrumentId;
@@ -268,7 +268,7 @@ function CharacterChestInstrument({
  * Layer 5 (바닥 받침대형): 締め(〆), 平, 中, 大, たる처럼 바닥 y = 0에 받침대를 두고 치는 악기
  * - public/models/instruments/inst_*.glb의 원점이 바닥(y = 0)이므로 캐릭터 앞쪽 바닥에 그대로 배치합니다.
  */
-function CharacterFloorInstrument({
+export function CharacterFloorInstrument({
   instrument,
 }: {
   instrument: EquippedInstrumentId;
@@ -347,6 +347,8 @@ export const Character = memo(function Character({
 
   // public/models/characters/char_body_rabbit.glb 또는 char_body_turtle.glb 존재 여부 자동 감지
   const hasBodyGlb = useAssetAvailability(group.bodyModelPath);
+  // public/models/characters/char_happi_base.glb 공통 하피 의상 GLB 존재 여부 자동 감지
+  const hasHappiGlb = useAssetAvailability('/models/characters/char_happi_base.glb');
 
   // 애니메이션 제어용 3D 그룹 ref
   const bodyGroupRef = useRef<Group>(null);
@@ -366,7 +368,7 @@ export const Character = memo(function Character({
   const isBlinkingRef = useRef(false);
   const lastExpressionRef = useRef<FaceExpression>('idle');
 
-  // Layer 3: 2D CanvasTexture 생성 (컴포넌트당 1회 생성, 언마운트 시 GPU 메모리 해제)
+  // Layer 3: 2D CanvasTexture 생성 (GLB 전환 시 새 텍스처로 flipY를 최초 업로드 전에 확정, 언마운트 시 GPU 메모리 해제)
   const faceResources = useMemo(() => {
     const canvas = document.createElement('canvas');
     canvas.width = FACE_CANVAS_SIZE;
@@ -374,8 +376,10 @@ export const Character = memo(function Character({
     const ctx = canvas.getContext('2d');
     const texture = new CanvasTexture(canvas);
     texture.colorSpace = SRGBColorSpace;
+    // glTF 표준 UV는 flipY = false, 임시 SphereGeometry는 flipY = true
+    texture.flipY = !hasBodyGlb;
     return { canvas, ctx, texture };
-  }, []);
+  }, [hasBodyGlb]);
 
   useEffect(() => {
     return () => {
@@ -383,17 +387,16 @@ export const Character = memo(function Character({
     };
   }, [faceResources]);
 
-  // 얼굴 커스터마이징 설정이 바뀌거나 GLB <-> 임시 모델 전환 시 2D 캔버스 UV 방향·그림 갱신
+  // 얼굴 커스터마이징 설정이 바뀌거나 GLB <-> 임시 모델 전환 시 2D 캔버스 그림 갱신
   useEffect(() => {
-    // glTF 표준 UV는 flipY = false, 임시 SphereGeometry는 flipY = true
-    faceResources.texture.flipY = !hasBodyGlb;
     if (!faceResources.ctx) return;
     drawFaceToCanvas(faceResources.ctx, face, {
       isBlinking: isBlinkingRef.current,
       expression: lastExpressionRef.current,
+      backgroundColor: hasBodyGlb ? group.bodyColor : undefined,
     });
     faceResources.texture.needsUpdate = true;
-  }, [face, faceResources, hasBodyGlb]);
+  }, [face, faceResources, group.bodyColor, hasBodyGlb]);
 
   // 북채(바치)를 쓰는 악기인지 판별 (피리·차파·쟝가라·방울·부채는 자체 손 악기/소품 사용)
   const usesBachi =
@@ -443,6 +446,7 @@ export const Character = memo(function Character({
       drawFaceToCanvas(faceResources.ctx, face, {
         isBlinking: isBlinkingRef.current,
         expression: lastExpressionRef.current,
+        backgroundColor: hasBodyGlb ? group.bodyColor : undefined,
       });
       faceResources.texture.needsUpdate = true;
     }
@@ -870,7 +874,9 @@ export const Character = memo(function Character({
       <ModelErrorBoundary fallback={placeholderCharacter}>
         <Suspense fallback={placeholderCharacter}>
           <SkinnedCharacterGlb
+            key={hasHappiGlb ? 'with-happi' : 'body-only'}
             bodyUrl={group.bodyModelPath}
+            happiUrl={hasHappiGlb ? '/models/characters/char_happi_base.glb' : undefined}
             group={group}
             appearance={appearance}
             faceTexture={faceResources.texture}

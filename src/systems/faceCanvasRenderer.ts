@@ -18,13 +18,23 @@ export type FaceExpression = 'idle' | 'play' | 'happy';
 export function drawFaceToCanvas(
   ctx: CanvasRenderingContext2D,
   face: CharacterFaceConfig,
-  options: { isBlinking: boolean; expression: FaceExpression }
+  options: {
+    isBlinking: boolean;
+    expression: FaceExpression;
+    /** Blender GLB의 Mat_Face처럼 얼굴 메쉬 자체에 칠해질 때 사용할 피부 배경색 (미지정 시 투명 배경) */
+    backgroundColor?: string;
+  }
 ): void {
   const size = FACE_CANVAS_SIZE;
   const centerX = size / 2;
 
-  // 이전 프레임 그림을 완전히 투명하게 비움 (캐릭터 피부색 위로 얼굴 요소만 얹힘)
-  ctx.clearRect(0, 0, size, size);
+  // 이전 프레임 그림을 초기화 (GLB 얼굴 슬롯일 때는 피부색으로 채워 구멍이 뚫리지 않게 하고, 임시 구면 패치일 때는 투명하게 비움)
+  if (options.backgroundColor) {
+    ctx.fillStyle = options.backgroundColor;
+    ctx.fillRect(0, 0, size, size);
+  } else {
+    ctx.clearRect(0, 0, size, size);
+  }
 
   const { isBlinking, expression } = options;
 
