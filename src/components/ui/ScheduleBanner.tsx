@@ -1,4 +1,5 @@
 import type { ScheduleEvent } from '../../types/content';
+import { useI18n } from '../../i18n/I18nContext';
 import { formatShortDate } from '../../utils/scheduleUtils';
 
 interface ScheduleBannerProps {
@@ -10,29 +11,29 @@ interface ScheduleBannerProps {
 
 /**
  * 화면 상단 정중앙에 항상 노출되는 최단 연주 일정 배너 컴포넌트
- * - "다음 연주" 라벨을 함께 보여줘 처음 방문한 사람도 다가오는 공연 일정임을 한눈에 알 수 있습니다.
- * @param props.nextEvent - 가장 가까운 예정 연주 데이터
- * @param props.onOpenCalendar - 캘린더 열기 핸들러
+ * - 현재 언어(ja/ko)에 맞춰 날짜와 라벨을 자동 표시합니다.
  */
 export function ScheduleBanner({ nextEvent, onOpenCalendar }: ScheduleBannerProps) {
+  const { lang, t } = useI18n();
+
   return (
     <button
       type="button"
       className="schedule-banner"
       onClick={onOpenCalendar}
-      aria-label="연주 일정 상세 캘린더 열기"
+      aria-label={t('schedule.bannerAria')}
     >
-      <span className="schedule-banner-pill">📅 다음 연주</span>
+      <span className="schedule-banner-pill">{t('schedule.bannerPill')}</span>
 
       {nextEvent ? (
         <span className="schedule-banner-text">
           <strong className="schedule-banner-date">
-            {formatShortDate(nextEvent.date)}
+            {formatShortDate(nextEvent.date, lang)}
           </strong>{' '}
           {nextEvent.title}
         </span>
       ) : (
-        <span className="schedule-banner-text">예정된 연주 일정 보기</span>
+        <span className="schedule-banner-text">{t('schedule.bannerFallback')}</span>
       )}
 
       <span className="schedule-banner-arrow" aria-hidden="true">

@@ -10,7 +10,6 @@ import taikoTracksData from './data/taikoTracks.json';
 import taikoGuideData from './data/taikoGuide.json';
 import themesData from './data/themes.json';
 import worldEnvironmentsData from './data/worldEnvironments.json';
-import siteTextsData from './data/siteTexts.json';
 import type {
   GroupHideoutConfig,
   InstrumentConfig,
@@ -25,12 +24,21 @@ import type {
   MemberConfig,
   ScheduleEvent,
   SeasonThemeCatalog,
-  SiteTextsConfig,
   SongConfig,
   TaikoGuideData,
   TaikoTrackDefinition,
   WorldEnvironmentConfig,
 } from './types/content';
+import { useI18n } from './i18n/I18nContext';
+import {
+  localizeCircleInfo,
+  localizeEnvironments,
+  localizeInstruments,
+  localizeSeasonTheme,
+  localizeSongs,
+  localizeTaikoGuide,
+  localizeTaikoTracks,
+} from './i18n/localizeData';
 import { audioManager } from './systems/audioManager';
 import type { TaikoHitType } from './systems/audioManager';
 import { TAIKO_KAKEGOE_PHRASES } from './systems/npcStateMachine';
@@ -108,7 +116,6 @@ const taikoTracks = taikoTracksData as unknown as TaikoTrackDefinition[];
 const taikoGuide = taikoGuideData as TaikoGuideData;
 const seasonCatalog = themesData as unknown as SeasonThemeCatalog;
 const worldEnvironments = worldEnvironmentsData as WorldEnvironmentConfig[];
-const siteTexts = siteTextsData as SiteTextsConfig;
 
 /** 사용자가 선택한 기본 배경 테마를 브라우저에 기억하는 키 */
 const ENV_STORAGE_KEY = 'taikoworld_world_env_v1';
@@ -138,13 +145,46 @@ const tracksById: Record<string, TaikoTrackDefinition> = Object.fromEntries(
  *   멀티 레이어 악보/직접 작곡, 지역 단체 소개 모달을 통합 관리합니다.
  */
 export function App() {
+  const { lang, t } = useI18n();
+
   // MVP 1차 공간: 첫 번째 공간(잔디 공원)을 기본으로 불러옴
   const baseSpace = spaces[0];
 
+  // 현재 선택된 언어(기본 일본어 / 메뉴에서 한국어 전환)에 맞춘 데이터 변환
+  const localizedCircleInfo = useMemo(
+    () => localizeCircleInfo(circleInfo, lang),
+    [lang]
+  );
+  const localizedTaikoGuide = useMemo(
+    () => localizeTaikoGuide(taikoGuide, lang),
+    [lang]
+  );
+  const localizedEnvironments = useMemo(
+    () => localizeEnvironments(worldEnvironments, lang),
+    [lang]
+  );
+  const localizedInstruments = useMemo(
+    () => localizeInstruments(instruments, lang),
+    [lang]
+  );
+  const localizedSongs = useMemo(() => localizeSongs(songs, lang), [lang]);
+  const localizedTaikoTracks = useMemo(
+    () => localizeTaikoTracks(taikoTracks, lang),
+    [lang]
+  );
+  const localizedTracksById = useMemo(
+    () => Object.fromEntries(localizedTaikoTracks.map((track) => [track.id, track])),
+    [localizedTaikoTracks]
+  );
+
   // 운영자 일괄 배포 시즌 테마 (themes.json의 activeOverride 또는 날짜 범위로 모든 사용자에게 일괄 적용)
-  const deployedSeasonTheme = useMemo(
+  const rawSeasonTheme = useMemo(
     () => resolveDeployedSeasonTheme(seasonCatalog),
     []
+  );
+  const deployedSeasonTheme = useMemo(
+    () => localizeSeasonTheme(rawSeasonTheme, lang),
+    [rawSeasonTheme, lang]
   );
 
   // 사용자가 메뉴에서 변경할 수 있는 기본 배경 테마 (잔디 공원, 연습실, 눈오는 들판, 노을 광장)
@@ -153,9 +193,9 @@ export function App() {
   );
   const selectedEnvironment = useMemo(
     () =>
-      worldEnvironments.find((env) => env.id === selectedEnvId) ??
-      worldEnvironments[0],
-    [selectedEnvId]
+      localizedEnvironments.find((env) => env.id === selectedEnvId) ??
+      localizedEnvironments[0],
+    [localizedEnvironments, selectedEnvId]
   );
 
   // 기본 배경 테마와 운영자 일괄 시즌 테마를 합친 최종 3D 분위기 설정
@@ -585,10 +625,10 @@ export function App() {
         <Scene
           space={currentSpace}
           atmosphere={worldAtmosphere}
-          instruments={instruments}
+          instruments={localizedInstruments}
           members={members}
-          songs={songs}
-          tracksById={tracksById}
+          songs={localizedSongs}
+          tracksById={localizedTracksById}
           playerStateRef={playerStateRef}
           playerAppearance={playerAppearance}
           joystickVectorRef={joystickVectorRef}
@@ -620,10 +660,8 @@ export function App() {
         disabled={!isExploring || isModalOpen}
       />
 
-      {/* 입장 전 화면 (첫 터치 시 오디오 활성화) */}
-      {!hasEntered && (
-        <LandingOverlay texts={siteTexts.landing} onEnter={handleEnterWorld} />
-      )}
+      {/* 입장 전 화면 (첫 터치 시 오디오 활성화 + 언어 빠른 선택) */}
+      {!hasEntered && <LandingOverlay onEnter={handleEnterWorld} />}
 
       {/* 탐색 모드 상단 좌측 [☰ 메뉴] 버튼 */}
       {showWorldHud && (
@@ -634,10 +672,10 @@ export function App() {
             closeAllModals();
             setIsMenuOpen(true);
           }}
-          aria-label="메뉴 열기"
+          aria-label={t('hud.menuButton')}
         >
           <span aria-hidden="true">☰</span>
-          <span className="menu-toggle-label">{siteTexts.hud.menuButton}</span>
+          <span className="menu-toggle-label">{t('hud.menuButton')}</span>
         </button>
       )}
 
@@ -675,7 +713,12 @@ export function App() {
       {activeJoinedEnsemble && (
         <div className="ensemble-jam-bar" data-ui-interactive="true">
           <div className="ensemble-jam-title">
-            🎵 「{activeJoinedEnsemble.songTitle.split(' (')[0]}」 함께 합주 중!
+            {t('ensembleJam.playingStatus', {
+              title: (
+                localizedSongs.find((s) => s.id === activeJoinedEnsemble.songId)?.title ??
+                activeJoinedEnsemble.songTitle
+              ).split(' (')[0],
+            })}
           </div>
           <div className="ensemble-jam-actions">
             <button
@@ -686,7 +729,7 @@ export function App() {
                 handleEnsembleJamHit('primary');
               }}
             >
-              <span>🥁 강타</span>
+              <span>{t('ensembleJam.primaryHit')}</span>
               <span className="key-cap">F/J</span>
             </button>
             <button
@@ -697,7 +740,7 @@ export function App() {
                 handleEnsembleJamHit('secondary');
               }}
             >
-              <span>🥢 테두리</span>
+              <span>{t('ensembleJam.secondaryHit')}</span>
               <span className="key-cap">D/K</span>
             </button>
             <button
@@ -705,7 +748,7 @@ export function App() {
               className="ensemble-jam-btn ensemble-jam-btn--kakegoe"
               onClick={() => handlePlayerKakegoe()}
             >
-              <span>📣 추임새</span>
+              <span>{t('ensembleJam.kakegoe')}</span>
               <span className="key-cap">Space</span>
             </button>
             <button
@@ -713,7 +756,7 @@ export function App() {
               className="ensemble-jam-btn ensemble-jam-btn--exit"
               onClick={handleLeaveEnsemble}
             >
-              <span>나가기</span>
+              <span>{t('ensembleJam.leave')}</span>
               <span className="key-cap key-cap--dark">E</span>
             </button>
           </div>
@@ -732,7 +775,12 @@ export function App() {
           }}
         >
           <span>
-            🥁 「{nearbyEnsemble.songTitle.split(' (')[0]}」 {siteTexts.hud.ensembleJoinSuffix}
+            {t('hud.ensembleJoinPrompt', {
+              title: (
+                localizedSongs.find((s) => s.id === nearbyEnsemble.songId)?.title ??
+                nearbyEnsemble.songTitle
+              ).split(' (')[0],
+            })}
           </span>
           <span className="key-cap">E</span>
         </button>
@@ -749,7 +797,13 @@ export function App() {
             className="play-prompt-btn"
             onClick={() => handleEnterPlayMode(nearbyInstrument)}
           >
-            <span>🥁 {nearbyInstrument.name} 연주하기</span>
+            <span>
+              {t('hud.playInstrument', {
+                name:
+                  localizedInstruments.find((inst) => inst.id === nearbyInstrument.id)
+                    ?.name ?? nearbyInstrument.name,
+              })}
+            </span>
             <span className="key-cap">Space</span>
           </button>
         )}
@@ -757,7 +811,10 @@ export function App() {
       {/* 타이코 연주 모드 전용 오버레이 */}
       {hasEntered && activeInstrument && (
         <TaikoPlayOverlay
-          instrument={activeInstrument}
+          instrument={
+            localizedInstruments.find((inst) => inst.id === activeInstrument.id) ??
+            activeInstrument
+          }
           onHit={handleTaikoHit}
           onExit={handleExitPlayMode}
         />
@@ -768,10 +825,9 @@ export function App() {
         {/* 통합 메뉴바 모달 */}
         {hasEntered && isMenuOpen && (
           <MenuModal
-            texts={siteTexts.menu}
             nextEvent={nextUpcomingEvent}
-            songCount={songs.length + customSongs.length}
-            environments={worldEnvironments}
+            songCount={localizedSongs.length + customSongs.length}
+            environments={localizedEnvironments}
             selectedEnvironmentId={selectedEnvId}
             deployedSeasonTheme={deployedSeasonTheme}
             onSelectEnvironment={handleSelectEnvironment}
@@ -826,7 +882,6 @@ export function App() {
         {/* 전체 서클 멤버 도감 모달 */}
         {hasEntered && isMemberDirectoryOpen && (
           <MemberDirectoryModal
-            texts={siteTexts.modals}
             members={members}
             onSelectMember={(member) => {
               setIsMemberDirectoryOpen(false);
@@ -840,10 +895,10 @@ export function App() {
         {/* 멀티 레이어 타이코 곡 정보 & 직접 작곡 모달 */}
         {hasEntered && isSongBookOpen && (
           <SongBookModal
-            builtInSongs={songs}
+            builtInSongs={localizedSongs}
             customSongs={customSongs}
-            allTracks={taikoTracks}
-            tracksById={tracksById}
+            allTracks={localizedTaikoTracks}
+            tracksById={localizedTracksById}
             members={members}
             onSaveCustomSong={handleSaveCustomSong}
             onDeleteCustomSong={handleDeleteCustomSong}
@@ -855,8 +910,8 @@ export function App() {
         {/* 타이코 종류 & 지역 타이코 단체 소개 모달 (아지트에서 진입 시 E로 닫기 지원) */}
         {hasEntered && isTaikoGuideOpen && (
           <TaikoGuideModal
-            guide={taikoGuide}
-            tracksById={tracksById}
+            guide={localizedTaikoGuide}
+            tracksById={localizedTracksById}
             initialTab={guideInitialTab}
             highlightedGroupId={highlightedGroupId}
             allowKeyEClose={guideOpenedFromHideout}
@@ -868,8 +923,7 @@ export function App() {
         {/* 서클 소개 & 대학교 홈페이지 · 인스타그램/사이트 QR 모달 */}
         {hasEntered && isCircleOpen && (
           <CircleInfoModal
-            circle={circleInfo}
-            kickerText={siteTexts.modals.circleKicker}
+            circle={localizedCircleInfo}
             onBackToMenu={openedFromMenu ? handleBackToMenu : undefined}
             onClose={closeAllModals}
           />
@@ -879,7 +933,7 @@ export function App() {
         {hasEntered && selectedMember && (
           <MemberProfileModal
             member={selectedMember}
-            songs={songs}
+            songs={localizedSongs}
             onClose={() => setSelectedMember(null)}
           />
         )}
@@ -910,7 +964,7 @@ export function App() {
                 ? ` · ${deployedSeasonTheme.emoji} ${deployedSeasonTheme.name}`
                 : ''}
             </span>
-            <span className="space-badge-hint">{siteTexts.hud.controlHint}</span>
+            <span className="space-badge-hint">{t('hud.controlHint')}</span>
           </div>
 
           <div className="bottom-right-actions">
@@ -924,7 +978,7 @@ export function App() {
                 setIsCustomizing(true);
               }}
             >
-              {siteTexts.hud.customizeButton}
+              {t('hud.customizeButton')}
             </button>
 
             <button
@@ -935,7 +989,7 @@ export function App() {
                 setIsCircleOpen(true);
               }}
             >
-              {siteTexts.hud.circleButton}
+              {t('hud.circleButton')}
             </button>
           </div>
         </>

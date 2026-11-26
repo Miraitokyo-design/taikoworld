@@ -8,6 +8,7 @@ import type {
   TaikoTrackDefinition,
   TrackInstrumentId,
 } from '../../types/content';
+import { useI18n } from '../../i18n/I18nContext';
 import { audioManager } from '../../systems/audioManager';
 import { getTaikoGroupById } from '../../utils/characterAppearance';
 import {
@@ -55,14 +56,14 @@ const DYNAMIC_BADGE_LABELS: Record<NoteDynamic, string> = {
   decresc: '>',
 };
 
-/** 작곡 표현(다이나믹) 도구 목록 */
-const COMPOSE_TOOLS: Array<{ id: ComposeTool; label: string }> = [
-  { id: 'note', label: '🎵 음표 찍기' },
-  { id: 'strong', label: '🔥 강하게 (f)' },
-  { id: 'weak', label: '🍃 약하게 (p)' },
-  { id: 'cresc', label: '📈 점점 크게 (<)' },
-  { id: 'decresc', label: '📉 점점 작게 (>)' },
-  { id: 'normal', label: '⬜ 보통' },
+/** 작곡 표현(다이나믹) 도구 ID 목록 */
+const COMPOSE_TOOL_IDS: readonly ComposeTool[] = [
+  'note',
+  'strong',
+  'weak',
+  'cresc',
+  'decresc',
+  'normal',
 ];
 
 /** 지정 길이의 빈 쉼표('-') 배열 생성 */
@@ -84,17 +85,17 @@ function resizeArray<T>(items: T[] | undefined, nextLength: number, fillValue: T
 }
 
 /** 직접 작곡 모드 시작 시 기본으로 제공하는 3레이어(締め · 尺4 · 沖) 초기 초안 */
-function createInitialDraftSong(): SongConfig {
+function createInitialDraftSong(t: (path: string) => string): SongConfig {
   return {
     id: `custom_${Date.now()}`,
-    title: '나의 타이코 곡',
-    subtitle: '직접 작곡한 멀티 레이어 악보',
+    title: t('songBook.draftTitleDefault'),
+    subtitle: t('songBook.draftSubtitleDefault'),
     bpm: 116,
     difficulty: '입문',
     minPlayers: 3,
     stepsPerMeasure: STEPS_PER_MEASURE,
     totalSteps: 32,
-    description: '직접 레이어와 강약을 구성해 만든 나만의 타이코 합주곡입니다.',
+    description: t('songBook.draftDescDefault'),
     layers: [
       {
         instrumentId: 'shime',
@@ -153,6 +154,8 @@ export function SongBookModal({
   onBackToMenu,
   onClose,
 }: SongBookModalProps) {
+  const { t } = useI18n();
+
   const allSongs = useMemo(
     () => [...builtInSongs, ...customSongs],
     [builtInSongs, customSongs]
@@ -165,7 +168,9 @@ export function SongBookModal({
   // 'view': 수록곡 감상 모드 / 'compose': 직접 작곡 모드
   const [mode, setMode] = useState<'view' | 'compose'>('view');
   const [selectedSongId, setSelectedSongId] = useState<string>(allSongs[0]?.id ?? '');
-  const [draftSong, setDraftSong] = useState<SongConfig>(() => createInitialDraftSong());
+  const [draftSong, setDraftSong] = useState<SongConfig>(() =>
+    createInitialDraftSong(t)
+  );
   const [composeTool, setComposeTool] = useState<ComposeTool>('note');
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
 
@@ -346,7 +351,7 @@ export function SongBookModal({
       id: `custom_${Date.now()}`,
       title: customSongIdSet.has(activeSong.id)
         ? activeSong.title
-        : `${activeSong.title.split(' (')[0]} (편곡)`,
+        : `${activeSong.title.split(' (')[0]} (${t('songBook.arrangeSuffix')})`,
       layers: activeSong.layers.map((layer) => ({
         instrumentId: layer.instrumentId,
         volume: layer.volume ?? 0.85,
@@ -356,7 +361,7 @@ export function SongBookModal({
     });
     setComposeTool('note');
     setMode('compose');
-    showToast('악보를 작곡 화면으로 불러왔어요!');
+    showToast(t('songBook.toastLoadedToComposer'));
   };
 
   /** 개별 악기 레이어 음소거 토글 */
@@ -410,7 +415,7 @@ export function SongBookModal({
       const exists = prev.layers.some((layer) => layer.instrumentId === instrumentId);
       if (exists) {
         if (prev.layers.length <= 1) {
-          showToast('최소 1개의 악기 레이어는 남겨두어야 해요.');
+          showToast(t('songBook.toastMinOneLayer'));
           return prev;
         }
         return {
@@ -559,13 +564,13 @@ export function SongBookModal({
         dynamics: createEmptyDynamics(prev.totalSteps),
       })),
     }));
-    showToast('모든 음표와 강약 표현을 비웠습니다.');
+    showToast(t('songBook.toastCleared'));
   };
 
   /** 작곡 모드: 브라우저(localStorage)에 저장하고 수록곡 목록에 바로 추가 */
   const handleSaveDraft = () => {
     stopPlayback();
-    const trimmedTitle = draftSong.title.trim() || '나의 타이코 곡';
+    const trimmedTitle = draftSong.title.trim() || t('songBook.draftTitleDefault');
     const savedSong: SongConfig = {
       ...draftSong,
       id: draftSong.id.startsWith('custom_') ? draftSong.id : `custom_${Date.now()}`,
@@ -583,12 +588,12 @@ export function SongBookModal({
     setSelectedSongId(savedSong.id);
     setViewVolumeOverrides({});
     setMode('view');
-    showToast(`"${trimmedTitle}" 곡을 저장했어요!`);
+    showToast(t('songBook.toastSaved', { title: trimmedTitle }));
   };
 
   /** [📤 내 곡 내보내기] — 추후 파일/공유 내보내기 기능 구현 예정 안내 */
   const handleExportPlaceholder = () => {
-    showToast('📤 내 곡 내보내기 기능은 추후 업데이트될 예정입니다!');
+    showToast(t('songBook.toastExportComing'));
   };
 
   /** 저장된 사용자 작곡 곡 삭제 */
@@ -597,7 +602,7 @@ export function SongBookModal({
     stopPlayback();
     onDeleteCustomSong(activeSong.id);
     setSelectedSongId(builtInSongs[0]?.id ?? '');
-    showToast('저장된 커스텀 곡을 삭제했습니다.');
+    showToast(t('songBook.toastDeleted'));
   };
 
   const handleClose = () => {
@@ -624,7 +629,7 @@ export function SongBookModal({
       onClick={handleClose}
       role="dialog"
       aria-modal="true"
-      aria-label="타이코 곡 정보 및 직접 작곡"
+      aria-label={t('songBook.dialogAria')}
     >
       <div
         className="modal-card songbook-modal-card"
@@ -633,8 +638,8 @@ export function SongBookModal({
         {/* 모달 헤더 */}
         <div className="modal-header">
           <div>
-            <div className="modal-kicker">🎵 멀티 레이어 타이코 스튜디오</div>
-            <h2 className="modal-title">곡 정보 · 레이어 악보</h2>
+            <div className="modal-kicker">{t('songBook.kicker')}</div>
+            <h2 className="modal-title">{t('songBook.title')}</h2>
           </div>
           <div className="modal-header-actions">
             {onBackToMenu && (
@@ -643,14 +648,14 @@ export function SongBookModal({
                 className="modal-back-btn"
                 onClick={handleBack}
               >
-                ← 메뉴
+                {t('common.backToMenu')}
               </button>
             )}
             <button
               type="button"
               className="modal-close-btn"
               onClick={handleClose}
-              aria-label="곡 정보 창 닫기"
+              aria-label={t('songBook.closeAria')}
             >
               ✕
             </button>
@@ -664,14 +669,14 @@ export function SongBookModal({
             className={`song-mode-btn ${mode === 'view' ? 'is-active' : ''}`}
             onClick={() => handleSwitchMode('view')}
           >
-            📚 수록곡 악보 ({allSongs.length})
+            {t('songBook.tabView', { count: allSongs.length })}
           </button>
           <button
             type="button"
             className={`song-mode-btn ${mode === 'compose' ? 'is-active' : ''}`}
             onClick={() => handleSwitchMode('compose')}
           >
-            ✨ 직접 작곡하기
+            {t('songBook.tabCompose')}
           </button>
         </div>
 
@@ -707,7 +712,9 @@ export function SongBookModal({
                   <div className="song-info-subtitle">{activeSong.subtitle}</div>
                 </div>
                 <span className="song-difficulty-badge">
-                  {isCustomViewing ? '내 작곡' : activeSong.difficulty}
+                  {isCustomViewing
+                    ? t('songBook.customBadge')
+                    : t(`songBook.difficulty.${activeSong.difficulty}`)}
                 </span>
               </div>
 
@@ -715,13 +722,21 @@ export function SongBookModal({
 
               <div className="song-meta-row">
                 <span>⏱️ BPM {activeSong.bpm}</span>
-                <span>🎚️ 참여 악기 {activeSong.layers.length}종</span>
-                <span>👥 합주 최소 {Math.max(3, activeSong.minPlayers)}명 이상</span>
+                <span>
+                  {t('songBook.metaLayers', { count: activeSong.layers.length })}
+                </span>
+                <span>
+                  {t('songBook.metaMinPlayers', {
+                    count: Math.max(3, activeSong.minPlayers),
+                  })}
+                </span>
               </div>
 
               {capableMembers.length > 0 && (
                 <div className="song-players-row">
-                  <span className="song-players-label">연주 가능 멤버</span>
+                  <span className="song-players-label">
+                    {t('songBook.capableMembers')}
+                  </span>
                   <div className="song-players-chips">
                     {capableMembers.map((member) => {
                       const group = getTaikoGroupById(member.appearance.groupId);
@@ -749,7 +764,7 @@ export function SongBookModal({
                   className="song-sub-btn"
                   onClick={handleEditCopyInComposer}
                 >
-                  ✏️ 이 곡을 작곡 화면에서 편곡하기
+                  {t('songBook.arrangeBtn')}
                 </button>
                 {isCustomViewing && (
                   <button
@@ -757,7 +772,7 @@ export function SongBookModal({
                     className="song-sub-btn is-danger"
                     onClick={handleDeleteCurrentCustomSong}
                   >
-                    🗑️ 삭제
+                    {t('songBook.deleteBtn')}
                   </button>
                 )}
               </div>
@@ -768,13 +783,15 @@ export function SongBookModal({
           <div className="composer-panel">
             <div className="composer-row">
               <label className="composer-field composer-field--title">
-                <span className="composer-label">곡 제목</span>
+                <span className="composer-label">
+                  {t('songBook.composerSongTitleLabel')}
+                </span>
                 <input
                   type="text"
                   className="composer-input"
                   value={draftSong.title}
                   maxLength={28}
-                  placeholder="예: 여름 축제 리듬"
+                  placeholder={t('songBook.composerSongTitlePlaceholder')}
                   onChange={(event) =>
                     setDraftSong((prev) => ({ ...prev, title: event.target.value }))
                   }
@@ -803,7 +820,9 @@ export function SongBookModal({
             {/* 마디 길이 & 최소 합주 인원 설정 (항상 3명 이상) */}
             <div className="composer-settings-grid">
               <div className="composer-inline-row">
-                <span className="composer-label">마디 길이</span>
+                <span className="composer-label">
+                  {t('songBook.composerMeasuresLabel')}
+                </span>
                 <div className="composer-measure-btns">
                   {[2, 4, 6].map((count) => (
                     <button
@@ -814,14 +833,16 @@ export function SongBookModal({
                       }`}
                       onClick={() => handleChangeMeasureCount(count)}
                     >
-                      {count}마디
+                      {t('songBook.composerMeasureChip', { count })}
                     </button>
                   ))}
                 </div>
               </div>
 
               <div className="composer-inline-row">
-                <span className="composer-label">최소 합주 인원</span>
+                <span className="composer-label">
+                  {t('songBook.composerMinPlayersLabel')}
+                </span>
                 <div className="composer-measure-btns">
                   {[3, 4, 5, 6].map((minCount) => (
                     <button
@@ -834,7 +855,7 @@ export function SongBookModal({
                         setDraftSong((prev) => ({ ...prev, minPlayers: minCount }))
                       }
                     >
-                      {minCount}명+
+                      {t('songBook.composerMinPlayersChip', { count: minCount })}
                     </button>
                   ))}
                 </div>
@@ -844,7 +865,7 @@ export function SongBookModal({
             {/* 참여 악기 레이어 추가 / 제거 선택 */}
             <div className="composer-tracks-row">
               <span className="composer-label">
-                악기 레이어 선택 (눌러서 추가 · 제거)
+                {t('songBook.composerTracksLabel')}
               </span>
               <div className="composer-track-chips">
                 {allTracks.map((track) => {
@@ -871,22 +892,22 @@ export function SongBookModal({
               </div>
             </div>
 
-            {/* 표현(다이나믹) 도구 선택 바: 강하게 / 약하게 / 점점 크게 / 점점 작게 */}
+            {/* 표현(다이나믹) 도구 선택 바 */}
             <div className="composer-tracks-row">
               <span className="composer-label">
-                편집 도구 (강약 · 점점 크게/작게 표현을 골라 칸을 눌러 적용)
+                {t('songBook.composerBrushLabel')}
               </span>
               <div className="composer-brush-bar">
-                {COMPOSE_TOOLS.map((tool) => (
+                {COMPOSE_TOOL_IDS.map((toolId) => (
                   <button
-                    key={tool.id}
+                    key={toolId}
                     type="button"
                     className={`composer-brush-btn ${
-                      composeTool === tool.id ? 'is-active' : ''
+                      composeTool === toolId ? 'is-active' : ''
                     }`}
-                    onClick={() => setComposeTool(tool.id)}
+                    onClick={() => setComposeTool(toolId)}
                   >
-                    {tool.label}
+                    {t(`songBook.tools.${toolId}`)}
                   </button>
                 ))}
               </div>
@@ -894,7 +915,7 @@ export function SongBookModal({
           </div>
         )}
 
-        {/* 재생 / 정지 + (작곡 모드 시) 저장 / 내 곡 내보내기 / 비우기 컨트롤 */}
+        {/* 재생 / 정지 + 저장 / 내보내기 / 비우기 컨트롤 */}
         <div className="song-controls-bar">
           <button
             type="button"
@@ -908,10 +929,10 @@ export function SongBookModal({
             }}
           >
             {isPlaying
-              ? '⏹ 연주 정지'
+              ? t('songBook.btnStop')
               : mode === 'compose'
-              ? '▶ 내 곡 연주 듣기'
-              : '▶ 레이어 악보 연주 듣기'}
+              ? t('songBook.btnPlayCustom')
+              : t('songBook.btnPlayView')}
           </button>
 
           {mode === 'compose' && (
@@ -921,40 +942,39 @@ export function SongBookModal({
                 className="composer-action-btn is-primary"
                 onClick={handleSaveDraft}
               >
-                💾 내 곡 저장
+                {t('songBook.btnSave')}
               </button>
               <button
                 type="button"
                 className="composer-action-btn"
                 onClick={handleExportPlaceholder}
               >
-                📤 내 곡 내보내기
+                {t('songBook.btnExport')}
               </button>
               <button
                 type="button"
                 className="composer-action-btn"
                 onClick={handleClearAllNotes}
               >
-                🗑️ 비우기
+                {t('songBook.btnClear')}
               </button>
             </div>
           )}
         </div>
 
-        {/* 좌우로 긴 멀티 레이어 타임라인 악보 (재생 바 이동 + 자동 가로 스크롤) */}
+        {/* 좌우로 긴 멀티 레이어 타임라인 악보 */}
         <div className="layer-score-section">
           <div className="layer-score-header-row">
             <span className="song-score-heading">
               {mode === 'compose'
-                ? '좌측 슬라이더로 레이어 볼륨 조절 · 칸 클릭으로 음표/강약 입력 (우클릭 지우기)'
-                : '좌측 슬라이더로 레이어 볼륨 조절 · f(강) p(약) <(점점 크게) >(점점 작게)'}
+                ? t('songBook.scoreHeadingCompose')
+                : t('songBook.scoreHeadingView')}
             </span>
           </div>
 
           <div className="layer-timeline-wrapper">
-            {/* 좌측 고정 악기 트랙 헤더 열 (이름 + 음소거 + 개별 볼륨 슬라이더) */}
             <div className="layer-track-labels">
-              <div className="layer-ruler-corner">마디 · 볼륨</div>
+              <div className="layer-ruler-corner">{t('songBook.rulerCorner')}</div>
               {activeSong.layers.map((layer) => {
                 const track = tracksById[layer.instrumentId];
                 const isLayerMuted = mutedLayers.has(layer.instrumentId);
@@ -980,7 +1000,7 @@ export function SongBookModal({
                           className="layer-mute-btn"
                           onClick={() => handleToggleLayerMute(layer.instrumentId)}
                           aria-label={`${track?.shortName ?? layer.instrumentId} ${
-                            isLayerMuted ? '소리 켜기' : '음소거'
+                            isLayerMuted ? t('songBook.unmute') : t('songBook.mute')
                           }`}
                         >
                           {isLayerMuted ? '🔇' : '🔊'}
@@ -993,7 +1013,7 @@ export function SongBookModal({
                         max={1}
                         step={0.05}
                         value={layerVolume}
-                        aria-label={`${track?.shortName ?? layer.instrumentId} 볼륨`}
+                        aria-label={`${track?.shortName ?? layer.instrumentId} ${t('songBook.volumeAria')}`}
                         onChange={(event) =>
                           handleLayerVolumeChange(
                             layer.instrumentId,
@@ -1007,13 +1027,11 @@ export function SongBookModal({
               })}
             </div>
 
-            {/* 우측 가로 스크롤 타임라인 (재생 시 바가 이동하며 자동 스크롤됨) */}
             <div ref={timelineScrollRef} className="layer-timeline-scroll">
               <div
                 className="layer-timeline-inner"
                 style={{ width: `${totalWidthPx}px` }}
               >
-                {/* 움직이는 세로 재생 바 (Playhead) */}
                 {currentStepIndex >= 0 && (
                   <div
                     className="layer-playhead-bar"
@@ -1025,7 +1043,6 @@ export function SongBookModal({
                   />
                 )}
 
-                {/* 상단 마디 / 박자 눈금자 */}
                 <div className="layer-ruler-row">
                   {stepIndices.map((stepIdx) => {
                     const isMeasureStart = stepIdx % activeSong.stepsPerMeasure === 0;
@@ -1043,7 +1060,7 @@ export function SongBookModal({
                         } ${stepIdx === currentStepIndex ? 'is-current' : ''}`}
                       >
                         {isMeasureStart
-                          ? `${measureNumber}마디`
+                          ? t('songBook.measureCell', { num: measureNumber })
                           : isMainBeat
                           ? `${beatInMeasure}`
                           : '·'}
@@ -1052,7 +1069,6 @@ export function SongBookModal({
                   })}
                 </div>
 
-                {/* 각 참여 악기별 음표 + 강약 표현 트랙 행 */}
                 {activeSong.layers.map((layer) => {
                   const track = tracksById[layer.instrumentId];
                   const trackColor = track?.color ?? '#8c7b6b';
@@ -1134,9 +1150,7 @@ export function SongBookModal({
             </div>
           </div>
 
-          <p className="song-score-legend">
-            f(강하게) · p(약하게) · &lt;(점점 크게) · &gt;(점점 작게) — 실제 재생과 NPC 합주에 모두 반영됩니다
-          </p>
+          <p className="song-score-legend">{t('songBook.scoreLegend')}</p>
         </div>
       </div>
     </div>

@@ -31,6 +31,7 @@ import {
   CharacterHairPart,
 } from './Character';
 import { GlbModel, useAssetAvailability } from './GlbModel';
+import { applyRimLightToMaterial } from '../utils/rimLight';
 
 interface SkinnedCharacterGlbProps {
   /** 종족 바디 GLB 파일 경로 (예: "/models/characters/char_body_rabbit.glb") */
@@ -363,12 +364,21 @@ export function SkinnedCharacterGlb({
         return cloned;
       }
 
-      // Layer 2: 단체 하피 슬롯(Mat_Happi) -> 내장/외부 512px 텍스처 또는 단체 색상 자동 연결
+      // Layer 2: 단체 하피 슬롯(Mat_Happi) -> 내장/외부 512px 텍스처 또는 단체 색상 + 경량 림라이트 연결
       if (matNameLower === 'mat_happi' || meshNameLower === 'mat_happi') {
         const cloned = original.clone();
         if (cloned instanceof MeshStandardMaterial) {
           applyHappiToMaterial(cloned);
+          applyRimLightToMaterial(cloned);
         }
+        clonedMaterials.push(cloned);
+        return cloned;
+      }
+
+      // Layer 1: 토끼/거북이 바디 재질 -> 얼굴 선명도를 건드리지 않도록 Mat_Face를 제외한 재질에만 림라이트 적용
+      if (original instanceof MeshStandardMaterial) {
+        const cloned = original.clone();
+        applyRimLightToMaterial(cloned);
         clonedMaterials.push(cloned);
         return cloned;
       }
@@ -558,6 +568,7 @@ export function SkinnedCharacterGlb({
         createPortal(
           <GlbModel
             url={hairUrl}
+            rimLight
             fallback={
               <group position={[0, -1.11, 0]}>
                 <CharacterHairPart
@@ -585,23 +596,23 @@ export function SkinnedCharacterGlb({
       {sockets.handR &&
         isRightHandInstrument &&
         instrumentUrl &&
-        createPortal(<GlbModel url={instrumentUrl} fallback={null} />, sockets.handR)}
+        createPortal(<GlbModel url={instrumentUrl} rimLight fallback={null} />, sockets.handR)}
 
       {/* Layer 5: 왼손 휴대 악기(パーランクー·チキ) -> Socket_Hand_L */}
       {sockets.handL &&
         isLeftHandInstrument &&
         instrumentUrl &&
-        createPortal(<GlbModel url={instrumentUrl} fallback={null} />, sockets.handL)}
+        createPortal(<GlbModel url={instrumentUrl} rimLight fallback={null} />, sockets.handL)}
 
       {/* Layer 5: 양손 금속 타악기(チャッパ·ジャンガラ) -> 양손 소켓 */}
       {sockets.handL &&
         isDualHandInstrument &&
         instrumentUrl &&
-        createPortal(<GlbModel url={instrumentUrl} fallback={null} />, sockets.handL)}
+        createPortal(<GlbModel url={instrumentUrl} rimLight fallback={null} />, sockets.handL)}
       {sockets.handR &&
         isDualHandInstrument &&
         instrumentUrl &&
-        createPortal(<GlbModel url={instrumentUrl} fallback={null} />, sockets.handR)}
+        createPortal(<GlbModel url={instrumentUrl} rimLight fallback={null} />, sockets.handR)}
 
       {/* 연주 중 양손 북채(inst_bachi.glb) -> 양손 소켓에 포털 부착 */}
       {sockets.handL &&
@@ -609,6 +620,7 @@ export function SkinnedCharacterGlb({
           <group ref={bachiLeftRef} visible={false}>
             <GlbModel
               url="/models/instruments/inst_bachi.glb"
+              rimLight
               fallback={bachiFallbackMesh}
             />
           </group>,
@@ -619,6 +631,7 @@ export function SkinnedCharacterGlb({
           <group ref={bachiRightRef} visible={false}>
             <GlbModel
               url="/models/instruments/inst_bachi.glb"
+              rimLight
               fallback={bachiFallbackMesh}
             />
           </group>,

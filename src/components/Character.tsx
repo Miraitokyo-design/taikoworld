@@ -252,7 +252,7 @@ export function CharacterChestInstrument({
 
         {/* 실제 Blender GLB(존재 시 자동 로드 — 왼쪽 허리 카츠기 자세로 배치) */}
         <group position={spec.pos} rotation={slungRotation}>
-          <GlbModel url={glbUrl} fallback={null} />
+          <GlbModel url={glbUrl} rimLight fallback={null} />
         </group>
 
         {/* GLB가 없을 때만 임시 도형 표시 */}
@@ -312,6 +312,7 @@ export function CharacterFloorInstrument({
       <GlbModel
         url="/models/instruments/inst_taiko_nagado.glb"
         scale={instrument === 'odaiko' ? 0.85 : 0.72}
+        rimLight
         fallback={placeholderFloorDrum}
       />
     ) : (
@@ -320,7 +321,7 @@ export function CharacterFloorInstrument({
 
   return (
     <group position={[0, 0, spec.z]}>
-      <GlbModel url={glbUrl} fallback={effectiveFallback} />
+      <GlbModel url={glbUrl} rimLight fallback={effectiveFallback} />
     </group>
   );
 }

@@ -1,0 +1,850 @@
+{
+  "common": {
+    "backToMenu": {
+      "ja": "← メニュー",
+      "ko": "← 메뉴"
+    },
+    "close": {
+      "ja": "閉じる",
+      "ko": "닫기"
+    },
+    "on": {
+      "ja": "ON",
+      "ko": "ON"
+    },
+    "off": {
+      "ja": "OFF",
+      "ko": "OFF"
+    },
+    "volume": {
+      "ja": "音量",
+      "ko": "볼륨"
+    },
+    "closeWithKeyEOrEscPrefix": {
+      "ja": "で閉じる",
+      "ko": "키로 닫기"
+    },
+    "or": {
+      "ja": "または",
+      "ko": "또는"
+    }
+  },
+  "language": {
+    "heading": {
+      "ja": "🌐 言語設定 / 언어",
+      "ko": "🌐 언어 설정 / 言語"
+    },
+    "jaLabel": {
+      "ja": "🇯🇵 日本語",
+      "ko": "🇯🇵 日本語 (일본어)"
+    },
+    "koLabel": {
+      "ja": "🇰🇷 한국어",
+      "ko": "🇰🇷 한국어"
+    },
+    "shortJa": {
+      "ja": "日本語",
+      "ko": "日本語"
+    },
+    "shortKo": {
+      "ja": "한국어",
+      "ko": "한국어"
+    }
+  },
+  "landing": {
+    "badge": {
+      "ja": "🥁 Taiko World",
+      "ko": "🥁 Taiko World"
+    },
+    "title": {
+      "ja": "Taiko World",
+      "ko": "Taiko World"
+    },
+    "descriptionLine1": {
+      "ja": "あたたかな芝生広場を歩きながら",
+      "ko": "따뜻한 잔디 공원을 돌아다니며"
+    },
+    "descriptionLine2": {
+      "ja": "和太鼓を自由に叩いてみよう！",
+      "ko": "직접 타이코를 두드려 보세요!"
+    },
+    "enterButton": {
+      "ja": "太鼓ワールドに入る",
+      "ko": "타이코 월드 입장"
+    },
+    "audioNote": {
+      "ja": "🔊 入場すると太鼓のサウンドが有効になります",
+      "ko": "🔊 입장 시 북 연주 소리가 활성화됩니다"
+    }
+  },
+  "hud": {
+    "menuButton": {
+      "ja": "メニュー",
+      "ko": "메뉴"
+    },
+    "customizeButton": {
+      "ja": "🎨 きせかえ",
+      "ko": "🎨 꾸미기"
+    },
+    "circleButton": {
+      "ja": "💬 サークル案内",
+      "ko": "💬 서클/문의"
+    },
+    "controlHint": {
+      "ja": "スマホ：タッチで移動 · PC：WASD · E（メンバー・拠点・合奏参加）· Space（演奏）",
+      "ko": "모바일: 화면 터치 조이스틱 · PC: WASD · E(멤버·아지트·합주) · Space(연주)"
+    },
+    "playInstrument": {
+      "ja": "🥁 {name}を叩く",
+      "ko": "🥁 {name} 연주하기"
+    },
+    "ensembleJoinPrompt": {
+      "ja": "🥁 「{title}」の合奏に参加",
+      "ko": "🥁 「{title}」 합주 참가하기"
+    }
+  },
+  "ensembleJam": {
+    "playingStatus": {
+      "ja": "🎵 「{title}」みんなで合奏中！",
+      "ko": "🎵 「{title}」 함께 합주 중!"
+    },
+    "primaryHit": {
+      "ja": "🥁 ドン（強打）",
+      "ko": "🥁 강타"
+    },
+    "secondaryHit": {
+      "ja": "🥢 カッ（縁）",
+      "ko": "🥢 테두리"
+    },
+    "kakegoe": {
+      "ja": "📣 かけ声",
+      "ko": "📣 추임새"
+    },
+    "leave": {
+      "ja": "ぬける",
+      "ko": "나가기"
+    }
+  },
+  "menu": {
+    "ariaLabel": {
+      "ja": "Taiko World メニュー",
+      "ko": "Taiko World 메뉴"
+    },
+    "closeAria": {
+      "ja": "メニューを閉じる",
+      "ko": "메뉴 닫기"
+    },
+    "kicker": {
+      "ja": "🌿 和太鼓3Dバーチャル広場",
+      "ko": "🌿 Taiko 3D 가상공간"
+    },
+    "title": {
+      "ja": "メニュー",
+      "ko": "메뉴"
+    },
+    "scheduleTitle": {
+      "ja": "演奏スケジュール",
+      "ko": "연주 일정 캘린더"
+    },
+    "scheduleNextPrefix": {
+      "ja": "次回の本番: {date} {title}",
+      "ko": "다음 연주: {date} {title}"
+    },
+    "scheduleFallbackDesc": {
+      "ja": "月間スケジュール・体験予定をチェック",
+      "ko": "월간 공연 및 체험 일정 확인"
+    },
+    "membersTitle": {
+      "ja": "メンバー図鑑",
+      "ko": "멤버 정보"
+    },
+    "membersDesc": {
+      "ja": "キャラクターイラストでサークルの仲間を紹介",
+      "ko": "캐릭터 일러스트로 서클 멤버 프로필 구경하기"
+    },
+    "songsTitle": {
+      "ja": "楽曲・パート譜 / 作曲",
+      "ko": "곡 정보 · 레이어 악보 / 직접 작곡"
+    },
+    "songsCount": {
+      "ja": "({count}曲)",
+      "ko": "({count}곡)"
+    },
+    "songsDesc": {
+      "ja": "パート別音量・強弱の調整やオリジナル作曲",
+      "ko": "레이어 볼륨·강약 조절 및 나만의 타이코 곡 직접 작곡하기"
+    },
+    "taikoGuideTitle": {
+      "ja": "和太鼓の種類 · 地域団体",
+      "ko": "타이코 종류 · 지역 단체 소개"
+    },
+    "taikoGuideDesc": {
+      "ja": "桶胴·締·篠笛·チャッパや各団体（転太鼓舞·鶴亀会）",
+      "ko": "어깨북·시메·피리·차파 특징과 지역 서클(転太鼓舞·鶴亀会)"
+    },
+    "circleTitle": {
+      "ja": "サークル紹介 · お問い合わせ / QR",
+      "ko": "서클 소개 · 문의 / 인스타 QR"
+    },
+    "circleDesc": {
+      "ja": "活動時間、Instagram QR、大学ページなど",
+      "ko": "정기 연습 안내, 인스타그램 QR, 대학교 홈페이지"
+    },
+    "environmentHeading": {
+      "ja": "🗺️ 背景テーマ",
+      "ko": "🗺️ 배경 테마"
+    },
+    "seasonInProgress": {
+      "ja": "{emoji} {name}開催中",
+      "ko": "{emoji} {name} 진행 중"
+    },
+    "soundHeading": {
+      "ja": "🔊 サウンド · 音量",
+      "ko": "🔊 소리 · 볼륨 설정"
+    }
+  },
+  "sound": {
+    "openAria": {
+      "ja": "サウンド設定を開く",
+      "ko": "소리 및 볼륨 설정 열기"
+    },
+    "dialogAria": {
+      "ja": "サウンド・音量設定",
+      "ko": "세부 소리 및 볼륨 설정"
+    },
+    "popoverTitle": {
+      "ja": "🔊 サウンド · 音量設定",
+      "ko": "🔊 소리 · 볼륨 설정"
+    },
+    "statusMuted": {
+      "ja": "消音",
+      "ko": "꺼짐"
+    },
+    "statusAll": {
+      "ja": "音声",
+      "ko": "소리"
+    },
+    "statusPartial": {
+      "ja": "一部",
+      "ko": "일부"
+    },
+    "playerLabel": {
+      "ja": "🥁 自分の演奏音",
+      "ko": "🥁 직접 연주 소리"
+    },
+    "playerShortDesc": {
+      "ja": "太鼓体験 · 楽譜 · 作曲",
+      "ko": "북 체험 · 악보 · 작곡"
+    },
+    "playerMenuDesc": {
+      "ja": "太鼓体験 · 楽譜試聴 · 作曲",
+      "ko": "북 체험 · 악보 미리듣기 · 작곡"
+    },
+    "npcLabel": {
+      "ja": "👥 NPCの合奏音",
+      "ko": "👥 NPC 합주 소리"
+    },
+    "npcShortDesc": {
+      "ja": "広場のメンバー合奏",
+      "ko": "공원 멤버 배경 합주"
+    },
+    "npcMenuDesc": {
+      "ja": "広場でメンバーが集まった時の合奏",
+      "ko": "공원에서 멤버들이 모였을 때 합주"
+    },
+    "playerVolumeAria": {
+      "ja": "自分の演奏音量",
+      "ko": "직접 연주 소리 볼륨"
+    },
+    "npcVolumeAria": {
+      "ja": "NPCの合奏音量",
+      "ko": "NPC 합주 소리 볼륨"
+    }
+  },
+  "schedule": {
+    "bannerAria": {
+      "ja": "演奏スケジュールカレンダーを開く",
+      "ko": "연주 일정 상세 캘린더 열기"
+    },
+    "bannerPill": {
+      "ja": "📅 次の本番",
+      "ko": "📅 다음 연주"
+    },
+    "bannerFallback": {
+      "ja": "演奏スケジュールを見る",
+      "ko": "예정된 연주 일정 보기"
+    },
+    "dialogAria": {
+      "ja": "演奏スケジュールカレンダー",
+      "ko": "연주 일정 캘린더"
+    },
+    "kicker": {
+      "ja": "🥁 P.Taiko 公演 · 体験案内",
+      "ko": "🥁 P.Taiko 공연 & 체험 안내"
+    },
+    "title": {
+      "ja": "演奏スケジュール",
+      "ko": "연주 일정 캘린더"
+    },
+    "closeAria": {
+      "ja": "スケジュールを閉じる",
+      "ko": "일정 창 닫기"
+    },
+    "prevMonthAria": {
+      "ja": "前の月",
+      "ko": "이전 달"
+    },
+    "nextMonthAria": {
+      "ja": "次の月",
+      "ko": "다음 달"
+    },
+    "monthFormat": {
+      "ja": "{year}年{month}月",
+      "ko": "{year}년 {month}월"
+    },
+    "emptyDay": {
+      "ja": "この日は予定された本番・イベントがありません。赤い点のある日付や下の一覧から確認できます。",
+      "ko": "선택한 날짜에는 예정된 연주 일정이 없습니다. 빨간 점이 표시된 날짜나 아래 다가오는 일정을 눌러 확인해 보세요!"
+    },
+    "upcomingHeading": {
+      "ja": "今後の演奏予定ショートカット",
+      "ko": "다가오는 연주 일정 바로가기"
+    }
+  },
+  "members": {
+    "directoryAria": {
+      "ja": "P.Taiko メンバー一覧",
+      "ko": "P.Taiko 멤버 정보 목록"
+    },
+    "directoryKicker": {
+      "ja": "👥 メンバー図鑑",
+      "ko": "👥 멤버 도감"
+    },
+    "directoryTitle": {
+      "ja": "サークルメンバー",
+      "ko": "서클 멤버"
+    },
+    "directorySubtitle": {
+      "ja": "キャラクターカードをタップして詳しいプロフィールを見てみよう！",
+      "ko": "캐릭터 일러스트를 눌러 세부 프로필을 확인해 보세요!"
+    },
+    "directoryCloseAria": {
+      "ja": "メンバー図鑑を閉じる",
+      "ko": "멤버 도감 닫기"
+    },
+    "profileAriaSuffix": {
+      "ja": "のプロフィール",
+      "ko": " 멤버 프로필"
+    },
+    "profileCloseAria": {
+      "ja": "プロフィールを閉じる",
+      "ko": "멤버 프로필 닫기"
+    },
+    "personalityLabel": {
+      "ja": "✨ 性格",
+      "ko": "✨ 성격"
+    },
+    "traitsLabel": {
+      "ja": "👀 特徴",
+      "ko": "👀 특징"
+    },
+    "favoriteTaikoLabel": {
+      "ja": "🥁 お気に入りの太鼓",
+      "ko": "🥁 좋아하는 타이코"
+    },
+    "playableSongsLabel": {
+      "ja": "🎵 演奏できる曲",
+      "ko": "🎵 연주 가능 곡"
+    }
+  },
+  "taikoPlay": {
+    "donPop": {
+      "ja": "ドン！",
+      "ko": "돈!"
+    },
+    "kaPop": {
+      "ja": "カッ！",
+      "ko": "카!"
+    },
+    "rimAria": {
+      "ja": "太鼓の縁を叩く（カッ）",
+      "ko": "북 테두리 치기 (카)"
+    },
+    "rimLabel": {
+      "ja": "縁 · カッ (D / K)",
+      "ko": "테두리 · 카 (D / K)"
+    },
+    "centerAria": {
+      "ja": "太鼓の中央を叩く（ドン）",
+      "ko": "북 중앙 치기 (돈)"
+    },
+    "centerMain": {
+      "ja": "ドン",
+      "ko": "돈"
+    },
+    "centerSub": {
+      "ja": "中央タップ · F / J",
+      "ko": "중앙 탭 · F / J"
+    },
+    "exitButton": {
+      "ja": "← 広場にもどる",
+      "ko": "← 월드로 돌아가기"
+    },
+    "guideText": {
+      "ja": "二本指ですばやく連打しても音が重なって響きます！",
+      "ko": "두 손가락으로 빠르게 연타해도 소리가 겹쳐 울려요!"
+    }
+  },
+  "taikoGuide": {
+    "dialogAria": {
+      "ja": "和太鼓の種類と地域団体の紹介",
+      "ko": "타이코 종류 및 지역 타이코 단체 소개"
+    },
+    "kicker": {
+      "ja": "📖 和太鼓 & 地域サークル",
+      "ko": "📖 타이코 & 지역 서클"
+    },
+    "title": {
+      "ja": "和太鼓の種類 · 地域団体",
+      "ko": "타이코 종류 · 지역 단체"
+    },
+    "closeAria": {
+      "ja": "和太鼓ガイドを閉じる",
+      "ko": "타이코 안내 창 닫기"
+    },
+    "tabTypes": {
+      "ja": "🥁 和太鼓の種類",
+      "ko": "🥁 타이코의 종류"
+    },
+    "tabGroups": {
+      "ja": "🏮 地域団体",
+      "ko": "🏮 지역 타이코 단체"
+    },
+    "listenSample": {
+      "ja": "🔊 音を聴く",
+      "ko": "🔊 소리 듣기"
+    },
+    "posturePrefix": {
+      "ja": "構え: {posture}",
+      "ko": "자세: {posture}"
+    },
+    "hereBadge": {
+      "ja": "📍 いま見ている拠点",
+      "ko": "📍 지금 보고 있는 아지트"
+    }
+  },
+  "circle": {
+    "kicker": {
+      "ja": "🥁 和太鼓サークル紹介",
+      "ko": "🥁 타이코 서클 소개"
+    },
+    "dialogAriaSuffix": {
+      "ja": "サークル紹介・お問い合わせ",
+      "ko": " 서클 소개 및 문의"
+    },
+    "closeAria": {
+      "ja": "サークル紹介を閉じる",
+      "ko": "서클 소개 창 닫기"
+    },
+    "practiceLabel": {
+      "ja": "🗓️ 定期練習",
+      "ko": "🗓️ 정기 연습"
+    },
+    "linksHeading": {
+      "ja": "お知らせ · リンク",
+      "ko": "소식 보기 · 바로가기"
+    },
+    "instaQrAlt": {
+      "ja": "Instagram QRコード",
+      "ko": "인스타그램 QR코드"
+    },
+    "siteQrAlt": {
+      "ja": "Taiko World サイトQRコード",
+      "ko": "Taiko World 사이트 공유 QR코드"
+    },
+    "instaQrFallback": {
+      "ja": "Instagram QR",
+      "ko": "인스타그램 QR"
+    },
+    "siteQrFallback": {
+      "ja": "サイト QR",
+      "ko": "이 사이트 QR"
+    }
+  },
+  "customizer": {
+    "dialogAria": {
+      "ja": "キャラクターきせかえ",
+      "ko": "캐릭터 꾸미기"
+    },
+    "rotateLeft": {
+      "ja": "↺ 回転",
+      "ko": "↺ 회전"
+    },
+    "rotateReset": {
+      "ja": "正面",
+      "ko": "정면"
+    },
+    "rotateRight": {
+      "ja": "回転 ↻",
+      "ko": "회전 ↻"
+    },
+    "poseBasic": {
+      "ja": "⏸ 通常ポーズ",
+      "ko": "⏸ 기본 자세"
+    },
+    "posePlay": {
+      "ja": "🥁 演奏ポーズ",
+      "ko": "🥁 연주 포즈"
+    },
+    "autoSaveSuffix": {
+      "ja": "自動保存",
+      "ko": "자동 저장"
+    },
+    "title": {
+      "ja": "🎨 きせかえ",
+      "ko": "🎨 캐릭터 꾸미기"
+    },
+    "randomBtn": {
+      "ja": "🎲 おまかせ",
+      "ko": "🎲 랜덤"
+    },
+    "randomTitle": {
+      "ja": "ランダムできせかえ",
+      "ko": "랜덤으로 꾸미기"
+    },
+    "doneBtn": {
+      "ja": "完了",
+      "ko": "완료"
+    },
+    "tabGroup": {
+      "ja": "🏮 団体",
+      "ko": "🏮 단체"
+    },
+    "tabFace": {
+      "ja": "😊 お顔",
+      "ko": "😊 얼굴"
+    },
+    "tabHair": {
+      "ja": "🎀 ヘア",
+      "ko": "🎀 헤어"
+    },
+    "tabInstrument": {
+      "ja": "🥁 太鼓",
+      "ko": "🥁 타이코"
+    },
+    "groupHint": {
+      "ja": "団体を選ぶと、その団体の動物キャラクターとお揃いの法被（はっぴ）に着替えます。",
+      "ko": "단체를 선택하면 해당 단체의 동물 캐릭터와 공통 法被(하피)가 함께 적용됩니다."
+    },
+    "commonHappi": {
+      "ja": "共通法被",
+      "ko": "공통 法被"
+    },
+    "eyesLabel": {
+      "ja": "👀 目の形",
+      "ko": "👀 눈 모양"
+    },
+    "eyeScale": {
+      "ja": "目の大きさ",
+      "ko": "눈 크기"
+    },
+    "eyeY": {
+      "ja": "目の高さ",
+      "ko": "눈 높이"
+    },
+    "eyeSpacing": {
+      "ja": "目の間隔",
+      "ko": "눈 간격"
+    },
+    "noseLabel": {
+      "ja": "👃 鼻の形",
+      "ko": "👃 코 모양"
+    },
+    "noseScale": {
+      "ja": "鼻の大きさ",
+      "ko": "코 크기"
+    },
+    "noseY": {
+      "ja": "鼻の高さ",
+      "ko": "코 높이"
+    },
+    "mouthLabel": {
+      "ja": "👄 口の形・ほっぺ",
+      "ko": "👄 입 모양 & 볼터치"
+    },
+    "mouthScale": {
+      "ja": "口の大きさ",
+      "ko": "입 크기"
+    },
+    "mouthY": {
+      "ja": "口の高さ",
+      "ko": "입 높이"
+    },
+    "blushToggle": {
+      "ja": "🌸 ピンクのほっぺを表示",
+      "ko": "🌸 분홍 볼터치 표시"
+    },
+    "copyFaceCodeBtn": {
+      "ja": "📋 スプレッドシート用の顔コードをコピー",
+      "ko": "📋 시트용 얼굴코드 복사 (NPC 등록용)"
+    },
+    "copySuccess": {
+      "ja": "✅ コピー完了！スプレッドシートの［얼굴코드］列に貼り付けできます。",
+      "ko": "✅ 복사 완료! 구글 시트 [얼굴코드] 칸에 붙여넣어 보세요."
+    },
+    "copyPrompt": {
+      "ja": "以下の顔コードをコピーしてシートの［얼굴코드］列に貼り付けてください:",
+      "ko": "아래 얼굴코드를 복사해 구글 시트 [얼굴코드] 칸에 붙여넣으세요:"
+    },
+    "copyShown": {
+      "ja": "📋 顔コードを表示しました。",
+      "ko": "📋 얼굴코드를 표시했습니다."
+    },
+    "hairHint": {
+      "ja": "うさぎの耳に重ならないヘアスタイル・飾りを試してみよう。",
+      "ko": "토끼 귀와 겹치지 않도록 호환 설계된 헤어·장식을 골라보세요."
+    },
+    "instrumentHint": {
+      "ja": "好きな太鼓や鳴り物を装備して芝生広場を歩こう！",
+      "ko": "마음에 드는 타이코나 피리를 몸에 장비하고 잔디 공원을 돌아다녀 보세요!"
+    },
+    "hair": {
+      "hair_hachimaki": { "ja": "鉢巻", "ko": "머리띠" },
+      "hair_bun": { "ja": "お団子", "ko": "만두머리" },
+      "hair_bob": { "ja": "ボブ", "ko": "단발" },
+      "hair_spiky": { "ja": "ツンツン", "ko": "뾰족헤어" },
+      "hair_cap": { "ja": "キャップ", "ko": "모자" },
+      "hair_none": { "ja": "なし", "ko": "없음" }
+    },
+    "eyes": {
+      "round": { "ja": "丸い目", "ko": "동그란 눈" },
+      "sparkle": { "ja": "キラキラ目", "ko": "반짝 눈" },
+      "happy": { "ja": "にっこり目", "ko": "웃는 눈" },
+      "sleepy": { "ja": "おねむ目", "ko": "나른한 눈" }
+    },
+    "nose": {
+      "rabbit": { "ja": "うさぎ鼻", "ko": "토끼 코" },
+      "dot": { "ja": "まる鼻", "ko": "동그란 코" },
+      "triangle": { "ja": "さんかく鼻", "ko": "삼각 코" }
+    },
+    "mouth": {
+      "smile": { "ja": "ほほえみ", "ko": "미소" },
+      "cat": { "ja": "うさぎ・ねこ口", "ko": "고양이·토끼 입" },
+      "grin": { "ja": "にこっと笑顔", "ko": "활짝 웃기" },
+      "calm": { "ja": "おだやか", "ko": "잔잔한 입" }
+    },
+    "instruments": {
+      "shaku_2": { "label": { "ja": "尺2", "ko": "尺2" }, "desc": { "ja": "小型桶胴 · 3D対応", "ko": "소형 어깨북 · 3D 적용" } },
+      "shaku_4": { "label": { "ja": "尺4", "ko": "尺4" }, "desc": { "ja": "標準桶胴 · 3D対応", "ko": "중형 어깨북 · 3D 적용" } },
+      "shaku_5": { "label": { "ja": "尺5", "ko": "尺5" }, "desc": { "ja": "1尺5寸 桶胴太鼓", "ko": "1척 5촌 어깨북" } },
+      "shaku_6": { "label": { "ja": "尺6", "ko": "尺6" }, "desc": { "ja": "大型桶胴 · 3D対応", "ko": "대형 어깨북 · 3D 적용" } },
+      "oki": { "label": { "ja": "沖", "ko": "沖" }, "desc": { "ja": "エイサー大太鼓 · 3D対応", "ko": "큰 어깨북 · 3D 적용" } },
+      "eisa": { "label": { "ja": "エイサー", "ko": "エイサー" }, "desc": { "ja": "エイサー太鼓", "ko": "에이사 어깨북" } },
+      "katsugi": { "label": { "ja": "担ぎ", "ko": "担ぎ" }, "desc": { "ja": "担ぎ桶胴 (鶴亀会)", "ko": "카츠기태고 (鶴亀会)" } },
+      "shime": { "label": { "ja": "〆 (締め)", "ko": "〆 (締め)" }, "desc": { "ja": "締太鼓 · 3D対応", "ko": "시메태고 · 3D 적용" } },
+      "hira": { "label": { "ja": "平", "ko": "平" }, "desc": { "ja": "平太鼓 (台座)", "ko": "평태고 (받침대)" } },
+      "chu": { "label": { "ja": "中", "ko": "中" }, "desc": { "ja": "中太鼓 (鶴亀会)", "ko": "중태고 (鶴亀会)" } },
+      "odaiko": { "label": { "ja": "大", "ko": "大" }, "desc": { "ja": "大太鼓 (鶴亀会)", "ko": "대태고 (鶴亀会)" } },
+      "taru": { "label": { "ja": "たる", "ko": "たる" }, "desc": { "ja": "樽太鼓 (鶴亀会)", "ko": "통북 (鶴亀会)" } },
+      "paranku": { "label": { "ja": "パーランクー", "ko": "パーランクー" }, "desc": { "ja": "片面手持ち太鼓", "ko": "파란쿠 손북" } },
+      "fue": { "label": { "ja": "笛", "ko": "笛" }, "desc": { "ja": "篠笛（横笛）", "ko": "대나무 피리" } },
+      "chappa": { "label": { "ja": "チャッパ", "ko": "チャッパ" }, "desc": { "ja": "手平鉦（小）", "ko": "미니 심벌즈" } },
+      "jangara": { "label": { "ja": "ジャンガラ", "ko": "ジャンガラ" }, "desc": { "ja": "大型手平鉦", "ko": "대형 놋쇠 징" } },
+      "chiki": { "label": { "ja": "チキ", "ko": "チキ" }, "desc": { "ja": "当たり鉦", "ko": "아타리가네" } },
+      "suzu": { "label": { "ja": "鈴", "ko": "鈴" }, "desc": { "ja": "神楽鈴・鳴り物", "ko": "전통 방울" } },
+      "uchiwa": { "label": { "ja": "うちわ", "ko": "うちわ" }, "desc": { "ja": "演出用うちわ", "ko": "연출용 부채" } },
+      "none": { "label": { "ja": "なし", "ko": "없음" }, "desc": { "ja": "手ぶらで散歩", "ko": "맨손 산책" } }
+    }
+  },
+  "songBook": {
+    "dialogAria": {
+      "ja": "和太鼓楽曲・パート譜・作曲",
+      "ko": "타이코 곡 정보 및 직접 작곡"
+    },
+    "kicker": {
+      "ja": "🎵 マルチレイヤー和太鼓スタジオ",
+      "ko": "🎵 멀티 레이어 타이코 스튜디오"
+    },
+    "title": {
+      "ja": "楽曲紹介 · パート譜",
+      "ko": "곡 정보 · 레이어 악보"
+    },
+    "closeAria": {
+      "ja": "楽曲画面を閉じる",
+      "ko": "곡 정보 창 닫기"
+    },
+    "tabView": {
+      "ja": "📚 収録曲スコア ({count})",
+      "ko": "📚 수록곡 악보 ({count})"
+    },
+    "tabCompose": {
+      "ja": "✨ オリジナル作曲",
+      "ko": "✨ 직접 작곡하기"
+    },
+    "customBadge": {
+      "ja": "自作",
+      "ko": "내 작곡"
+    },
+    "difficulty": {
+      "입문": { "ja": "入門", "ko": "입문" },
+      "보통": { "ja": "標準", "ko": "보통" },
+      "중급": { "ja": "中級", "ko": "중급" }
+    },
+    "metaLayers": {
+      "ja": "🎚️ 参加パート {count}種",
+      "ko": "🎚️ 참여 악기 {count}종"
+    },
+    "metaMinPlayers": {
+      "ja": "👥 合奏 {count}人以上",
+      "ko": "👥 합주 최소 {count}명 이상"
+    },
+    "capableMembers": {
+      "ja": "演奏可能メンバー",
+      "ko": "연주 가능 멤버"
+    },
+    "arrangeBtn": {
+      "ja": "✏️ この曲をアレンジして作曲する",
+      "ko": "✏️ 이 곡을 작곡 화면에서 편곡하기"
+    },
+    "deleteBtn": {
+      "ja": "🗑️ 削除",
+      "ko": "🗑️ 삭제"
+    },
+    "draftTitleDefault": {
+      "ja": "オリジナル太鼓曲",
+      "ko": "나의 타이코 곡"
+    },
+    "draftSubtitleDefault": {
+      "ja": "自作マルチレイヤー口唱歌スコア",
+      "ko": "직접 작곡한 멀티 레이어 악보"
+    },
+    "draftDescDefault": {
+      "ja": "楽器パートと強弱を自由に組んだオリジナル合奏曲です。",
+      "ko": "직접 레이어와 강약을 구성해 만든 나만의 타이코 합주곡입니다."
+    },
+    "arrangeSuffix": {
+      "ja": "アレンジ",
+      "ko": "편곡"
+    },
+    "toastLoadedToComposer": {
+      "ja": "楽譜を作曲エディタに読み込みました！",
+      "ko": "악보를 작곡 화면으로 불러왔어요!"
+    },
+    "toastMinOneLayer": {
+      "ja": "最低1つの楽器パートを残してください。",
+      "ko": "최소 1개의 악기 레이어는 남겨두어야 해요."
+    },
+    "toastCleared": {
+      "ja": "すべての音符と強弱記号をリセットしました。",
+      "ko": "모든 음표와 강약 표현을 비웠습니다."
+    },
+    "toastSaved": {
+      "ja": "「{title}」を保存しました！",
+      "ko": "\"{title}\" 곡을 저장했어요!"
+    },
+    "toastExportComing": {
+      "ja": "📤 書き出し機能は今後のアップデートで追加予定です！",
+      "ko": "📤 내 곡 내보내기 기능은 추후 업데이트될 예정입니다!"
+    },
+    "toastDeleted": {
+      "ja": "保存した自作楽曲を削除しました。",
+      "ko": "저장된 커스텀 곡을 삭제했습니다."
+    },
+    "composerSongTitleLabel": {
+      "ja": "曲タイトル",
+      "ko": "곡 제목"
+    },
+    "composerSongTitlePlaceholder": {
+      "ja": "例: 夏祭りリズム",
+      "ko": "예: 여름 축제 리듬"
+    },
+    "composerMeasuresLabel": {
+      "ja": "小節数",
+      "ko": "마디 길이"
+    },
+    "composerMeasureChip": {
+      "ja": "{count}小節",
+      "ko": "{count}마디"
+    },
+    "composerMinPlayersLabel": {
+      "ja": "最低合奏人数",
+      "ko": "최소 합주 인원"
+    },
+    "composerMinPlayersChip": {
+      "ja": "{count}人+",
+      "ko": "{count}명+"
+    },
+    "composerTracksLabel": {
+      "ja": "楽器パート選択（タップで追加・削除）",
+      "ko": "악기 레이어 선택 (눌러서 추가 · 제거)"
+    },
+    "composerBrushLabel": {
+      "ja": "編集ツール（強弱・クレッシェンド等を選んでマスをタップ）",
+      "ko": "편집 도구 (강약 · 점점 크게/작게 표현을 골라 칸을 눌러 적용)"
+    },
+    "tools": {
+      "note": { "ja": "🎵 音符入力", "ko": "🎵 음표 찍기" },
+      "strong": { "ja": "🔥 強く (f)", "ko": "🔥 강하게 (f)" },
+      "weak": { "ja": "🍃 弱く (p)", "ko": "🍃 약하게 (p)" },
+      "cresc": { "ja": "📈 だんだん強く (<)", "ko": "📈 점점 크게 (<)" },
+      "decresc": { "ja": "📉 だんだん弱く (>)", "ko": "📉 점점 작게 (>)" },
+      "normal": { "ja": "⬜ 通常", "ko": "⬜ 보통" }
+    },
+    "btnStop": {
+      "ja": "⏹ 停止",
+      "ko": "⏹ 연주 정지"
+    },
+    "btnPlayCustom": {
+      "ja": "▶ 自作曲を再生",
+      "ko": "▶ 내 곡 연주 듣기"
+    },
+    "btnPlayView": {
+      "ja": "▶ スコアを再生",
+      "ko": "▶ 레이어 악보 연주 듣기"
+    },
+    "btnSave": {
+      "ja": "💾 保存",
+      "ko": "💾 내 곡 저장"
+    },
+    "btnExport": {
+      "ja": "📤 書き出し",
+      "ko": "📤 내 곡 내보내기"
+    },
+    "btnClear": {
+      "ja": "🗑️ クリア",
+      "ko": "🗑️ 비우기"
+    },
+    "scoreHeadingCompose": {
+      "ja": "左スライダーで音量調整 · タップで音符/強弱入力（右クリックで消去）",
+      "ko": "좌측 슬라이더로 레이어 볼륨 조절 · 칸 클릭으로 음표/강약 입력 (우클릭 지우기)"
+    },
+    "scoreHeadingView": {
+      "ja": "左スライダーでパート別音量調整 · f(強) p(弱) <(強く) >(弱く)",
+      "ko": "좌측 슬라이더로 레이어 볼륨 조절 · f(강) p(약) <(점점 크게) >(점점 작게)"
+    },
+    "rulerCorner": {
+      "ja": "小節 · 音量",
+      "ko": "마디 · 볼륨"
+    },
+    "measureCell": {
+      "ja": "{num}小節",
+      "ko": "{num}마디"
+    },
+    "unmute": {
+      "ja": "ミュート解除",
+      "ko": "소리 켜기"
+    },
+    "mute": {
+      "ja": "ミュート",
+      "ko": "음소거"
+    },
+    "volumeAria": {
+      "ja": "音量",
+      "ko": "볼륨"
+    },
+    "scoreLegend": {
+      "ja": "f(強く) · p(弱く) · <(だんだん強く) · >(だんだん弱く) — 再生とNPC合奏に反映されます",
+      "ko": "f(강하게) · p(약하게) · <(점점 크게) · >(점점 작게) — 실제 재생과 NPC 합주에 모두 반영됩니다"
+    }
+  }
+}

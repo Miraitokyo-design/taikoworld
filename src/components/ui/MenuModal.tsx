@@ -2,14 +2,12 @@ import { useEffect } from 'react';
 import type {
   ScheduleEvent,
   SeasonThemeConfig,
-  SiteTextsConfig,
   WorldEnvironmentConfig,
 } from '../../types/content';
+import { useI18n } from '../../i18n/I18nContext';
 import { formatShortDate } from '../../utils/scheduleUtils';
 
 interface MenuModalProps {
-  /** siteTexts.json에서 불러온 메뉴 항목 이름·설명 문구 */
-  texts: SiteTextsConfig['menu'];
   /** 가장 가까운 예정 연주 1건 (메뉴 항목 보조 안내용) */
   nextEvent: ScheduleEvent | null;
   /** 등록된 타이코 곡 수 */
@@ -45,12 +43,10 @@ interface MenuModalProps {
 
 /**
  * 화면 좌측 상단 [☰ 메뉴] 버튼을 눌렀을 때 열리는 통합 메뉴바 모달 컴포넌트
- * - 연주 일정, 멤버 정보, 곡 정보/직접 작곡, 타이코 종류·지역 단체, 서클/문의,
- *   기본 배경 테마 변경(잔디 공원·연습실·눈오는 들판 등), 세부 소리/볼륨 설정을 제공합니다.
- * - 시즌 테마(크리스마스·졸업·입학·오봉 등)는 운영자 일괄 배포로 적용되므로 메뉴에서 제외합니다.
+ * - 언어 전환(日本語 / 한국어), 연주 일정, 멤버 정보, 곡 정보/직접 작곡, 타이코 종류·지역 단체,
+ *   서클/문의, 기본 배경 테마 변경, 세부 소리/볼륨 설정을 제공합니다.
  */
 export function MenuModal({
-  texts,
   nextEvent,
   songCount,
   environments,
@@ -72,6 +68,8 @@ export function MenuModal({
   onChangeNpcVolume,
   onClose,
 }: MenuModalProps) {
+  const { lang, setLang, t, languages } = useI18n();
+
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.code === 'Escape') {
@@ -93,7 +91,7 @@ export function MenuModal({
       onClick={onClose}
       role="dialog"
       aria-modal="true"
-      aria-label="Taiko World 메뉴"
+      aria-label={t('menu.ariaLabel')}
     >
       <div
         className="modal-card menu-modal-card"
@@ -101,31 +99,34 @@ export function MenuModal({
       >
         <div className="modal-header">
           <div>
-            <div className="modal-kicker">{texts.kicker}</div>
-            <h2 className="modal-title">{texts.title}</h2>
+            <div className="modal-kicker">{t('menu.kicker')}</div>
+            <h2 className="modal-title">{t('menu.title')}</h2>
           </div>
           <button
             type="button"
             className="modal-close-btn"
             onClick={onClose}
-            aria-label="메뉴 닫기"
+            aria-label={t('menu.closeAria')}
           >
             ✕
           </button>
         </div>
 
-        {/* 핵심 메뉴 항목 목록 (문구는 src/data/siteTexts.json에서 일괄 관리) */}
+        {/* 핵심 메뉴 항목 목록 (다국어 사전 src/locales/ui.json에서 일괄 관리) */}
         <div className="menu-list">
           <button type="button" className="menu-item-btn" onClick={onOpenSchedule}>
             <span className="menu-item-icon" aria-hidden="true">
               📅
             </span>
             <span className="menu-item-body">
-              <span className="menu-item-title">{texts.scheduleTitle}</span>
+              <span className="menu-item-title">{t('menu.scheduleTitle')}</span>
               <span className="menu-item-desc">
                 {nextEvent
-                  ? `다음 연주: ${formatShortDate(nextEvent.date)} ${nextEvent.title}`
-                  : texts.scheduleFallbackDesc}
+                  ? t('menu.scheduleNextPrefix', {
+                      date: formatShortDate(nextEvent.date, lang),
+                      title: nextEvent.title,
+                    })
+                  : t('menu.scheduleFallbackDesc')}
               </span>
             </span>
             <span className="menu-item-arrow" aria-hidden="true">
@@ -138,8 +139,8 @@ export function MenuModal({
               👥
             </span>
             <span className="menu-item-body">
-              <span className="menu-item-title">{texts.membersTitle}</span>
-              <span className="menu-item-desc">{texts.membersDesc}</span>
+              <span className="menu-item-title">{t('menu.membersTitle')}</span>
+              <span className="menu-item-desc">{t('menu.membersDesc')}</span>
             </span>
             <span className="menu-item-arrow" aria-hidden="true">
               ▸
@@ -152,9 +153,9 @@ export function MenuModal({
             </span>
             <span className="menu-item-body">
               <span className="menu-item-title">
-                {texts.songsTitle} ({songCount}곡)
+                {t('menu.songsTitle')} {t('menu.songsCount', { count: songCount })}
               </span>
-              <span className="menu-item-desc">{texts.songsDesc}</span>
+              <span className="menu-item-desc">{t('menu.songsDesc')}</span>
             </span>
             <span className="menu-item-arrow" aria-hidden="true">
               ▸
@@ -166,8 +167,8 @@ export function MenuModal({
               📖
             </span>
             <span className="menu-item-body">
-              <span className="menu-item-title">{texts.taikoGuideTitle}</span>
-              <span className="menu-item-desc">{texts.taikoGuideDesc}</span>
+              <span className="menu-item-title">{t('menu.taikoGuideTitle')}</span>
+              <span className="menu-item-desc">{t('menu.taikoGuideDesc')}</span>
             </span>
             <span className="menu-item-arrow" aria-hidden="true">
               ▸
@@ -179,23 +180,43 @@ export function MenuModal({
               💬
             </span>
             <span className="menu-item-body">
-              <span className="menu-item-title">{texts.circleTitle}</span>
-              <span className="menu-item-desc">{texts.circleDesc}</span>
+              <span className="menu-item-title">{t('menu.circleTitle')}</span>
+              <span className="menu-item-desc">{t('menu.circleDesc')}</span>
             </span>
             <span className="menu-item-arrow" aria-hidden="true">
               ▸
             </span>
           </button>
 
-          {/* 기본 배경 테마 선택 (잔디 공원 · 연습실 · 눈오는 들판 등) */}
+          {/* 언어 전환 카드 (기본 日本語 / 한국어 전환, 추후 영어 확장 대응) */}
+          <div className="menu-sound-card">
+            <div className="menu-sound-heading">{t('language.heading')}</div>
+            <div className="menu-theme-grid">
+              {languages.map((option) => (
+                <button
+                  key={option.id}
+                  type="button"
+                  className={`menu-theme-pill ${lang === option.id ? 'is-active' : ''}`}
+                  onClick={() => setLang(option.id)}
+                >
+                  {option.flag} {option.nativeLabel}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* 기본 배경 테마 선택 (잔디 공원 · 연습실 · 눈오는 들판 · 노을 광장) */}
           <div className="menu-sound-card">
             <div className="menu-theme-head">
               <span className="menu-sound-heading" style={{ marginBottom: 0 }}>
-                {texts.environmentHeading}
+                {t('menu.environmentHeading')}
               </span>
               {deployedSeasonTheme.id !== 'default' && (
                 <span className="menu-theme-status">
-                  {deployedSeasonTheme.emoji} {deployedSeasonTheme.name} 진행 중
+                  {t('menu.seasonInProgress', {
+                    emoji: deployedSeasonTheme.emoji,
+                    name: deployedSeasonTheme.name,
+                  })}
                 </span>
               )}
             </div>
@@ -217,7 +238,7 @@ export function MenuModal({
 
           {/* 세분화된 소리 & 볼륨 설정 (직접 연주 vs NPC 합주) */}
           <div className="menu-sound-card">
-            <div className="menu-sound-heading">{texts.soundHeading}</div>
+            <div className="menu-sound-heading">{t('menu.soundHeading')}</div>
             <div className="menu-sound-rows">
               <div className="sound-channel-box">
                 <button
@@ -226,17 +247,17 @@ export function MenuModal({
                   onClick={onTogglePlayerSound}
                 >
                   <span className="sound-toggle-info">
-                    <span className="sound-toggle-name">🥁 직접 연주 소리</span>
-                    <span className="sound-toggle-desc">북 체험 · 악보 미리듣기 · 작곡</span>
+                    <span className="sound-toggle-name">{t('sound.playerLabel')}</span>
+                    <span className="sound-toggle-desc">{t('sound.playerMenuDesc')}</span>
                   </span>
                   <span
                     className={`sound-switch-pill ${effectivePlayerOn ? 'is-on' : 'is-off'}`}
                   >
-                    {effectivePlayerOn ? 'ON' : 'OFF'}
+                    {effectivePlayerOn ? t('common.on') : t('common.off')}
                   </span>
                 </button>
                 <label className="sound-volume-row">
-                  <span className="sound-volume-label">볼륨</span>
+                  <span className="sound-volume-label">{t('common.volume')}</span>
                   <input
                     type="range"
                     className="sound-volume-slider"
@@ -259,17 +280,17 @@ export function MenuModal({
                   onClick={onToggleNpcSound}
                 >
                   <span className="sound-toggle-info">
-                    <span className="sound-toggle-name">👥 NPC 합주 소리</span>
-                    <span className="sound-toggle-desc">공원에서 멤버들이 모였을 때 합주</span>
+                    <span className="sound-toggle-name">{t('sound.npcLabel')}</span>
+                    <span className="sound-toggle-desc">{t('sound.npcMenuDesc')}</span>
                   </span>
                   <span
                     className={`sound-switch-pill ${effectiveNpcOn ? 'is-on' : 'is-off'}`}
                   >
-                    {effectiveNpcOn ? 'ON' : 'OFF'}
+                    {effectiveNpcOn ? t('common.on') : t('common.off')}
                   </span>
                 </button>
                 <label className="sound-volume-row">
-                  <span className="sound-volume-label">볼륨</span>
+                  <span className="sound-volume-label">{t('common.volume')}</span>
                   <input
                     type="range"
                     className="sound-volume-slider"

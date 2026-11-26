@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
 import type { TaikoGuideData, TaikoTrackDefinition } from '../../types/content';
+import { useI18n } from '../../i18n/I18nContext';
 import { audioManager } from '../../systems/audioManager';
 
 interface TaikoGuideModalProps {
-  /** taikoGuide.json에서 불러온 타이코 종류·지역 단체 소개 데이터 */
+  /** 현재 언어로 변환된 타이코 종류·지역 단체 소개 데이터 */
   guide: TaikoGuideData;
   /** 소리 미리듣기에 사용할 악기 음원 맵 */
   tracksById: Record<string, TaikoTrackDefinition>;
@@ -21,8 +22,6 @@ interface TaikoGuideModalProps {
 
 /**
  * [타이코 종류 · 지역 단체 소개] 안내 모달 컴포넌트
- * - 메뉴에서 열거나, 3D 월드의 지역 단체 아지트(転太鼓舞·鶴亀会 큐브)에 다가가 E/클릭으로 열 수 있습니다.
- * - 아지트에서 열었을 때는 바로 '지역 타이코 단체' 탭이 선택되며 E 키로 열고 닫을 수 있습니다.
  */
 export function TaikoGuideModal({
   guide,
@@ -33,6 +32,7 @@ export function TaikoGuideModal({
   onBackToMenu,
   onClose,
 }: TaikoGuideModalProps) {
+  const { t } = useI18n();
   const [activeTab, setActiveTab] = useState<'types' | 'groups'>(initialTab);
 
   useEffect(() => {
@@ -51,7 +51,6 @@ export function TaikoGuideModal({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [onClose, allowKeyEClose]);
 
-  /** 안내 카드에서 해당 악기의 대표 소리를 1회 들려주는 핸들러 */
   const handlePlaySample = (trackId: string, sampleNote: string) => {
     const trackDef = tracksById[trackId];
     audioManager.playTrackNote(trackId, sampleNote, {
@@ -68,7 +67,7 @@ export function TaikoGuideModal({
       onClick={onClose}
       role="dialog"
       aria-modal="true"
-      aria-label="타이코 종류 및 지역 타이코 단체 소개"
+      aria-label={t('taikoGuide.dialogAria')}
     >
       <div
         className="modal-card guide-modal-card"
@@ -76,8 +75,8 @@ export function TaikoGuideModal({
       >
         <div className="modal-header">
           <div>
-            <div className="modal-kicker">📖 타이코 &amp; 지역 서클</div>
-            <h2 className="modal-title">타이코 종류 · 지역 단체</h2>
+            <div className="modal-kicker">{t('taikoGuide.kicker')}</div>
+            <h2 className="modal-title">{t('taikoGuide.title')}</h2>
           </div>
           <div className="modal-header-actions">
             {onBackToMenu && (
@@ -86,14 +85,14 @@ export function TaikoGuideModal({
                 className="modal-back-btn"
                 onClick={onBackToMenu}
               >
-                ← 메뉴
+                {t('common.backToMenu')}
               </button>
             )}
             <button
               type="button"
               className="modal-close-btn"
               onClick={onClose}
-              aria-label="타이코 안내 창 닫기"
+              aria-label={t('taikoGuide.closeAria')}
             >
               ✕
             </button>
@@ -109,14 +108,14 @@ export function TaikoGuideModal({
             className={`guide-tab-btn ${activeTab === 'types' ? 'is-active' : ''}`}
             onClick={() => setActiveTab('types')}
           >
-            🥁 타이코의 종류
+            {t('taikoGuide.tabTypes')}
           </button>
           <button
             type="button"
             className={`guide-tab-btn ${activeTab === 'groups' ? 'is-active' : ''}`}
             onClick={() => setActiveTab('groups')}
           >
-            🏮 지역 타이코 단체
+            {t('taikoGuide.tabGroups')}
           </button>
         </div>
 
@@ -146,13 +145,15 @@ export function TaikoGuideModal({
                         className="guide-sample-btn"
                         onClick={() => handlePlaySample(item.trackId!, item.sampleNote!)}
                       >
-                        🔊 소리 듣기
+                        {t('taikoGuide.listenSample')}
                       </button>
                     )}
                   </div>
 
                   <div className="guide-instrument-tags">
-                    <span className="guide-tag">자세: {item.posture}</span>
+                    <span className="guide-tag">
+                      {t('taikoGuide.posturePrefix', { posture: item.posture })}
+                    </span>
                     <span className="guide-tag">{item.soundsLabel}</span>
                   </div>
 
@@ -175,7 +176,9 @@ export function TaikoGuideModal({
                   <div className="guide-group-top-row">
                     <span className="guide-group-affiliation">{group.affiliation}</span>
                     {isHighlighted && (
-                      <span className="guide-group-here-badge">📍 지금 보고 있는 아지트</span>
+                      <span className="guide-group-here-badge">
+                        {t('taikoGuide.hereBadge')}
+                      </span>
                     )}
                   </div>
                   <div className="guide-group-title-row">
@@ -201,8 +204,9 @@ export function TaikoGuideModal({
 
         {allowKeyEClose && (
           <div className="modal-key-hint">
-            <span className="key-cap key-cap--dark">E</span> 또는{' '}
-            <span className="key-cap key-cap--dark">ESC</span> 키로 닫기
+            <span className="key-cap key-cap--dark">E</span> {t('common.or')}{' '}
+            <span className="key-cap key-cap--dark">ESC</span>{' '}
+            {t('common.closeWithKeyEOrEscPrefix')}
           </div>
         )}
       </div>

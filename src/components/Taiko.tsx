@@ -112,6 +112,7 @@ export const Taiko = memo(function Taiko({
         <GlbModel
           url={instrument.modelPath}
           scale={instrument.scale ?? 1}
+          rimLight
           fallback={<PlaceholderTaikoMesh />}
         />
       </group>

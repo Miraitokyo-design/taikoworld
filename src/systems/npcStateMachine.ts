@@ -74,8 +74,8 @@ export interface NpcGroupStepResult {
   kakegoeEvents: Array<{ memberId: string; text: string }>;
 }
 
-/** NPC 걷기 속도 (여유로운 산책 속도, m/s) */
-const NPC_WALK_SPEED = 1.65;
+/** NPC 걷기 속도 (기존 1.65 m/s의 0.8배인 여유로운 산책 속도, m/s) */
+const NPC_WALK_SPEED = 1.32;
 /** NPC가 플레이어 접근을 눈치채고 고개를 돌리며 걸음을 늦추기 시작하는 거리 (m) */
 const PLAYER_NOTICE_RADIUS = 3.2;
 /** 플레이어 바로 근처에서의 최소 걸음 속도 배율 (평소의 38% 속도로 천천히 걸음) */

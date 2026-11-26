@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import type { MemberConfig, SongConfig } from '../../types/content';
+import { useI18n } from '../../i18n/I18nContext';
 import { getTaikoGroupById } from '../../utils/characterAppearance';
 
 interface MemberProfileModalProps {
@@ -156,6 +157,8 @@ export function MemberProfileModal({
   songs,
   onClose,
 }: MemberProfileModalProps) {
+  const { t } = useI18n();
+
   // E 키 또는 ESC 키로 프로필 카드 닫기 지원 (한글 입력 상태에서도 event.code로 동작)
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -180,7 +183,7 @@ export function MemberProfileModal({
       onClick={onClose}
       role="dialog"
       aria-modal="true"
-      aria-label={`${member.nickname} 멤버 프로필`}
+      aria-label={`${member.nickname}${t('members.profileAriaSuffix')}`}
     >
       <div
         className="modal-card member-modal-card"
@@ -210,7 +213,7 @@ export function MemberProfileModal({
             type="button"
             className="modal-close-btn"
             onClick={onClose}
-            aria-label="멤버 프로필 닫기"
+            aria-label={t('members.profileCloseAria')}
           >
             ✕
           </button>
@@ -230,20 +233,20 @@ export function MemberProfileModal({
         {/* 멤버 프로필 상세 항목 리스트 */}
         <dl className="member-profile-list">
           <div className="member-profile-row">
-            <dt className="member-profile-label">✨ 성격</dt>
+            <dt className="member-profile-label">{t('members.personalityLabel')}</dt>
             <dd className="member-profile-value">{profile.personality}</dd>
           </div>
           <div className="member-profile-row">
-            <dt className="member-profile-label">👀 특징</dt>
+            <dt className="member-profile-label">{t('members.traitsLabel')}</dt>
             <dd className="member-profile-value">{profile.traits}</dd>
           </div>
           <div className="member-profile-row">
-            <dt className="member-profile-label">🥁 좋아하는 타이코</dt>
+            <dt className="member-profile-label">{t('members.favoriteTaikoLabel')}</dt>
             <dd className="member-profile-value">{profile.favoriteTaiko}</dd>
           </div>
           {memberSongs.length > 0 && (
             <div className="member-profile-row">
-              <dt className="member-profile-label">🎵 연주 가능 곡</dt>
+              <dt className="member-profile-label">{t('members.playableSongsLabel')}</dt>
               <dd className="member-profile-value">
                 <div className="member-song-chips">
                   {memberSongs.map((song) => (
@@ -259,8 +262,9 @@ export function MemberProfileModal({
 
         {/* PC 단축키 안내 푸터 (모바일 터치 기기에서는 자동 숨김) */}
         <div className="modal-key-hint">
-          <span className="key-cap key-cap--dark">E</span> 또는{' '}
-          <span className="key-cap key-cap--dark">ESC</span> 키로 닫기
+          <span className="key-cap key-cap--dark">E</span> {t('common.or')}{' '}
+          <span className="key-cap key-cap--dark">ESC</span>{' '}
+          {t('common.closeWithKeyEOrEscPrefix')}
         </div>
       </div>
     </div>

@@ -9,7 +9,8 @@
   "scripts": {
     "dev": "vite --host",
     "build": "tsc --noEmit && vite build",
-    "preview": "vite preview --host"
+    "preview": "vite preview --host",
+    "i18n:review": "node scripts/export-i18n-review.mjs"
   },
   "dependencies": {
     "@react-three/drei": "^10.7.9",

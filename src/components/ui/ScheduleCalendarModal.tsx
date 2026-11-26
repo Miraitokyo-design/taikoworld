@@ -1,12 +1,13 @@
 import { useEffect, useMemo, useState } from 'react';
 import type { ScheduleEvent } from '../../types/content';
+import { useI18n } from '../../i18n/I18nContext';
 import {
-  WEEKDAY_LABELS,
   buildMonthCalendarCells,
   formatFullDate,
   formatShortDate,
   getTodayDateKey,
   getUpcomingEvents,
+  getWeekdayLabels,
   groupEventsByDate,
   parseDateKey,
 } from '../../utils/scheduleUtils';
@@ -24,8 +25,6 @@ interface ScheduleCalendarModalProps {
 
 /**
  * 상단 일정 배너를 눌렀을 때 열리는 상세 월간 캘린더 모달 컴포넌트
- * - 연주 예정 일자에 마커(점/강조)를 표시하고, 날짜를 누르면 시간·장소·안내 메모를 보여줍니다.
- * - 다가오는 일정 바로가기 목록을 함께 제공해 다른 달에 있는 공연도 한 번에 점프할 수 있습니다.
  */
 export function ScheduleCalendarModal({
   events,
@@ -33,6 +32,9 @@ export function ScheduleCalendarModal({
   onBackToMenu,
   onClose,
 }: ScheduleCalendarModalProps) {
+  const { lang, t } = useI18n();
+  const weekdayLabels = getWeekdayLabels(lang);
+
   const todayKey = useMemo(() => getTodayDateKey(), []);
   const eventsByDate = useMemo(() => groupEventsByDate(events), [events]);
   const upcomingEvents = useMemo(
@@ -40,22 +42,18 @@ export function ScheduleCalendarModal({
     [events, todayKey]
   );
 
-  // 초기 표시 월과 선택 날짜: 가장 가까운 예정 공연이 있으면 그 날짜로, 없으면 오늘로 시작
   const initialDateKey = nextEvent ? nextEvent.date : todayKey;
   const initialParsed = parseDateKey(initialDateKey);
 
-  // useState: 현재 보고 있는 달력 연/월과 사용자가 선택한 날짜를 기억
   const [viewYear, setViewYear] = useState(initialParsed.year);
   const [viewMonthIndex, setViewMonthIndex] = useState(initialParsed.monthIndex);
   const [selectedDateKey, setSelectedDateKey] = useState(initialDateKey);
 
-  // useMemo: 연도나 월이 바뀔 때만 달력 칸 배열을 다시 계산해 불필요한 연산 방지
   const calendarCells = useMemo(
     () => buildMonthCalendarCells(viewYear, viewMonthIndex),
     [viewYear, viewMonthIndex]
   );
 
-  // ESC 키로 모달 닫기 지원
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.code === 'Escape') {
@@ -67,7 +65,6 @@ export function ScheduleCalendarModal({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [onClose]);
 
-  /** 이전 달로 이동하는 핸들러 */
   const handlePrevMonth = () => {
     if (viewMonthIndex === 0) {
       setViewYear((y) => y - 1);
@@ -77,7 +74,6 @@ export function ScheduleCalendarModal({
     }
   };
 
-  /** 다음 달로 이동하는 핸들러 */
   const handleNextMonth = () => {
     if (viewMonthIndex === 11) {
       setViewYear((y) => y + 1);
@@ -87,7 +83,6 @@ export function ScheduleCalendarModal({
     }
   };
 
-  /** 특정 공연 일정으로 달력과 선택 날짜를 한 번에 이동하는 핸들러 */
   const handleJumpToEvent = (event: ScheduleEvent) => {
     const parsed = parseDateKey(event.date);
     setViewYear(parsed.year);
@@ -104,18 +99,16 @@ export function ScheduleCalendarModal({
       onClick={onClose}
       role="dialog"
       aria-modal="true"
-      aria-label="연주 일정 캘린더"
+      aria-label={t('schedule.dialogAria')}
     >
-      {/* 카드 내부 클릭 시 배경 닫기 이벤트로 전파되지 않도록 차단 */}
       <div
         className="modal-card schedule-modal-card"
         onClick={(event) => event.stopPropagation()}
       >
-        {/* 모달 헤더 */}
         <div className="modal-header">
           <div>
-            <div className="modal-kicker">🥁 P.Taiko 공연 &amp; 체험 안내</div>
-            <h2 className="modal-title">연주 일정 캘린더</h2>
+            <div className="modal-kicker">{t('schedule.kicker')}</div>
+            <h2 className="modal-title">{t('schedule.title')}</h2>
           </div>
           <div className="modal-header-actions">
             {onBackToMenu && (
@@ -124,14 +117,14 @@ export function ScheduleCalendarModal({
                 className="modal-back-btn"
                 onClick={onBackToMenu}
               >
-                ← 메뉴
+                {t('common.backToMenu')}
               </button>
             )}
             <button
               type="button"
               className="modal-close-btn"
               onClick={onClose}
-              aria-label="일정 창 닫기"
+              aria-label={t('schedule.closeAria')}
             >
               ✕
             </button>
@@ -144,18 +137,21 @@ export function ScheduleCalendarModal({
             type="button"
             className="calendar-nav-btn"
             onClick={handlePrevMonth}
-            aria-label="이전 달"
+            aria-label={t('schedule.prevMonthAria')}
           >
             ◀
           </button>
           <div className="calendar-month-label">
-            {viewYear}년 {viewMonthIndex + 1}월
+            {t('schedule.monthFormat', {
+              year: viewYear,
+              month: viewMonthIndex + 1,
+            })}
           </div>
           <button
             type="button"
             className="calendar-nav-btn"
             onClick={handleNextMonth}
-            aria-label="다음 달"
+            aria-label={t('schedule.nextMonthAria')}
           >
             ▶
           </button>
@@ -163,7 +159,7 @@ export function ScheduleCalendarModal({
 
         {/* 요일 헤더 (일 ~ 토) */}
         <div className="calendar-weekdays">
-          {WEEKDAY_LABELS.map((label, index) => (
+          {weekdayLabels.map((label, index) => (
             <div
               key={label}
               className={`calendar-weekday ${
@@ -203,7 +199,6 @@ export function ScheduleCalendarModal({
                 onClick={() => setSelectedDateKey(cell.dateKey!)}
               >
                 <span className="calendar-day-num">{cell.day}</span>
-                {/* schedule.json에 연주가 예정된 날짜에는 눈에 띄는 마커 점 표시 */}
                 {hasEvent && <span className="calendar-event-dot" aria-hidden="true" />}
               </button>
             );
@@ -212,7 +207,9 @@ export function ScheduleCalendarModal({
 
         {/* 선택한 날짜의 상세 공연 안내 */}
         <div className="schedule-detail-section">
-          <div className="schedule-detail-date">{formatFullDate(selectedDateKey)}</div>
+          <div className="schedule-detail-date">
+            {formatFullDate(selectedDateKey, lang)}
+          </div>
 
           {selectedDayEvents.length > 0 ? (
             <div className="schedule-event-list">
@@ -228,17 +225,16 @@ export function ScheduleCalendarModal({
               ))}
             </div>
           ) : (
-            <p className="schedule-empty-text">
-              선택한 날짜에는 예정된 연주 일정이 없습니다. 빨간 점이 표시된 날짜나 아래
-              다가오는 일정을 눌러 확인해 보세요!
-            </p>
+            <p className="schedule-empty-text">{t('schedule.emptyDay')}</p>
           )}
         </div>
 
         {/* 다가오는 전체 연주 일정 빠른 이동 칩 목록 */}
         {upcomingEvents.length > 0 && (
           <div className="schedule-upcoming-section">
-            <div className="schedule-upcoming-heading">다가오는 연주 일정 바로가기</div>
+            <div className="schedule-upcoming-heading">
+              {t('schedule.upcomingHeading')}
+            </div>
             <div className="schedule-upcoming-chips">
               {upcomingEvents.map((item) => (
                 <button
@@ -249,7 +245,9 @@ export function ScheduleCalendarModal({
                   }`}
                   onClick={() => handleJumpToEvent(item)}
                 >
-                  <span className="schedule-chip-date">{formatShortDate(item.date)}</span>
+                  <span className="schedule-chip-date">
+                    {formatShortDate(item.date, lang)}
+                  </span>
                   <span className="schedule-chip-title">{item.title}</span>
                 </button>
               ))}

@@ -148,7 +148,8 @@ export function NpcGroup({
         headLookYawRefs.current[i].current = npc.headLookYaw;
       }
       if (walkSpeedScaleRefs.current[i]) {
-        walkSpeedScaleRefs.current[i].current = npc.walkSpeedScale;
+        // 이동 속도 0.8배 조정에 맞춰 걷기 모션(발걸음) 속도도 0.8배로 동기화
+        walkSpeedScaleRefs.current[i].current = npc.walkSpeedScale * 0.8;
       }
 
       const ringObj = playRingRefs.current[i];

@@ -153,12 +153,12 @@ Rabbit_Control_Rig (Armature 루트)
 ### Layer 4: 헤어 / 머리 장식 파츠 (`public/models/characters/`)
 
 - **부착 기준**: `Socket_Head` (`[0, 1.150, 0]`) 원점에 부착 (권장 ≤ `400 tris`)
-- **용량 절약 팁**: `hair_hachimaki.glb`처럼 노멀맵(`tex_hachimaki_normal.png`)이 고해상도로 포함되면 `359KB`까지 커집니다. 추가 헤어는 색상 텍스처(256~512px)나 단색/팔레트 재질만 쓰면 **개당 `20~40KB`**로 가볍게 만들 수 있습니다.
+- **소형 액세서리 노멀맵 생략 원칙**: 쿼터뷰 화면에서는 작은 헤어·장식 파츠의 미세 요철(노멀맵)이 거의 보이지 않고 용량만 크게 늘립니다(`hair_hachimaki.glb`도 노멀맵 제거 후 `359.2 KB → 97.8 KB`로 경량화). 추가 헤어·장식은 **노멀맵 없이 컬러 텍스처(256~512px WebP/JPEG)나 단색/팔레트 재질만 사용**해 개당 `20~98 KB` 수준으로 가볍게 유지합니다.
 
 | 상태 | 파츠 ID | 파일 경로 | 디자인 예시 |
 | --- | --- | --- | --- |
 | *(없음)* | `hair_none` | — | 민머리 / 동물 본연의 모습 |
-| ✅ 완료 | `hair_hachimaki` | `/models/characters/hair_hachimaki.glb` | `359.2 KB` / `384 tris` — 전통 타이코 머리띠(하치마키) |
+| ✅ 완료 | `hair_hachimaki` | `/models/characters/hair_hachimaki.glb` | `97.8 KB` / `384 tris` — 전통 타이코 머리띠(하치마키, 노멀맵 제거·경량화 완료) |
 | ⬜ 예정 | `hair_bun` | `/models/characters/hair_bun.glb` | 뒤쪽 만두머리 + 리본 (토끼 귀와 겹치지 않게 뒤 배치) |
 | ⬜ 예정 | `hair_cap` | `/models/characters/hair_cap.glb` | 귀 사이/앞쪽에 쓰는 미니 캡·베레 |
 | ⬜ 예정 | `hair_spiky` | `/models/characters/hair_spiky.glb` | 앞머리 뾰족 헤어 + 이마 밴드 |
@@ -180,6 +180,7 @@ Rabbit_Control_Rig (Armature 루트)
 | ✅ 완료 | `inst_shaku_6.glb` | **尺6** (1척 6촌 桶胴太鼓) | 중심 원점, 대형 오케도 다이코(지름 `~0.39~0.48m`). 카츠기 또는 `6据台(桶立台)` 세로 거치 |
 | ✅ 완료 | `inst_oki.glb` | **沖 · エイサー** (통합!) | 중심 원점, 붉은 칠 + 검은 징(`鋲打ち`) 오키나와 에이사 대북(`~0.45m`). `沖`과 `エイサー`는 동일 악기이므로 `inst_eisa.glb` 중복 제작 불필요 |
 | ✅ 완료 | `inst_shime.glb` | **〆 · 締め** (공통 시메다이코) | 바닥 원점(`y=0`), 밧줄 조임 납작 북 + X형/사각 받침대(`〆立足`/`〆座足`) 포함 높이 `~0.48m` |
+| ⬜ 예정 | `inst_strap_katsugi.glb` | **카츠기 어깨 띠** *(단색/문양 커스텀용)* | 어깨북(`尺2·4·5·6`, `沖`)용 천 스트랩 전용 모델(임시 도넛 메쉬 대체). 머티리얼 슬롯 **`Mat_Strap`** + **`0~1` 직사각형 UV**로 제작하면 웹 코드에서 단색·문양 자동 교체 지원 예정 |
 | ⬜ 예정 | `inst_hira.glb` | **平** (평태고 · 転太鼓舞) | 바닥 원점(`y=0`), 징 박기 방식의 얇고 넓은 북 + 낮은 받침대 |
 | ⬜ 예정 | `inst_paranku.glb` | **パーランクー** (파란쿠 · 転太鼓舞) | `Socket_Hand_L` (지름 `~0.21m` 붉은 테두리 + 검은 징의 얇은 **한 면** 오키나와 손북) |
 | ⬜ 예정 | `inst_fue.glb` | **笛** (시노부에 가로피리) | `Socket_Hand_R` (길이 `~0.40m`, 대나무 가로피리) |
@@ -233,7 +234,7 @@ Blender **Action Editor → Push Down (NLA Track)**에 아래 이름으로 등�
 | --- | --- | --- | --- | --- |
 | ⬜ 예정 | **원형 잔디 광장** | 중심 `[0, 0, 0]` | 이동 가능 반지름 **`9.0m`** (지름 18m) | `/models/spaces/space_park_grass.glb` |
 | — | **플레이어 스폰 위치** | `[0, 0, 3.6]` | *(비워둘 것)* | — |
-| ✅ 완료 | **중앙 체험 타이코** | `[0, 0, -1.0]` | 장애물 반경 `0.9m` (상호작용 `1.8m`) | `/models/instruments/inst_taiko_nagado.glb` (`58.1 KB`) |
+| ✅ 완료 | **중앙 체험 타이코** | `[0, 0, -1.0]` | 장애물 반경 `1.05m` (상호작용 `2.1m`, 코드 `scale: 2`) | `/models/instruments/inst_taiko_nagado.glb` (`58.1 KB`) |
 | ⬜ 예정 | **転太鼓舞 아지트 (좌앞)** | `[-5.1, 0, -1.4]` | 장애물 반경 `1.2m` (약 `1.65×1.6×1.65m`) | `/models/props/hideout_tentaikomai.glb` |
 | ⬜ 예정 | **鶴亀会 아지트 (우앞)** | `[5.1, 0, -1.4]` | 장애물 반경 `1.2m` (약 `1.65×1.6×1.65m`) | `/models/props/hideout_tsurukamekai.glb` |
 | ⬜ 예정 | **외곽 나무 4그루** | `[-5.6,0,-4.8]`, `[5.8,0,-4.6]`, `[-6.0,0,4.0]`, `[5.8,0,4.4]` | 장애물 반경 `0.85m` | *(공원 GLB 안에 포함 가능)* |
@@ -273,8 +274,16 @@ Blender **Action Editor → Push Down (NLA Track)**에 아래 이름으로 등�
 - [ ] **2. 원점(Origin) 확인**: 바닥이 있는 모델(캐릭터·건물·거치북)은 **`(0, 0, 0)` 바닥 중심**, 어깨에 메는 북(`尺`·`沖`)은 **북 정중앙 원점 `(0, 0, 0)`**
 - [ ] **3. 정면 방향 확인**: Blender `Numpad 1`(Front View)에서 앞모습이 정면 (`-Y`가 정면)
 - [ ] **4. 불필요한 요소 제거**: 카메라, 라이트, Control Rig 보조 도형 제외 (`Selected Objects` 사용 권장)
-- [ ] **5. 머티리얼 정리**: Principled BSDF 사용, 특수 슬롯 이름(`Mat_Face`, `Mat_Happi`, `Mat_Banner`) 확인
+- [ ] **5. 머티리얼 정리**: Principled BSDF 사용, 특수 슬롯 이름(`Mat_Face`, `Mat_Happi`, `Mat_Strap`, `Mat_Banner`) 확인
 - [ ] **6. 애니메이션 확인**: 캐릭터 GLB는 모든 Action이 NLA 트랙에 등록되었는지 확인
+
+### 빛 · 그림자 & 텍스처 최적화 규칙 (표준 룩앤필 가이드)
+- **실시간 그림자(`Shadow Map`) 미사용 원칙**: 실시간 그림자를 켜면 초기 다운로드 용량은 거의 늘지 않지만(`~0KB`), 모바일 GPU가 매 프레임 3D 장면을 **2번 렌더링**해야 해서 발열·프레임 드랍의 주원인이 됩니다.
+- **권장 대체 조합 (용량·부하 최소화)**:
+  1. **블렌더 텍스처 베이크 (AO · 부드러운 그라데이션 음영)**: 꺾인 틈새 그림자(Ambient Occlusion)와 위아래 명암을 컬러 텍스처 자체에 미리 구워두면 실시간 그림자 없이도 3D 입체감이 살아납니다.
+  2. **웹 코드 경량 림라이트 (`src/utils/rimLight.ts`)**: Three.js 셰이더에서 시선 외곽선만 살짝 밝히는 프레넬 림라이트를 자동 적용해, **추가 이미지 용량 `0KB`**로 어느 각도에서 보든 캐릭터와 북 윤곽선이 또렷하게 빛납니다.
+  3. **바닥 블롭 그림자 + 반구/보조 조명**: 캐릭터·북 바닥 아래에 얇은 원형 블롭 그림자를 깔고, 반구광 + 태양광 + 반대편 보조광으로 가볍게 밝기를 맞춥니다.
+- **소형 액세서리 노멀맵 생략**: 머리띠·손 악기·어깨 띠처럼 화면에서 작게 보이는 파츠는 **노멀맵을 빼고 컬러 텍스처(256~512px WebP/JPEG)만 내보내** 초기 로딩 10MB 예산을 여유 있게 지킵니다.
 
 ### Blender Export 설정 (`File → Export → glTF 2.0`)
 | 항목 | 권장 설정 | 이유 |
@@ -284,7 +293,7 @@ Blender **Action Editor → Push Down (NLA Track)**에 아래 이름으로 등�
 | **Transform** | **`+Y Up` 체크** | Blender(Z-Up) → Three.js(Y-Up) 자동 변환 |
 | **Data → Mesh** | `Apply Modifiers`, `UVs`, `Normals` 체크 | 모디파이어 적용 상태로 내보내기 |
 | **Data → Compression** | **`Compression (Draco)` 체크** (Level 6) | 모바일 파일 용량 50~80% 절감 |
-| **Data → Material → Images** | `WebP` (또는 압축 PNG) | 텍스처 용량 절감 (가능하면 노멀맵 생략) |
+| **Data → Material → Images** | `WebP` (또는 압축 JPEG/PNG) | 텍스처 용량 절감 (소형 파츠는 노멀맵 생략) |
 | **Animation** | 캐릭터만 체크 (`NLA Tracks`, `Sampling Rate: 30`) | 정적 모델(공원·아지트·타이코)은 꺼서 용량 절약 |
 
 ### 모바일 10MB 총 용량 & 폴리곤 예산표
@@ -292,8 +301,8 @@ Blender **Action Editor → Push Down (NLA Track)**에 아래 이름으로 등�
 | --- | --- | --- | --- |
 | 원형 잔디 공원 (`space_park_grass.glb`) | ≤ 30,000 tris | 최대 1024px | ~ 2.0 MB |
 | 지역 단체 아지트 2종 (`hideout_*.glb`) | 각 ≤ 3,000 tris | 512px | 합계 ~ 0.8 MB |
-| 중앙 나가도 타이코 (`inst_taiko_nagado.glb`) | ≤ 5,000 tris | 512~1024px | ~ 0.6 MB |
-| 캐릭터 2종 + 하피 + 헤어 + 악기 | 캐릭터 합계 ≤ 3,000 tris | 하피 512px / 얼굴 256px | 현재 토끼+하피+하치마키 실측 **`0.52 MB`** |
+| 중앙 나가도 타이코 (`inst_taiko_nagado.glb`) | ≤ 5,000 tris | 512~1024px | 실측 **`0.06 MB`** (`58.1 KB`) |
+| 캐릭터 2종 + 하피 + 헤어 + 악기 | 캐릭터 합계 ≤ 3,000 tris | 하피 512px / 얼굴 256px | 현재 토끼+하피+하치마키 실측 **`0.26 MB`** |
 | 2D 일러스트 + QR 이미지 + OG 이미지 | — | 256~512px WebP/PNG | 합계 ~ 1.2 MB |
 | 타이코 오디오 파일 (MP3) | — | 128kbps 모노 | 합계 ~ 1.5 MB |
 | **기본 첫 로딩 총합** | **≤ 50,000 tris** | — | **10MB 이하 여유 확보** |
@@ -302,7 +311,7 @@ Blender **Action Editor → Push Down (NLA Track)**에 아래 이름으로 등�
 
 ## 6. 단계별 교체 테스트 워크플로우 (현재 진행 현황)
 
-1. ✅ **캐릭터 토끼 + 하피 + 하치마키 (`char_body_rabbit.glb`, `char_happi_base.glb`, `hair_hachimaki.glb`, `happi_tentaikomai.png`)** — 40본 스켈레톤 결합, `walk` 모션, 2D 얼굴 커스터마이징 실기 연동 완료
+1. ✅ **캐릭터 토끼 + 하피 + 하치마키 (`char_body_rabbit.glb` `83.5KB`, `char_happi_base.glb` `81.8KB`, `hair_hachimaki.glb` `97.8KB`, `happi_tentaikomai.png`)** — 40본 스켈레톤 결합, `walk` 모션, 2D 얼굴 커스터마이징, 경량 림라이트 실기 연동 완료
 2. ✅ **어깨북 · 시메 · 중앙 체험 나가도 타이코 · X형 받침대 7종 (`inst_shaku_2/4/6.glb`, `inst_oki.glb`, `inst_shime.glb`, `inst_taiko_nagado.glb`, `stand_oosueashi.glb`)** — 광장 중앙 북 & 카츠기/`大·中` 캐릭터 공유 연동 완료
 3. ⬜ **다음 추천 A — 토끼 연주 모션(`play_strong`, `play_weak`) & 거북이 바디(`char_body_turtle.glb`)**: 鶴亀会 거북이 모델 추가 시 모든 캐릭터가 3D 모델로 전환됨
 4. ⬜ **다음 추천 B — 단체 아지트 2종(`hideout_tentaikomai.glb`, `hideout_tsurukamekai.glb`) & 원형 잔디 공원(`space_park_grass.glb`)**: 광장 배경 랜드마크 완성

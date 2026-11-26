@@ -1,11 +1,10 @@
 import { useEffect } from 'react';
-import type { MemberConfig, SiteTextsConfig } from '../../types/content';
+import type { MemberConfig } from '../../types/content';
+import { useI18n } from '../../i18n/I18nContext';
 import { getTaikoGroupById } from '../../utils/characterAppearance';
 import { MemberAvatar } from './MemberProfileModal';
 
 interface MemberDirectoryModalProps {
-  /** siteTexts.json에서 불러온 멤버 도감 제목·안내 문구 */
-  texts: SiteTextsConfig['modals'];
   /** members.json 또는 구글 시트에서 불러온 전체 서클 멤버 목록 */
   members: MemberConfig[];
   /** 캐릭터 일러스트 카드를 선택했을 때 상세 프로필 카드를 여는 콜백 */
@@ -18,17 +17,15 @@ interface MemberDirectoryModalProps {
 
 /**
  * 메뉴바의 [멤버 정보]에서 열리는 컴팩트 캐릭터 일러스트 도감 모달 컴포넌트
- * - 추후 15~20명 이상으로 늘어나도 한 화면에 많은 멤버를 한눈에 볼 수 있도록
- *   캐릭터 일러스트 + 이름 + 소속 단체만 깔끔한 그리드로 표시합니다.
- * - 일러스트 카드를 누르면 해당 멤버의 상세 프로필 카드(MemberProfileModal)가 열립니다.
  */
 export function MemberDirectoryModal({
-  texts,
   members,
   onSelectMember,
   onBackToMenu,
   onClose,
 }: MemberDirectoryModalProps) {
+  const { t } = useI18n();
+
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.code === 'Escape') {
@@ -47,7 +44,7 @@ export function MemberDirectoryModal({
       onClick={onClose}
       role="dialog"
       aria-modal="true"
-      aria-label="P.Taiko 멤버 정보 목록"
+      aria-label={t('members.directoryAria')}
     >
       <div
         className="modal-card directory-modal-card directory-modal-card--grid"
@@ -55,8 +52,8 @@ export function MemberDirectoryModal({
       >
         <div className="modal-header">
           <div>
-            <div className="modal-kicker">{texts.memberDirectoryKicker}</div>
-            <h2 className="modal-title">{texts.memberDirectoryTitle}</h2>
+            <div className="modal-kicker">{t('members.directoryKicker')}</div>
+            <h2 className="modal-title">{t('members.directoryTitle')}</h2>
           </div>
           <div className="modal-header-actions">
             {onBackToMenu && (
@@ -65,21 +62,21 @@ export function MemberDirectoryModal({
                 className="modal-back-btn"
                 onClick={onBackToMenu}
               >
-                ← 메뉴
+                {t('common.backToMenu')}
               </button>
             )}
             <button
               type="button"
               className="modal-close-btn"
               onClick={onClose}
-              aria-label="멤버 도감 닫기"
+              aria-label={t('members.directoryCloseAria')}
             >
               ✕
             </button>
           </div>
         </div>
 
-        <p className="directory-subtitle">{texts.memberDirectorySubtitle}</p>
+        <p className="directory-subtitle">{t('members.directorySubtitle')}</p>
 
         {/* 한 화면에 최대한 많은 멤버를 한눈에 보여주는 일러스트 중심 컴팩트 그리드 */}
         <div className="directory-grid">
@@ -91,7 +88,7 @@ export function MemberDirectoryModal({
                 type="button"
                 className="directory-card-btn"
                 onClick={() => onSelectMember(member)}
-                aria-label={`${member.nickname} (${group.name}) 세부 정보 보기`}
+                aria-label={`${member.nickname} (${group.name})`}
               >
                 <div className="directory-card-avatar">
                   <MemberAvatar member={member} size="small" />

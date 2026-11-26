@@ -1,6 +1,7 @@
 import { Component, Suspense, useEffect, useMemo, useState } from 'react';
 import type { ReactNode } from 'react';
 import { useGLTF } from '@react-three/drei';
+import { applyRimLightToObject } from '../utils/rimLight';
 
 interface GlbModelProps {
   /** public/ 폴더 기준 GLB 파일 경로 (예: "/models/instruments/inst_taiko_nagado.glb") */
@@ -9,6 +10,8 @@ interface GlbModelProps {
   fallback: ReactNode;
   /** 스케일 배율 (기본값 1 = Blender 1m) */
   scale?: number;
+  /** 외곽선이 은은하게 빛나는 경량 프레넬 림라이트 적용 여부 (기본값 false) */
+  rimLight?: boolean;
 }
 
 /**
@@ -116,9 +119,32 @@ export class ModelErrorBoundary extends Component<
  * - 정적 모델(공간·아지트·소품·무기)용으로 clone(true)을 사용합니다.
  * - 뼈대가 있는 스킨드 캐릭터는 SkinnedCharacterGlb(SkeletonUtils.clone)를 사용합니다.
  */
-function LoadedGlbMesh({ url, scale = 1 }: { url: string; scale?: number }) {
+function LoadedGlbMesh({
+  url,
+  scale = 1,
+  rimLight = false,
+}: {
+  url: string;
+  scale?: number;
+  rimLight?: boolean;
+}) {
   const { scene } = useGLTF(url);
-  const clonedScene = useMemo(() => scene.clone(true), [scene]);
+
+  // 원본 GLTF 캐시를 보호하기 위해 씬을 복제하고, 옵션이 켜진 경우에만 경량 림라이트를 주입
+  const { clonedScene, rimMaterials } = useMemo(() => {
+    const cloned = scene.clone(true);
+    const applied = rimLight ? applyRimLightToObject(cloned) : [];
+    return { clonedScene: cloned, rimMaterials: applied };
+  }, [scene, rimLight]);
+
+  useEffect(() => {
+    return () => {
+      for (const mat of rimMaterials) {
+        mat.dispose();
+      }
+    };
+  }, [rimMaterials]);
+
   return <primitive object={clonedScene} scale={scale} />;
 }
 
@@ -126,7 +152,7 @@ function LoadedGlbMesh({ url, scale = 1 }: { url: string; scale?: number }) {
  * Blender에서 내보낸 정적 GLB 3D 에셋을 안전하게 불러오고, 파일이 아직 없으면 임시 모델(fallback)을 보여주는 래퍼 컴포넌트
  * - 제작자님이 Blender 에셋을 public/models/에 넣기만 하면 코드 수정 없이 바로 교체됩니다.
  */
-export function GlbModel({ url, fallback, scale = 1 }: GlbModelProps) {
+export function GlbModel({ url, fallback, scale = 1, rimLight = false }: GlbModelProps) {
   const isAvailable = useAssetAvailability(url);
 
   if (!url || !isAvailable) {
@@ -136,7 +162,7 @@ export function GlbModel({ url, fallback, scale = 1 }: GlbModelProps) {
   return (
     <ModelErrorBoundary fallback={fallback}>
       <Suspense fallback={fallback}>
-        <LoadedGlbMesh url={url} scale={scale} />
+        <LoadedGlbMesh url={url} scale={scale} rimLight={rimLight} />
       </Suspense>
     </ModelErrorBoundary>
   );

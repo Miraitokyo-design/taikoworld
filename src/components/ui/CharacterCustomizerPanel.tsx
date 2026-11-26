@@ -8,6 +8,8 @@ import type {
   FaceMouthStyle,
   FaceNoseStyle,
 } from '../../types/content';
+import { useI18n } from '../../i18n/I18nContext';
+import { localizeGroup } from '../../i18n/localizeData';
 import {
   TAIKO_GROUPS,
   createRandomAppearance,
@@ -32,69 +34,44 @@ interface CharacterCustomizerPanelProps {
 
 type CustomizerTab = 'group' | 'face' | 'hair' | 'instrument';
 
-/** 헤어 선택 버튼용 한국어 라벨 목록 */
-const HAIR_CHOICES: Array<{ id: CharacterHairStyle; label: string; emoji: string }> = [
-  { id: 'hair_hachimaki', label: '머리띠', emoji: '🎀' },
-  { id: 'hair_bun', label: '만두머리', emoji: '🍡' },
-  { id: 'hair_bob', label: '단발', emoji: '💇' },
-  { id: 'hair_spiky', label: '뾰족헤어', emoji: '⚡' },
-  { id: 'hair_cap', label: '모자', emoji: '🧢' },
-  { id: 'hair_none', label: '없음', emoji: '✨' },
+const HAIR_OPTIONS: Array<{ id: CharacterHairStyle; emoji: string }> = [
+  { id: 'hair_hachimaki', emoji: '🎀' },
+  { id: 'hair_bun', emoji: '🍡' },
+  { id: 'hair_bob', emoji: '💇' },
+  { id: 'hair_spiky', emoji: '⚡' },
+  { id: 'hair_cap', emoji: '🧢' },
+  { id: 'hair_none', emoji: '✨' },
 ];
 
-/** 장비 타이코·소품 선택 버튼 목록 (転太鼓舞 우선 제작 악기 중심 + 鶴亀会 포함) */
-const INSTRUMENT_CHOICES: Array<{
-  id: EquippedInstrumentId;
-  label: string;
-  desc: string;
-}> = [
-  { id: 'shaku_2', label: '尺2', desc: '소형 어깨북 · 3D 적용' },
-  { id: 'shaku_4', label: '尺4', desc: '중형 어깨북 · 3D 적용' },
-  { id: 'shaku_5', label: '尺5', desc: '1척 5촌 어깨북' },
-  { id: 'shaku_6', label: '尺6', desc: '대형 어깨북 · 3D 적용' },
-  { id: 'oki', label: '沖', desc: '큰 어깨북 · 3D 적용' },
-  { id: 'eisa', label: 'エイサー', desc: '에이사 어깨북' },
-  { id: 'katsugi', label: '担ぎ', desc: '카츠기태고 (鶴亀会)' },
-  { id: 'shime', label: '〆 (締め)', desc: '시메태고 · 3D 적용' },
-  { id: 'hira', label: '平', desc: '평태고 (받침대)' },
-  { id: 'chu', label: '中', desc: '중태고 (鶴亀会)' },
-  { id: 'odaiko', label: '大', desc: '대태고 (鶴亀会)' },
-  { id: 'taru', label: 'たる', desc: '통북 (鶴亀会)' },
-  { id: 'paranku', label: 'パーランクー', desc: '파란쿠 손북' },
-  { id: 'fue', label: '笛', desc: '대나무 피리' },
-  { id: 'chappa', label: 'チャッパ', desc: '미니 심벌즈' },
-  { id: 'jangara', label: 'ジャンガラ', desc: '대형 놋쇠 징' },
-  { id: 'chiki', label: 'チキ', desc: '아타리가네' },
-  { id: 'suzu', label: '鈴', desc: '전통 방울' },
-  { id: 'uchiwa', label: 'うちわ', desc: '연출용 부채' },
-  { id: 'none', label: '없음', desc: '맨손 산책' },
+const INSTRUMENT_IDS: readonly EquippedInstrumentId[] = [
+  'shaku_2',
+  'shaku_4',
+  'shaku_5',
+  'shaku_6',
+  'oki',
+  'eisa',
+  'katsugi',
+  'shime',
+  'hira',
+  'chu',
+  'odaiko',
+  'taru',
+  'paranku',
+  'fue',
+  'chappa',
+  'jangara',
+  'chiki',
+  'suzu',
+  'uchiwa',
+  'none',
 ];
 
-const EYE_CHOICES: Array<{ id: FaceEyeStyle; label: string }> = [
-  { id: 'round', label: '동그란 눈' },
-  { id: 'sparkle', label: '반짝 눈' },
-  { id: 'happy', label: '웃는 눈' },
-  { id: 'sleepy', label: '나른한 눈' },
-];
-
-const NOSE_CHOICES: Array<{ id: FaceNoseStyle; label: string }> = [
-  { id: 'rabbit', label: '토끼 코' },
-  { id: 'dot', label: '동그란 코' },
-  { id: 'triangle', label: '삼각 코' },
-];
-
-const MOUTH_CHOICES: Array<{ id: FaceMouthStyle; label: string }> = [
-  { id: 'smile', label: '미소' },
-  { id: 'cat', label: '고양이·토끼 입' },
-  { id: 'grin', label: '활짝 웃기' },
-  { id: 'calm', label: '잔잔한 입' },
-];
+const EYE_IDS: readonly FaceEyeStyle[] = ['round', 'sparkle', 'happy', 'sleepy'];
+const NOSE_IDS: readonly FaceNoseStyle[] = ['rabbit', 'dot', 'triangle'];
+const MOUTH_IDS: readonly FaceMouthStyle[] = ['smile', 'cat', 'grin', 'calm'];
 
 /**
  * 화면 하단 [🎨 꾸미기] 버튼을 눌렀을 때 열리는 실시간 3D 캐릭터 커스터마이징 패널 컴포넌트
- * - 카메라가 내 캐릭터를 가까이 클로즈업한 상태에서 단체(종족+법피), 2D 얼굴(눈·코·입 크기/위치),
- *   헤어, 좋아하는 타이코를 실시간으로 바꾸며 모든 변경은 localStorage에 자동 저장됩니다.
- * - [📋 시트용 얼굴코드 복사] 기능으로 3D로 꾸민 얼굴을 구글 시트 멤버 탭에 바로 붙여넣을 수 있습니다.
  */
 export function CharacterCustomizerPanel({
   appearance,
@@ -104,13 +81,12 @@ export function CharacterCustomizerPanel({
   onRotatePreview,
   onClose,
 }: CharacterCustomizerPanelProps) {
-  // useState: 현재 선택된 탭과 얼굴코드 복사 완료 안내 토스트 관리
+  const { lang, t } = useI18n();
   const [activeTab, setActiveTab] = useState<CustomizerTab>('group');
   const [copyFeedback, setCopyFeedback] = useState<string | null>(null);
 
-  const currentGroup = getTaikoGroupById(appearance.groupId);
+  const currentGroup = localizeGroup(getTaikoGroupById(appearance.groupId), lang);
 
-  // ESC 키로 꾸미기 종료
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.code === 'Escape') {
@@ -122,7 +98,6 @@ export function CharacterCustomizerPanel({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [onClose]);
 
-  /** 얼굴 세부 설정(눈·코·입 모양/크기/위치)의 일부만 깔끔하게 업데이트하는 보조 함수 */
   const updateFace = (patch: Partial<CharacterFaceConfig>) => {
     onChangeAppearance({
       ...appearance,
@@ -133,23 +108,18 @@ export function CharacterCustomizerPanel({
     });
   };
 
-  /** 랜덤 외형 생성 버튼 핸들러 */
   const handleRandomize = () => {
     onChangeAppearance(createRandomAppearance());
   };
 
-  /**
-   * 현재 3D로 맞춰 둔 얼굴 설정을 구글 시트 `멤버` 탭의 `M열(얼굴코드)`에 바로 붙여넣을 수 있게 복사
-   */
   const handleCopyFaceCode = async () => {
     const faceCode = serializeFaceCode(appearance.face);
     try {
       await navigator.clipboard.writeText(faceCode);
-      setCopyFeedback('✅ 복사 완료! 구글 시트 [얼굴코드] 칸에 붙여넣어 보세요.');
+      setCopyFeedback(t('customizer.copySuccess'));
     } catch {
-      // 클립보드 API가 제한된 환경에서는 프롬프트로 직접 복사할 수 있게 폴백
-      window.prompt('아래 얼굴코드를 복사해 구글 시트 [얼굴코드] 칸에 붙여넣으세요:', faceCode);
-      setCopyFeedback('📋 얼굴코드를 표시했습니다.');
+      window.prompt(t('customizer.copyPrompt'), faceCode);
+      setCopyFeedback(t('customizer.copyShown'));
     }
     window.setTimeout(() => setCopyFeedback(null), 2600);
   };
@@ -159,7 +129,7 @@ export function CharacterCustomizerPanel({
       className="customizer-overlay"
       data-ui-interactive="true"
       role="dialog"
-      aria-label="캐릭터 꾸미기"
+      aria-label={t('customizer.dialogAria')}
     >
       {/* 3D 캐릭터 회전 & 연주 포즈 테스트용 작은 플로팅 컨트롤 */}
       <div className="customizer-preview-controls">
@@ -167,44 +137,41 @@ export function CharacterCustomizerPanel({
           type="button"
           className="customizer-preview-btn"
           onClick={() => onRotatePreview(-Math.PI / 4)}
-          aria-label="캐릭터 왼쪽으로 돌리기"
         >
-          ↺ 회전
+          {t('customizer.rotateLeft')}
         </button>
         <button
           type="button"
           className="customizer-preview-btn"
           onClick={() => onRotatePreview('reset')}
-          aria-label="캐릭터 정면 보기"
         >
-          정면
+          {t('customizer.rotateReset')}
         </button>
         <button
           type="button"
           className="customizer-preview-btn"
           onClick={() => onRotatePreview(Math.PI / 4)}
-          aria-label="캐릭터 오른쪽으로 돌리기"
         >
-          회전 ↻
+          {t('customizer.rotateRight')}
         </button>
         <button
           type="button"
           className={`customizer-preview-btn ${isPreviewPlaying ? 'is-active' : ''}`}
           onClick={onTogglePreviewPlay}
         >
-          {isPreviewPlaying ? '⏸ 기본 자세' : '🥁 연주 포즈'}
+          {isPreviewPlaying ? t('customizer.poseBasic') : t('customizer.posePlay')}
         </button>
       </div>
 
-      {/* 실제 꾸미기 드로어 (PC: 우측 플로팅 카드 / 모바일: 하단 시트) */}
+      {/* 실제 꾸미기 드로어 */}
       <aside className="customizer-drawer">
-        {/* 상단 헤더 */}
         <div className="customizer-header">
           <div>
             <div className="customizer-kicker">
-              {currentGroup.species === 'rabbit' ? '🐰' : '🐢'} {currentGroup.name} · 자동 저장
+              {currentGroup.species === 'rabbit' ? '🐰' : '🐢'} {currentGroup.name} ·{' '}
+              {t('customizer.autoSaveSuffix')}
             </div>
-            <h2 className="customizer-title">🎨 캐릭터 꾸미기</h2>
+            <h2 className="customizer-title">{t('customizer.title')}</h2>
           </div>
 
           <div className="customizer-header-actions">
@@ -212,16 +179,16 @@ export function CharacterCustomizerPanel({
               type="button"
               className="customizer-random-btn"
               onClick={handleRandomize}
-              title="랜덤으로 꾸미기"
+              title={t('customizer.randomTitle')}
             >
-              🎲 랜덤
+              {t('customizer.randomBtn')}
             </button>
             <button
               type="button"
               className="customizer-done-btn"
               onClick={onClose}
             >
-              완료
+              {t('customizer.doneBtn')}
             </button>
           </div>
         </div>
@@ -235,7 +202,7 @@ export function CharacterCustomizerPanel({
             className={`customizer-tab-btn ${activeTab === 'group' ? 'is-active' : ''}`}
             onClick={() => setActiveTab('group')}
           >
-            🏮 단체
+            {t('customizer.tabGroup')}
           </button>
           <button
             type="button"
@@ -244,7 +211,7 @@ export function CharacterCustomizerPanel({
             className={`customizer-tab-btn ${activeTab === 'face' ? 'is-active' : ''}`}
             onClick={() => setActiveTab('face')}
           >
-            😊 얼굴
+            {t('customizer.tabFace')}
           </button>
           <button
             type="button"
@@ -253,7 +220,7 @@ export function CharacterCustomizerPanel({
             className={`customizer-tab-btn ${activeTab === 'hair' ? 'is-active' : ''}`}
             onClick={() => setActiveTab('hair')}
           >
-            🎀 헤어
+            {t('customizer.tabHair')}
           </button>
           <button
             type="button"
@@ -262,7 +229,7 @@ export function CharacterCustomizerPanel({
             className={`customizer-tab-btn ${activeTab === 'instrument' ? 'is-active' : ''}`}
             onClick={() => setActiveTab('instrument')}
           >
-            🥁 타이코
+            {t('customizer.tabInstrument')}
           </button>
         </div>
 
@@ -271,12 +238,10 @@ export function CharacterCustomizerPanel({
           {/* 1) 단체 · 종족 · 法被 탭 */}
           {activeTab === 'group' && (
             <div className="customizer-section">
-              <p className="customizer-hint">
-                단체를 선택하면 해당 단체의 <strong>동물 캐릭터</strong>와{' '}
-                <strong>공통 法被(하피)</strong>가 함께 적용됩니다.
-              </p>
+              <p className="customizer-hint">{t('customizer.groupHint')}</p>
               <div className="customizer-group-list">
-                {TAIKO_GROUPS.map((group) => {
+                {TAIKO_GROUPS.map((rawGroup) => {
+                  const group = localizeGroup(rawGroup, lang);
                   const isSelected = appearance.groupId === group.id;
                   return (
                     <button
@@ -307,7 +272,7 @@ export function CharacterCustomizerPanel({
                           </span>
                         </span>
                         <span className="customizer-group-sub">
-                          {group.affiliation} · 공통 法被
+                          {group.affiliation} · {t('customizer.commonHappi')}
                         </span>
                       </span>
                     </button>
@@ -320,24 +285,23 @@ export function CharacterCustomizerPanel({
           {/* 2) 2D CanvasTexture 얼굴 커스터마이징 탭 */}
           {activeTab === 'face' && (
             <div className="customizer-section">
-              {/* 눈 모양 + 슬라이더 */}
               <div className="customizer-block">
-                <div className="customizer-label">👀 눈 모양</div>
+                <div className="customizer-label">{t('customizer.eyesLabel')}</div>
                 <div className="customizer-chip-grid">
-                  {EYE_CHOICES.map((opt) => (
+                  {EYE_IDS.map((eyeId) => (
                     <button
-                      key={opt.id}
+                      key={eyeId}
                       type="button"
-                      className={`customizer-chip ${appearance.face.eyes === opt.id ? 'is-selected' : ''}`}
-                      onClick={() => updateFace({ eyes: opt.id })}
+                      className={`customizer-chip ${appearance.face.eyes === eyeId ? 'is-selected' : ''}`}
+                      onClick={() => updateFace({ eyes: eyeId })}
                     >
-                      {opt.label}
+                      {t(`customizer.eyes.${eyeId}`)}
                     </button>
                   ))}
                 </div>
                 <div className="customizer-sliders">
                   <label className="customizer-slider-row">
-                    <span>눈 크기</span>
+                    <span>{t('customizer.eyeScale')}</span>
                     <input
                       type="range"
                       min={0.75}
@@ -348,7 +312,7 @@ export function CharacterCustomizerPanel({
                     />
                   </label>
                   <label className="customizer-slider-row">
-                    <span>눈 높이</span>
+                    <span>{t('customizer.eyeY')}</span>
                     <input
                       type="range"
                       min={-12}
@@ -359,7 +323,7 @@ export function CharacterCustomizerPanel({
                     />
                   </label>
                   <label className="customizer-slider-row">
-                    <span>눈 간격</span>
+                    <span>{t('customizer.eyeSpacing')}</span>
                     <input
                       type="range"
                       min={-8}
@@ -372,24 +336,23 @@ export function CharacterCustomizerPanel({
                 </div>
               </div>
 
-              {/* 코 모양 + 슬라이더 */}
               <div className="customizer-block">
-                <div className="customizer-label">👃 코 모양</div>
+                <div className="customizer-label">{t('customizer.noseLabel')}</div>
                 <div className="customizer-chip-grid customizer-chip-grid--3">
-                  {NOSE_CHOICES.map((opt) => (
+                  {NOSE_IDS.map((noseId) => (
                     <button
-                      key={opt.id}
+                      key={noseId}
                       type="button"
-                      className={`customizer-chip ${appearance.face.nose === opt.id ? 'is-selected' : ''}`}
-                      onClick={() => updateFace({ nose: opt.id })}
+                      className={`customizer-chip ${appearance.face.nose === noseId ? 'is-selected' : ''}`}
+                      onClick={() => updateFace({ nose: noseId })}
                     >
-                      {opt.label}
+                      {t(`customizer.nose.${noseId}`)}
                     </button>
                   ))}
                 </div>
                 <div className="customizer-sliders">
                   <label className="customizer-slider-row">
-                    <span>코 크기</span>
+                    <span>{t('customizer.noseScale')}</span>
                     <input
                       type="range"
                       min={0.75}
@@ -400,7 +363,7 @@ export function CharacterCustomizerPanel({
                     />
                   </label>
                   <label className="customizer-slider-row">
-                    <span>코 높이</span>
+                    <span>{t('customizer.noseY')}</span>
                     <input
                       type="range"
                       min={-10}
@@ -413,24 +376,23 @@ export function CharacterCustomizerPanel({
                 </div>
               </div>
 
-              {/* 입 모양 + 슬라이더 + 볼터치 */}
               <div className="customizer-block">
-                <div className="customizer-label">👄 입 모양 & 볼터치</div>
+                <div className="customizer-label">{t('customizer.mouthLabel')}</div>
                 <div className="customizer-chip-grid">
-                  {MOUTH_CHOICES.map((opt) => (
+                  {MOUTH_IDS.map((mouthId) => (
                     <button
-                      key={opt.id}
+                      key={mouthId}
                       type="button"
-                      className={`customizer-chip ${appearance.face.mouth === opt.id ? 'is-selected' : ''}`}
-                      onClick={() => updateFace({ mouth: opt.id })}
+                      className={`customizer-chip ${appearance.face.mouth === mouthId ? 'is-selected' : ''}`}
+                      onClick={() => updateFace({ mouth: mouthId })}
                     >
-                      {opt.label}
+                      {t(`customizer.mouth.${mouthId}`)}
                     </button>
                   ))}
                 </div>
                 <div className="customizer-sliders">
                   <label className="customizer-slider-row">
-                    <span>입 크기</span>
+                    <span>{t('customizer.mouthScale')}</span>
                     <input
                       type="range"
                       min={0.75}
@@ -441,7 +403,7 @@ export function CharacterCustomizerPanel({
                     />
                   </label>
                   <label className="customizer-slider-row">
-                    <span>입 높이</span>
+                    <span>{t('customizer.mouthY')}</span>
                     <input
                       type="range"
                       min={-10}
@@ -454,7 +416,7 @@ export function CharacterCustomizerPanel({
                 </div>
 
                 <label className="customizer-toggle-row">
-                  <span>🌸 분홍 볼터치 표시</span>
+                  <span>{t('customizer.blushToggle')}</span>
                   <input
                     type="checkbox"
                     checked={appearance.face.blush}
@@ -463,14 +425,13 @@ export function CharacterCustomizerPanel({
                 </label>
               </div>
 
-              {/* 구글 시트 NPC 등록용 얼굴코드 원클릭 복사 */}
               <div className="customizer-sheet-helper">
                 <button
                   type="button"
                   className="customizer-copy-btn"
                   onClick={() => void handleCopyFaceCode()}
                 >
-                  📋 시트용 얼굴코드 복사 (NPC 등록용)
+                  {t('customizer.copyFaceCodeBtn')}
                 </button>
                 {copyFeedback && (
                   <div className="customizer-copy-feedback">{copyFeedback}</div>
@@ -482,11 +443,9 @@ export function CharacterCustomizerPanel({
           {/* 3) 헤어 / 머리 장식 탭 */}
           {activeTab === 'hair' && (
             <div className="customizer-section">
-              <p className="customizer-hint">
-                토끼 귀와 겹치지 않도록 호환 설계된 헤어·장식을 골라보세요.
-              </p>
+              <p className="customizer-hint">{t('customizer.hairHint')}</p>
               <div className="customizer-chip-grid">
-                {HAIR_CHOICES.map((opt) => (
+                {HAIR_OPTIONS.map((opt) => (
                   <button
                     key={opt.id}
                     type="button"
@@ -501,7 +460,7 @@ export function CharacterCustomizerPanel({
                     }
                   >
                     <span className="customizer-chip-emoji">{opt.emoji}</span>
-                    <span>{opt.label}</span>
+                    <span>{t(`customizer.hair.${opt.id}`)}</span>
                   </button>
                 ))}
               </div>
@@ -511,26 +470,28 @@ export function CharacterCustomizerPanel({
           {/* 4) 장비 타이코 / 악기 탭 */}
           {activeTab === 'instrument' && (
             <div className="customizer-section">
-              <p className="customizer-hint">
-                마음에 드는 타이코나 피리를 몸에 장비하고 잔디 공원을 돌아다녀 보세요!
-              </p>
+              <p className="customizer-hint">{t('customizer.instrumentHint')}</p>
               <div className="customizer-chip-grid">
-                {INSTRUMENT_CHOICES.map((opt) => (
+                {INSTRUMENT_IDS.map((instId) => (
                   <button
-                    key={opt.id}
+                    key={instId}
                     type="button"
                     className={`customizer-chip customizer-chip--instrument ${
-                      appearance.equippedInstrument === opt.id ? 'is-selected' : ''
+                      appearance.equippedInstrument === instId ? 'is-selected' : ''
                     }`}
                     onClick={() =>
                       onChangeAppearance({
                         ...appearance,
-                        equippedInstrument: opt.id,
+                        equippedInstrument: instId,
                       })
                     }
                   >
-                    <span className="customizer-inst-name">{opt.label}</span>
-                    <span className="customizer-inst-desc">{opt.desc}</span>
+                    <span className="customizer-inst-name">
+                      {t(`customizer.instruments.${instId}.label`)}
+                    </span>
+                    <span className="customizer-inst-desc">
+                      {t(`customizer.instruments.${instId}.desc`)}
+                    </span>
                   </button>
                 ))}
               </div>

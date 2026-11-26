@@ -1,7 +1,22 @@
 import type { ScheduleEvent } from '../types/content';
+import type { SupportedLanguage } from '../i18n/I18nContext';
 
-/** 요일 한글 표기 (일요일 = 0 ~ 토요일 = 6) */
-export const WEEKDAY_LABELS = ['일', '월', '화', '수', '목', '금', '토'] as const;
+/** 요일 언어별 표기 (일요일 = 0 ~ 토요일 = 6) */
+export const WEEKDAY_LABELS_BY_LANG: Record<
+  SupportedLanguage,
+  readonly [string, string, string, string, string, string, string]
+> = {
+  ja: ['日', '月', '火', '水', '木', '金', '土'],
+  ko: ['일', '월', '화', '수', '목', '금', '토'],
+};
+
+/** 하위 호환용 기본 요일 배열 */
+export const WEEKDAY_LABELS = WEEKDAY_LABELS_BY_LANG.ko;
+
+/** 현재 언어에 맞는 7요일 라벨 배열 반환 */
+export function getWeekdayLabels(lang: SupportedLanguage = 'ja') {
+  return WEEKDAY_LABELS_BY_LANG[lang] ?? WEEKDAY_LABELS_BY_LANG.ja;
+}
 
 /** 월간 캘린더 한 칸의 데이터 타입 */
 export interface CalendarCell {
@@ -79,23 +94,31 @@ export function getNextUpcomingEvent(
  * @param dateKey - YYYY-MM-DD 문자열
  * @returns "M/D(요일)" 형식 문자열
  */
-export function formatShortDate(dateKey: string): string {
+export function formatShortDate(
+  dateKey: string,
+  lang: SupportedLanguage = 'ja'
+): string {
   const { year, monthIndex, day } = parseDateKey(dateKey);
   const dateObj = new Date(year, monthIndex, day);
-  const weekday = WEEKDAY_LABELS[dateObj.getDay()];
+  const weekday = getWeekdayLabels(lang)[dateObj.getDay()];
   return `${monthIndex + 1}/${day}(${weekday})`;
 }
 
 /**
- * 상세 카드용 전체 날짜 문자열로 변환하는 함수 (예: "2026-12-05" -> "2026년 12월 5일 (토)")
- * @param dateKey - YYYY-MM-DD 문자열
- * @returns 한국어 전체 날짜 문자열
+ * 상세 카드용 전체 날짜 문자열로 변환하는 함수
+ * - ja: "2026年12月5日 (土)" / ko: "2026년 12월 5일 (토)"
  */
-export function formatFullDate(dateKey: string): string {
+export function formatFullDate(
+  dateKey: string,
+  lang: SupportedLanguage = 'ja'
+): string {
   const { year, monthIndex, day } = parseDateKey(dateKey);
   const dateObj = new Date(year, monthIndex, day);
-  const weekday = WEEKDAY_LABELS[dateObj.getDay()];
-  return `${year}년 ${monthIndex + 1}월 ${day}일 (${weekday})`;
+  const weekday = getWeekdayLabels(lang)[dateObj.getDay()];
+  if (lang === 'ko') {
+    return `${year}년 ${monthIndex + 1}월 ${day}일 (${weekday})`;
+  }
+  return `${year}年${monthIndex + 1}月${day}日 (${weekday})`;
 }
 
 /**

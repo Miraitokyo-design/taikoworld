@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import { useI18n } from '../../i18n/I18nContext';
 
 interface SoundControlProps {
   /** 직접 연주(북 체험 · 악보 · 소리 듣기) ON/OFF 상태 */
@@ -43,6 +44,7 @@ export function SoundControl({
   onChangePlayerVolume,
   onChangeNpcVolume,
 }: SoundControlProps) {
+  const { t } = useI18n();
   const wrapperRef = useRef<HTMLDivElement>(null);
 
   // 팝오버 바깥을 클릭하면 자동으로 닫기
@@ -75,10 +77,10 @@ export function SoundControl({
 
   const soundLabel =
     !effectivePlayerOn && !effectiveNpcOn
-      ? '꺼짐'
+      ? t('sound.statusMuted')
       : effectivePlayerOn && effectiveNpcOn
-      ? '소리'
-      : '일부';
+      ? t('sound.statusAll')
+      : t('sound.statusPartial');
 
   return (
     <div
@@ -91,15 +93,19 @@ export function SoundControl({
         className="mute-toggle-btn"
         onClick={onToggleOpen}
         aria-expanded={isOpen}
-        aria-label="소리 및 볼륨 설정 열기"
+        aria-label={t('sound.openAria')}
       >
         <span aria-hidden="true">{soundIcon}</span>
         <span className="mute-toggle-label">{soundLabel}</span>
       </button>
 
       {isOpen && (
-        <div className="sound-popover" role="dialog" aria-label="세부 소리 및 볼륨 설정">
-          <div className="sound-popover-title">🔊 소리 · 볼륨 설정</div>
+        <div
+          className="sound-popover"
+          role="dialog"
+          aria-label={t('sound.dialogAria')}
+        >
+          <div className="sound-popover-title">{t('sound.popoverTitle')}</div>
 
           {/* 1) 직접 연주 소리 ON/OFF + 볼륨 슬라이더 */}
           <div className="sound-channel-box">
@@ -109,17 +115,17 @@ export function SoundControl({
               onClick={onTogglePlayerSound}
             >
               <span className="sound-toggle-info">
-                <span className="sound-toggle-name">🥁 직접 연주 소리</span>
-                <span className="sound-toggle-desc">북 체험 · 악보 · 작곡</span>
+                <span className="sound-toggle-name">{t('sound.playerLabel')}</span>
+                <span className="sound-toggle-desc">{t('sound.playerShortDesc')}</span>
               </span>
               <span
                 className={`sound-switch-pill ${effectivePlayerOn ? 'is-on' : 'is-off'}`}
               >
-                {effectivePlayerOn ? 'ON' : 'OFF'}
+                {effectivePlayerOn ? t('common.on') : t('common.off')}
               </span>
             </button>
             <label className="sound-volume-row">
-              <span className="sound-volume-label">볼륨</span>
+              <span className="sound-volume-label">{t('common.volume')}</span>
               <input
                 type="range"
                 className="sound-volume-slider"
@@ -128,7 +134,7 @@ export function SoundControl({
                 step={5}
                 value={isPlayerSoundOn ? Math.round(playerVolume * 100) : 0}
                 onChange={(e) => onChangePlayerVolume(Number(e.target.value) / 100)}
-                aria-label="직접 연주 소리 볼륨"
+                aria-label={t('sound.playerVolumeAria')}
               />
               <span className="sound-volume-pct">
                 {isPlayerSoundOn ? Math.round(playerVolume * 100) : 0}%
@@ -144,17 +150,17 @@ export function SoundControl({
               onClick={onToggleNpcSound}
             >
               <span className="sound-toggle-info">
-                <span className="sound-toggle-name">👥 NPC 합주 소리</span>
-                <span className="sound-toggle-desc">공원 멤버 배경 합주</span>
+                <span className="sound-toggle-name">{t('sound.npcLabel')}</span>
+                <span className="sound-toggle-desc">{t('sound.npcShortDesc')}</span>
               </span>
               <span
                 className={`sound-switch-pill ${effectiveNpcOn ? 'is-on' : 'is-off'}`}
               >
-                {effectiveNpcOn ? 'ON' : 'OFF'}
+                {effectiveNpcOn ? t('common.on') : t('common.off')}
               </span>
             </button>
             <label className="sound-volume-row">
-              <span className="sound-volume-label">볼륨</span>
+              <span className="sound-volume-label">{t('common.volume')}</span>
               <input
                 type="range"
                 className="sound-volume-slider"
@@ -163,7 +169,7 @@ export function SoundControl({
                 step={5}
                 value={isNpcSoundOn ? Math.round(npcVolume * 100) : 0}
                 onChange={(e) => onChangeNpcVolume(Number(e.target.value) / 100)}
-                aria-label="NPC 합주 소리 볼륨"
+                aria-label={t('sound.npcVolumeAria')}
               />
               <span className="sound-volume-pct">
                 {isNpcSoundOn ? Math.round(npcVolume * 100) : 0}%
